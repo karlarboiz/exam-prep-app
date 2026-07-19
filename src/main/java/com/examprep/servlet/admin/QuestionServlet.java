@@ -7,11 +7,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @WebServlet("/admin/questions")
 public class QuestionServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(QuestionServlet.class);
 
     private final AdminService adminService = new AdminService();
 
@@ -35,6 +39,7 @@ public class QuestionServlet extends HttpServlet {
             req.setAttribute("subjects", adminService.getAllSubjects());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/questions.jsp").forward(req, resp);
         } catch (Exception e) {
+            log.error("Failed to render questions page", e);
             throw new ServletException(e);
         }
     }
@@ -56,8 +61,10 @@ public class QuestionServlet extends HttpServlet {
                 case "delete" -> adminService.deleteQuestion(Long.parseLong(req.getParameter("id")));
                 default -> throw new IllegalArgumentException("Unknown action");
             }
+            log.info("Question action={} completed", action);
             resp.sendRedirect(req.getContextPath() + "/admin/questions");
         } catch (Exception e) {
+            log.error("Question action={} failed", action, e);
             req.setAttribute("error", e.getMessage());
             doGet(req, resp);
         }

@@ -7,11 +7,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @WebServlet("/admin/dashboard")
 public class AdminDashboardServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminDashboardServlet.class);
 
     private final AdminService adminService = new AdminService();
     private final AuthService authService = new AuthService();
@@ -25,6 +29,7 @@ public class AdminDashboardServlet extends HttpServlet {
             req.setAttribute("questions", adminService.getAllQuestions());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/dashboard.jsp").forward(req, resp);
         } catch (Exception e) {
+            log.error("Failed to render admin dashboard", e);
             throw new ServletException(e);
         }
     }

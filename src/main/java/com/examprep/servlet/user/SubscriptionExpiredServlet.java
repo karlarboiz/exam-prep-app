@@ -8,12 +8,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 @WebServlet("/user/subscription-expired")
 public class SubscriptionExpiredServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionExpiredServlet.class);
 
     private final AccessGrantService accessGrantService = new AccessGrantService();
 
@@ -34,6 +38,7 @@ public class SubscriptionExpiredServlet extends HttpServlet {
             });
             req.getRequestDispatcher("/WEB-INF/jsp/user/subscription-expired.jsp").forward(req, resp);
         } catch (Exception e) {
+            log.error("Failed to render subscription-expired page for user={}", user.getUsername(), e);
             throw new ServletException(e);
         }
     }

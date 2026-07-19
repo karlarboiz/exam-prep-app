@@ -7,6 +7,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 
 @WebServlet("/admin/exams")
 public class ExamServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(ExamServlet.class);
 
     private final AdminService adminService = new AdminService();
 
@@ -29,6 +33,7 @@ public class ExamServlet extends HttpServlet {
                     try {
                         req.setAttribute("selectedQuestionIds", adminService.getExamQuestionIds(examId));
                     } catch (Exception e) {
+                        log.error("Failed to load question ids for examId={}", examId, e);
                         throw new RuntimeException(e);
                     }
                 });
@@ -38,6 +43,7 @@ public class ExamServlet extends HttpServlet {
             req.setAttribute("questions", adminService.getAllQuestions());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/exams.jsp").forward(req, resp);
         } catch (Exception e) {
+            log.error("Failed to render exams page", e);
             throw new ServletException(e);
         }
     }
@@ -70,8 +76,10 @@ public class ExamServlet extends HttpServlet {
                 case "delete" -> adminService.deleteExam(Long.parseLong(req.getParameter("id")));
                 default -> throw new IllegalArgumentException("Unknown action");
             }
+            log.info("Exam action={} completed", action);
             resp.sendRedirect(req.getContextPath() + "/admin/exams");
         } catch (Exception e) {
+            log.error("Exam action={} failed", action, e);
             req.setAttribute("error", e.getMessage());
             doGet(req, resp);
         }
