@@ -43,6 +43,10 @@ public final class DatabaseManager {
             }
             String sql = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
                     .lines()
+                    .map(line -> {
+                        int comment = line.indexOf("--");
+                        return comment >= 0 ? line.substring(0, comment) : line;
+                    })
                     .collect(Collectors.joining("\n"));
             String[] statements = sql.split(";");
             try (Connection conn = dataSource.getConnection();
