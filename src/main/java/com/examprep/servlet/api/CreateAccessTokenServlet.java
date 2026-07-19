@@ -9,6 +9,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,11 +20,14 @@ import java.time.format.DateTimeFormatter;
 @WebServlet("/api/access-tokens")
 public class CreateAccessTokenServlet extends HttpServlet {
 
+    private static final Logger log = LoggerFactory.getLogger(CreateAccessTokenServlet.class);
+
     private final AccessGrantService accessGrantService = new AccessGrantService();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (!isAuthorized(req)) {
+            log.warn("Unauthorized access-token create attempt");
             writeJson(resp, HttpServletResponse.SC_UNAUTHORIZED,
                     SimpleJson.object("error", "Invalid or missing API key"));
             return;
@@ -39,6 +44,8 @@ public class CreateAccessTokenServlet extends HttpServlet {
                     accessGrantService.createToken(expiresAt, durationDays, planCode, sourceRef);
             AccessGrant grant = created.grant();
             String expiresAtIso = grant.getExpiresAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            log.info("Created access token id={} planCode={} sourceRef={} expiresAt={}",
+                    grant.getId(), planCode, sourceRef, expiresAtIso);
             writeJson(resp, HttpServletResponse.SC_CREATED, SimpleJson.object(
                     "token", created.rawToken(),
                     "expiresAt", expiresAtIso,
@@ -46,8 +53,10 @@ public class CreateAccessTokenServlet extends HttpServlet {
                     "status", grant.getStatus().name()
             ));
         } catch (IllegalArgumentException e) {
+            log.warn("Invalid access-token create request: {}", e.getMessage());
             writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, SimpleJson.object("error", e.getMessage()));
         } catch (Exception e) {
+            log.error("Failed to create access token", e);
             writeJson(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     SimpleJson.object("error", "Failed to create access token"));
         }

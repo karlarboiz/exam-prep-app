@@ -9,6 +9,8 @@ import com.examprep.model.Role;
 import com.examprep.model.User;
 import com.examprep.util.PasswordUtil;
 import com.examprep.util.TokenHashUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,6 +19,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 public class AccessGrantService {
+
+    private static final Logger log = LoggerFactory.getLogger(AccessGrantService.class);
 
     private final AccessGrantDao accessGrantDao = new AccessGrantDao();
     private final UserDao userDao = new UserDao();
@@ -33,6 +37,7 @@ public class AccessGrantService {
         String rawToken = TokenHashUtil.generateRawToken();
         String hash = TokenHashUtil.sha256(rawToken);
         AccessGrant grant = accessGrantDao.create(hash, expiry, planCode, sourceRef);
+        log.info("Created access grant id={} expiresAt={}", grant.getId(), grant.getExpiresAt());
         return new CreatedAccessToken(rawToken, grant);
     }
 
@@ -73,9 +78,11 @@ public class AccessGrantService {
                 User user = userDao.create(conn, username, email, hash, Role.USER);
                 accessGrantDao.redeem(conn, grant.getId(), user.getId());
                 conn.commit();
+                log.info("Redeemed access grant id={} for user={}", grant.getId(), user.getUsername());
                 return user;
             } catch (Exception e) {
                 conn.rollback();
+                log.error("Registration with token rolled back for username={}", username, e);
                 throw e;
             } finally {
                 conn.setAutoCommit(previousAutoCommit);

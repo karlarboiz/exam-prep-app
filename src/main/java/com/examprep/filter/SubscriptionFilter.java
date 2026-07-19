@@ -11,6 +11,8 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -19,6 +21,8 @@ import java.io.IOException;
  * ADMIN users are not checked. /user/subscription-expired remains reachable.
  */
 public class SubscriptionFilter implements Filter {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionFilter.class);
 
     private final AccessGrantService accessGrantService = new AccessGrantService();
 
@@ -55,8 +59,10 @@ public class SubscriptionFilter implements Filter {
                 chain.doFilter(request, response);
                 return;
             }
+            log.info("Subscription expired for user={}; redirecting", user.getUsername());
             resp.sendRedirect(req.getContextPath() + "/user/subscription-expired");
         } catch (Exception e) {
+            log.error("Failed to check subscription for user={}", user.getUsername(), e);
             throw new ServletException(e);
         }
     }

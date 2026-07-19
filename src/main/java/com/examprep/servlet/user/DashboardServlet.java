@@ -8,11 +8,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @WebServlet("/user/dashboard")
 public class DashboardServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(DashboardServlet.class);
 
     private final ExamService examService = new ExamService();
 
@@ -25,6 +29,7 @@ public class DashboardServlet extends HttpServlet {
             req.setAttribute("history", examService.getUserHistory(user.getId()));
             req.getRequestDispatcher("/WEB-INF/jsp/user/dashboard.jsp").forward(req, resp);
         } catch (Exception e) {
+            log.error("Failed to render user dashboard for user={}", user.getUsername(), e);
             throw new ServletException(e);
         }
     }

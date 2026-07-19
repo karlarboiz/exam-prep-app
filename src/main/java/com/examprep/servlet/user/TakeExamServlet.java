@@ -12,6 +12,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +23,8 @@ import java.util.Map;
 
 @WebServlet("/user/exam")
 public class TakeExamServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(TakeExamServlet.class);
 
     private final ExamService examService = new ExamService();
 
@@ -44,16 +48,20 @@ public class TakeExamServlet extends HttpServlet {
             Long examId = Long.parseLong(examIdParam);
             Exam exam = examService.getExam(examId).orElse(null);
             if (exam == null || !exam.isActive()) {
+                log.warn("User {} tried to start missing/inactive examId={}", user.getUsername(), examId);
                 resp.sendRedirect(req.getContextPath() + "/user/dashboard");
                 return;
             }
 
             ExamAttempt attempt = examService.startExam(user.getId(), examId);
+            log.info("User {} started examId={} attemptId={}", user.getUsername(), examId, attempt.getId());
             resp.sendRedirect(req.getContextPath() + "/user/exam?attemptId=" + attempt.getId());
         } catch (IllegalStateException e) {
+            log.warn("Cannot start exam for user={}: {}", user.getUsername(), e.getMessage());
             req.setAttribute("error", e.getMessage());
             resp.sendRedirect(req.getContextPath() + "/user/dashboard");
         } catch (Exception e) {
+            log.error("Failed to start/show exam for user={}", user.getUsername(), e);
             throw new ServletException(e);
         }
     }
@@ -67,6 +75,7 @@ public class TakeExamServlet extends HttpServlet {
         try {
             ExamAttempt attempt = examService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId())) {
+                log.warn("User {} forbidden from attemptId={}", user.getUsername(), attemptId);
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
@@ -74,6 +83,8 @@ public class TakeExamServlet extends HttpServlet {
             if ("submit".equals(action)) {
                 Map<Long, String> answers = collectAnswers(req, attemptId);
                 ExamAttempt completed = examService.submitExam(attemptId, answers);
+                log.info("User {} submitted attemptId={} scorePercent={}",
+                        user.getUsername(), attemptId, completed.getScorePercent());
                 resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + completed.getId());
                 return;
             }
@@ -83,12 +94,15 @@ public class TakeExamServlet extends HttpServlet {
                 String selected = req.getParameter("selectedOption");
                 if (selected != null && !selected.isBlank()) {
                     examService.saveAnswer(attemptId, questionId, selected);
+                    log.debug("Saved answer attemptId={} questionId={}", attemptId, questionId);
                 }
                 showExamPage(attemptId, user, req, resp);
             }
         } catch (IllegalStateException e) {
+            log.warn("Exam attemptId={} already completed: {}", attemptId, e.getMessage());
             resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + attemptId);
         } catch (Exception e) {
+            log.error("Exam action={} failed for attemptId={}", action, attemptId, e);
             throw new ServletException(e);
         }
     }
@@ -107,6 +121,7 @@ public class TakeExamServlet extends HttpServlet {
         }
 
         if (examService.isExpired(attempt)) {
+            log.info("Auto-submitting expired attemptId={}", attemptId);
             examService.submitExam(attemptId, examService.getAnswerMap(attemptId));
             resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + attemptId);
             return;
