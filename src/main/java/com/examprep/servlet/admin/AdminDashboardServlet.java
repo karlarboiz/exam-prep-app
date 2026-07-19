@@ -23,7 +23,7 @@ public class AdminDashboardServlet extends HttpServlet {
             req.setAttribute("exams", adminService.getAllExams());
             req.setAttribute("users", authService.findAllUsers());
             req.setAttribute("questions", adminService.getAllQuestions());
-            req.getRequestDispatcher("/webapp/WEB-INF/jsp/admin/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/jsp/admin/dashboard.jsp").forward(req, resp);
         } catch (Exception e) {
             throw new ServletException(e);
         }
