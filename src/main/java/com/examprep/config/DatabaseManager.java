@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.stream.Collectors;
@@ -57,9 +58,25 @@ public final class DatabaseManager {
                         stmt.execute(trimmed);
                     }
                 }
+                // Explicit MERGE ids do not advance H2 identity counters — sync them.
+                syncIdentity(stmt, "subjects");
+                syncIdentity(stmt, "questions");
+                syncIdentity(stmt, "exams");
+                syncIdentity(stmt, "users");
+                syncIdentity(stmt, "exam_attempts");
+                syncIdentity(stmt, "access_grants");
             }
         } catch (IOException | SQLException e) {
             throw new RuntimeException("Failed to initialize database schema", e);
+        }
+    }
+
+    private static void syncIdentity(Statement stmt, String table) throws SQLException {
+        try (ResultSet rs = stmt.executeQuery("SELECT COALESCE(MAX(id), 0) + 1 FROM " + table)) {
+            if (rs.next()) {
+                long next = rs.getLong(1);
+                stmt.execute("ALTER TABLE " + table + " ALTER COLUMN id RESTART WITH " + next);
+            }
         }
     }
 
