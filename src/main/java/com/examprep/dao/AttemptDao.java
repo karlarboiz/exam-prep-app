@@ -166,6 +166,16 @@ public class AttemptDao {
         }
     }
 
+    public void updateStartedAt(Long attemptId, LocalDateTime startedAt) throws SQLException {
+        String sql = "UPDATE exam_attempts SET started_at = ? WHERE id = ? AND status = 'IN_PROGRESS'";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(startedAt));
+            ps.setLong(2, attemptId);
+            ps.executeUpdate();
+        }
+    }
+
     private ExamAttempt mapAttempt(ResultSet rs) throws SQLException {
         ExamAttempt attempt = new ExamAttempt();
         attempt.setId(rs.getLong("id"));

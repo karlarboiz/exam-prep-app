@@ -17,4 +17,4 @@
 
 Deadline = `startedAt.plusMinutes(durationMinutes)`.
 
-For **diagnostic** attempts, the question set is `attempt_questions`, not `exam_questions`. Subject breakdown is stored in [DiagnosticSubjectScore](DiagnosticSubjectScore.md).
+For **diagnostic** attempts, the question set is `attempt_questions`, not `exam_questions`. Subject breakdown is stored in [DiagnosticSubjectScore](DiagnosticSubjectScore.md). Only `COMPLETED` clears the placement gate; `EXPIRED` requires a retake — see [diagnostic flow](../features/diagnostic/flow.md).

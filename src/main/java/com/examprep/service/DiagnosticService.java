@@ -53,6 +53,7 @@ public class DiagnosticService {
         if (existing.isPresent()) {
             ExamAttempt attempt = existing.get();
             if (isExpired(attempt)) {
+                // Abandoned / AFK past deadline — score as EXPIRED but do not complete the gate
                 submitDiagnostic(attempt.getId(), getAnswerMap(attempt.getId()));
             } else {
                 return attempt;
@@ -66,6 +67,25 @@ public class DiagnosticService {
         }
         questionDao.setAttemptQuestions(attempt.getId(), sampledIds);
         return attemptDao.findById(attempt.getId()).orElseThrow();
+    }
+
+    /**
+     * Starts the exam clock after the intro modal. Resets {@code started_at} only when
+     * the attempt still has no saved answers (fresh start).
+     */
+    public LocalDateTime beginDiagnostic(Long attemptId) throws SQLException {
+        ExamAttempt attempt = getAttempt(attemptId);
+        if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Attempt is not in progress");
+        }
+        if (isExpired(attempt)) {
+            submitDiagnostic(attemptId, getAnswerMap(attemptId));
+            throw new IllegalStateException("Exam time has expired");
+        }
+        if (attemptDao.findAnswersByAttemptId(attemptId).isEmpty()) {
+            attemptDao.updateStartedAt(attemptId, LocalDateTime.now());
+        }
+        return getDeadline(getAttempt(attemptId));
     }
 
     public ExamAttempt getAttempt(Long attemptId) throws SQLException {
@@ -121,7 +141,11 @@ public class DiagnosticService {
 
         List<DiagnosticSubjectScore> subjectScores = buildSubjectScores(attemptId, questions);
         subjectScoreDao.replaceForAttempt(attemptId, subjectScores);
-        userDao.markDiagnosticCompleted(attempt.getUserId());
+
+        // Only a finished (non-expired) attempt clears the hard gate; AFK/timeout requires retake
+        if (finalStatus == AttemptStatus.COMPLETED) {
+            userDao.markDiagnosticCompleted(attempt.getUserId());
+        }
 
         return attemptDao.findById(attemptId).orElseThrow();
     }

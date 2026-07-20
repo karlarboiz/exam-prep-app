@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,11 @@ public class DiagnosticServlet extends HttpServlet {
             }
 
             ExamAttempt attempt = diagnosticService.startDiagnostic(user.getId());
-            resp.sendRedirect(req.getContextPath() + "/user/diagnostic?attemptId=" + attempt.getId());
+            String redirect = req.getContextPath() + "/user/diagnostic?attemptId=" + attempt.getId();
+            if ("1".equals(req.getParameter("retake"))) {
+                redirect += "&retake=1";
+            }
+            resp.sendRedirect(redirect);
         } catch (IllegalStateException e) {
             req.setAttribute("error", e.getMessage());
             req.getRequestDispatcher("/WEB-INF/jsp/user/diagnostic-unavailable.jsp").forward(req, resp);
@@ -62,10 +67,26 @@ public class DiagnosticServlet extends HttpServlet {
                 return;
             }
 
+            if ("begin".equals(action)) {
+                LocalDateTime deadline = diagnosticService.beginDiagnostic(attemptId);
+                if ("1".equals(req.getParameter("ajax"))) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"deadline\":\""
+                            + deadline.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "\"}");
+                    return;
+                }
+                resp.sendRedirect(req.getContextPath() + "/user/diagnostic?attemptId=" + attemptId);
+                return;
+            }
+
             if ("submit".equals(action)) {
                 Map<Long, String> answers = collectAnswers(req, attemptId);
                 ExamAttempt completed = diagnosticService.submitDiagnostic(attemptId, answers);
-                resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + completed.getId());
+                if (completed.getStatus() == AttemptStatus.COMPLETED) {
+                    resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + completed.getId());
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/user/diagnostic?retake=1");
+                }
                 return;
             }
 
@@ -82,7 +103,7 @@ public class DiagnosticServlet extends HttpServlet {
                 showDiagnosticPage(attemptId, user, req, resp);
             }
         } catch (IllegalStateException e) {
-            resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + attemptId);
+            resp.sendRedirect(req.getContextPath() + "/user/diagnostic?retake=1");
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -97,26 +118,34 @@ public class DiagnosticServlet extends HttpServlet {
         }
 
         if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
-            resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + attemptId);
+            if (attempt.getStatus() == AttemptStatus.COMPLETED) {
+                resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + attemptId);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/user/diagnostic?retake=1");
+            }
             return;
         }
 
         if (diagnosticService.isExpired(attempt)) {
             diagnosticService.submitDiagnostic(attemptId, diagnosticService.getAnswerMap(attemptId));
-            resp.sendRedirect(req.getContextPath() + "/user/diagnostic/result?attemptId=" + attemptId);
+            resp.sendRedirect(req.getContextPath() + "/user/diagnostic?retake=1");
             return;
         }
 
-        List<Question> questions = diagnosticService.getAttemptQuestions(attemptId);
         Map<Long, String> answers = diagnosticService.getAnswerMap(attemptId);
+        List<Question> questions = diagnosticService.getAttemptQuestions(attemptId);
         int secondsPerQuestion = questions.isEmpty()
                 ? 1
                 : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());
+
+        boolean showIntro = answers.isEmpty();
 
         req.setAttribute("attempt", attempt);
         req.setAttribute("questions", questions);
         req.setAttribute("answers", answers);
         req.setAttribute("secondsPerQuestion", secondsPerQuestion);
+        req.setAttribute("showIntro", showIntro);
+        req.setAttribute("retake", "1".equals(req.getParameter("retake")));
         req.setAttribute("deadline", diagnosticService.getDeadline(attempt)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         req.getRequestDispatcher("/WEB-INF/jsp/user/diagnostic.jsp").forward(req, resp);
