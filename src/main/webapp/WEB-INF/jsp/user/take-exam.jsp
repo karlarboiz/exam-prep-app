@@ -86,8 +86,12 @@
     const cards = Array.from(document.querySelectorAll('.question-card'));
     const questionCount = cards.length;
 
+    const remainingMs = Array.from({length: questionCount}, function () {
+        return secondsPerQuestion * 1000;
+    });
     let currentIndex = 0;
-    let questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+    let questionEndsAt = Date.now() + remainingMs[0];
+    let questionStarted = false;
     let submitted = false;
 
     function formatTime(ms) {
@@ -98,7 +102,12 @@
     }
 
     function showQuestion(index) {
-        currentIndex = Math.max(0, Math.min(index, questionCount - 1));
+        const nextIndex = Math.max(0, Math.min(index, questionCount - 1));
+        if (questionStarted) {
+            remainingMs[currentIndex] = Math.max(0, questionEndsAt - Date.now());
+        }
+        questionStarted = true;
+        currentIndex = nextIndex;
         cards.forEach(function (card, i) {
             card.classList.toggle('is-hidden', i !== currentIndex);
         });
@@ -107,7 +116,7 @@
         const isLast = currentIndex === questionCount - 1;
         nextBtn.classList.toggle('is-hidden', isLast);
         submitBtn.classList.toggle('is-hidden', !isLast);
-        questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+        questionEndsAt = Date.now() + remainingMs[currentIndex];
         questionTimerEl.classList.remove('timer-warning', 'timer-expired');
         updateTimers();
     }

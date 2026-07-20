@@ -14,24 +14,26 @@ GET ?examId=N
 
 GET ?attemptId=N
   → if not IN_PROGRESS or expired → redirect to result
-  → else show one question at a time + dual timers
+  → else show questions + timer
 
 POST action=answer
   → saveAnswer for one question
-  → if ajax=1 → 204; else re-show exam page
 
 POST action=submit
   → submitExam with all answers
   → redirect /user/result?attemptId=N
 ```
 
+<<<<<<< Updated upstream
+=======
 ## UI timing
 
 - Shows one question at a time; Previous / Next allowed.
-- Per-question budget: `max(1, (durationMinutes × 60) / questionCount)` seconds; resets when entering a question.
+- Per-question budget: `max(1, (durationMinutes × 60) / questionCount)` seconds; remaining time is preserved per question when navigating.
 - Question timeout auto-advances; on the last question it auto-submits.
 - Overall deadline (`startedAt + durationMinutes`) still forces submit.
 
+>>>>>>> Stashed changes
 ## Rules
 
 - Only the owning user may view/submit the attempt (403 otherwise).
