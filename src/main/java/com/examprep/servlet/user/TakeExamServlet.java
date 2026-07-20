@@ -84,6 +84,10 @@ public class TakeExamServlet extends HttpServlet {
                 if (selected != null && !selected.isBlank()) {
                     examService.saveAnswer(attemptId, questionId, selected);
                 }
+                if ("1".equals(req.getParameter("ajax"))) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    return;
+                }
                 showExamPage(attemptId, user, req, resp);
             }
         } catch (IllegalStateException e) {
@@ -114,10 +118,14 @@ public class TakeExamServlet extends HttpServlet {
 
         List<Question> questions = examService.getExamQuestions(attempt.getExamId());
         Map<Long, String> answers = examService.getAnswerMap(attemptId);
+        int secondsPerQuestion = questions.isEmpty()
+                ? 1
+                : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());
 
         req.setAttribute("attempt", attempt);
         req.setAttribute("questions", questions);
         req.setAttribute("answers", answers);
+        req.setAttribute("secondsPerQuestion", secondsPerQuestion);
         req.setAttribute("deadline", examService.getDeadline(attempt).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         req.getRequestDispatcher("/WEB-INF/jsp/user/take-exam.jsp").forward(req, resp);
     }

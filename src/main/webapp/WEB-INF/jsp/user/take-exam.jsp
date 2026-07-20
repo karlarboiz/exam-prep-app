@@ -7,9 +7,16 @@
 <div class="exam-header">
     <h1>${attempt.examTitle}</h1>
     <p class="exam-meta">${attempt.subjectName} &middot; ${questions.size()} questions</p>
+    <p class="exam-progress" id="exam-progress">Question 1 of ${questions.size()}</p>
     <div class="timer-bar">
-        <span id="timer-label">Time remaining:</span>
-        <span id="timer" class="timer-value">--:--</span>
+        <div class="timer-slot">
+            <span class="timer-label">Question time:</span>
+            <span id="question-timer" class="timer-value">--:--</span>
+        </div>
+        <div class="timer-slot">
+            <span class="timer-label">Exam time:</span>
+            <span id="timer" class="timer-value">--:--</span>
+        </div>
     </div>
 </div>
 
@@ -18,7 +25,7 @@
     <input type="hidden" name="action" value="submit">
 
     <c:forEach var="q" items="${questions}" varStatus="status">
-        <div class="question-card">
+        <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}">
             <h3>Question ${status.index + 1}</h3>
             <p class="question-prompt">${q.prompt}</p>
             <div class="options">
@@ -54,23 +61,21 @@
         </div>
     </c:forEach>
 
-    <div class="exam-actions">
-        <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Submit exam? You cannot change answers after submitting.');">
+    <div class="exam-nav">
+        <button type="button" id="prevBtn" class="btn btn-outline" disabled>Previous</button>
+        <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-lg is-hidden"
+                onclick="return confirm('Submit exam? You cannot change answers after submitting.');">
             Submit Exam
         </button>
     </div>
 </form>
 
-<form id="saveForm" method="post" action="${ctx}/user/exam" style="display:none;">
-    <input type="hidden" name="attemptId" value="${attempt.id}">
-    <input type="hidden" name="action" value="answer">
-    <input type="hidden" name="questionId" id="saveQuestionId">
-    <input type="hidden" name="selectedOption" id="saveSelectedOption">
-</form>
-
 <script>
+    const ctx = '${ctx}';
+    const attemptId = '${attempt.id}';
     const deadline = new Date('${deadline}');
-    const timerEl = document.getElementById('timer');
+    const secondsPerQuestion = ${secondsPerQuestion};
     const examForm = document.getElementById('examForm');
     const timerEl = document.getElementById('timer');
     const questionTimerEl = document.getElementById('question-timer');
@@ -81,8 +86,12 @@
     const cards = Array.from(document.querySelectorAll('.question-card'));
     const questionCount = cards.length;
 
+    const remainingMs = Array.from({length: questionCount}, function () {
+        return secondsPerQuestion * 1000;
+    });
     let currentIndex = 0;
-    let questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+    let questionEndsAt = Date.now() + remainingMs[0];
+    let questionStarted = false;
     let submitted = false;
 
     function formatTime(ms) {
@@ -93,7 +102,12 @@
     }
 
     function showQuestion(index) {
-        currentIndex = Math.max(0, Math.min(index, questionCount - 1));
+        const nextIndex = Math.max(0, Math.min(index, questionCount - 1));
+        if (questionStarted) {
+            remainingMs[currentIndex] = Math.max(0, questionEndsAt - Date.now());
+        }
+        questionStarted = true;
+        currentIndex = nextIndex;
         cards.forEach(function (card, i) {
             card.classList.toggle('is-hidden', i !== currentIndex);
         });
@@ -102,7 +116,7 @@
         const isLast = currentIndex === questionCount - 1;
         nextBtn.classList.toggle('is-hidden', isLast);
         submitBtn.classList.toggle('is-hidden', !isLast);
-        questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+        questionEndsAt = Date.now() + remainingMs[currentIndex];
         questionTimerEl.classList.remove('timer-warning', 'timer-expired');
         updateTimers();
     }
@@ -133,23 +147,53 @@
         if (overallDiff <= 0) {
             timerEl.textContent = '00:00';
             timerEl.classList.add('timer-expired');
-            examForm.submit();
+            questionTimerEl.textContent = '00:00';
+            questionTimerEl.classList.add('timer-expired');
+            submitExam();
             return;
         }
-        const mins = Math.floor(diff / 60000);
-        const secs = Math.floor((diff % 60000) / 1000);
-        timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-        if (diff < 60000) timerEl.classList.add('timer-warning');
+        timerEl.textContent = formatTime(overallDiff);
+        if (overallDiff < 60000) timerEl.classList.add('timer-warning');
+
+        const questionDiff = questionEndsAt - now;
+        if (questionDiff <= 0) {
+            questionTimerEl.textContent = '00:00';
+            questionTimerEl.classList.add('timer-expired');
+            goNext();
+            return;
+        }
+        questionTimerEl.textContent = formatTime(questionDiff);
+        if (questionDiff < 15000) {
+            questionTimerEl.classList.add('timer-warning');
+        } else {
+            questionTimerEl.classList.remove('timer-warning');
+        }
     }
 
     function saveAnswer(questionId, option) {
-        document.getElementById('saveQuestionId').value = questionId;
-        document.getElementById('saveSelectedOption').value = option;
-        document.getElementById('saveForm').submit();
+        const body = new URLSearchParams({
+            action: 'answer',
+            ajax: '1',
+            attemptId: attemptId,
+            questionId: String(questionId),
+            selectedOption: option
+        });
+        fetch(ctx + '/user/exam', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString()
+        }).then(function (res) {
+            if (res.redirected || res.status === 403) {
+                window.location.href = res.url || (ctx + '/user/dashboard');
+            }
+        }).catch(function () { /* keep selection local if save fails briefly */ });
     }
 
-    updateTimer();
-    setInterval(updateTimer, 1000);
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+
+    showQuestion(0);
+    setInterval(updateTimers, 1000);
 </script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>
