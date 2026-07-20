@@ -12,13 +12,13 @@
 <div class="grid-2">
     <div class="card">
         <h2><c:choose><c:when test="${not empty editExam}">Edit Exam</c:when><c:otherwise>Create Exam</c:otherwise></c:choose></h2>
-        <form method="post" action="${ctx}/admin/exams" class="form">
+        <form method="post" action="${ctx}/admin/exams" class="form" id="examForm">
             <input type="hidden" name="action" value="${not empty editExam ? 'update' : 'create'}">
             <c:if test="${not empty editExam}">
                 <input type="hidden" name="id" value="${editExam.id}">
             </c:if>
             <div class="form-group">
-                <label for="subjectId">Subject</label>
+                <label for="subjectId">Subject <span class="exam-meta">(anchor for diagnostic; sampling uses all subjects)</span></label>
                 <select id="subjectId" name="subjectId" required>
                     <c:forEach var="s" items="${subjects}">
                         <option value="${s.id}" ${(not empty editExam && editExam.subjectId == s.id) ? 'selected' : ''}>${s.name}</option>
@@ -39,7 +39,21 @@
                     Active
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="diagnostic" id="diagnostic"
+                           ${not empty editExam && editExam.diagnostic ? 'checked' : ''}
+                           onchange="toggleDiagnosticFields()">
+                    Diagnostic (placement test — samples N questions per subject)
+                </label>
+            </div>
+            <div class="form-group" id="questionsPerSubjectGroup">
+                <label for="questionsPerSubject">Questions per subject</label>
+                <input type="number" id="questionsPerSubject" name="questionsPerSubject"
+                       value="${not empty editExam && editExam.questionsPerSubject != null ? editExam.questionsPerSubject : 5}"
+                       min="1">
+            </div>
+            <div class="form-group" id="questionPickerGroup">
                 <label>Select Questions</label>
                 <div class="checkbox-list">
                     <c:forEach var="q" items="${questions}">
@@ -66,15 +80,21 @@
         <h2>All Exams</h2>
         <table class="data-table">
             <thead>
-            <tr><th>Title</th><th>Subject</th><th>Duration</th><th>Questions</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Title</th><th>Subject</th><th>Type</th><th>Duration</th><th>Questions</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
             <c:forEach var="exam" items="${exams}">
                 <tr>
                     <td>${exam.title}</td>
                     <td>${exam.subjectName}</td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${exam.diagnostic}">Diagnostic (${exam.questionsPerSubject}/subject)</c:when>
+                            <c:otherwise>Practice</c:otherwise>
+                        </c:choose>
+                    </td>
                     <td>${exam.durationMinutes} min</td>
-                    <td>${exam.questionCount}</td>
+                    <td>${exam.diagnostic ? '—' : exam.questionCount}</td>
                     <td><span class="badge ${exam.active ? 'badge-success' : 'badge-muted'}">${exam.active ? 'Active' : 'Inactive'}</span></td>
                     <td class="actions">
                         <a href="${ctx}/admin/exams?edit=${exam.id}" class="btn btn-sm">Edit</a>
@@ -90,5 +110,14 @@
         </table>
     </div>
 </div>
+
+<script>
+    function toggleDiagnosticFields() {
+        var isDiagnostic = document.getElementById('diagnostic').checked;
+        document.getElementById('questionsPerSubjectGroup').style.display = isDiagnostic ? '' : 'none';
+        document.getElementById('questionPickerGroup').style.display = isDiagnostic ? 'none' : '';
+    }
+    toggleDiagnosticFields();
+</script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

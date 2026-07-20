@@ -10,6 +10,7 @@ public class User {
     private String passwordHash;
     private Role role;
     private LocalDateTime createdAt;
+    private LocalDateTime diagnosticCompletedAt;
 
     public User() {
     }
@@ -69,6 +70,18 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getDiagnosticCompletedAt() {
+        return diagnosticCompletedAt;
+    }
+
+    public void setDiagnosticCompletedAt(LocalDateTime diagnosticCompletedAt) {
+        this.diagnosticCompletedAt = diagnosticCompletedAt;
+    }
+
+    public boolean isDiagnosticCompleted() {
+        return diagnosticCompletedAt != null;
     }
 
     public boolean isAdmin() {

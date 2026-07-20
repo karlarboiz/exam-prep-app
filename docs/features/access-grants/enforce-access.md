@@ -14,6 +14,12 @@
 
 If the user has no active grant → redirect to `/user/subscription-expired`.
 
+## Filter order
+
+1. `JwtAuthFilter` — session identity  
+2. `SubscriptionFilter` — active access grant  
+3. `DiagnosticFilter` — placement diagnostic completed (see [diagnostic](../diagnostic/overview.md))
+
 ## Relation to session JWT
 
 - Login JWT proves **who** you are (cookie `access_token`).

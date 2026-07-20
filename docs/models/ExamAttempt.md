@@ -16,3 +16,5 @@
 | durationMinutes | int | Copied/joined from exam for deadline checks |
 
 Deadline = `startedAt.plusMinutes(durationMinutes)`.
+
+For **diagnostic** attempts, the question set is `attempt_questions`, not `exam_questions`. Subject breakdown is stored in [DiagnosticSubjectScore](DiagnosticSubjectScore.md).
