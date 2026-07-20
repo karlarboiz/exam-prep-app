@@ -2,6 +2,7 @@ package com.examprep.servlet.admin;
 
 import com.examprep.model.Exam;
 import com.examprep.service.AdminService;
+import com.examprep.service.DiagnosticService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -56,6 +57,19 @@ public class ExamServlet extends HttpServlet {
                     exam.setTitle(req.getParameter("title").trim());
                     exam.setDurationMinutes(Integer.parseInt(req.getParameter("durationMinutes")));
                     exam.setActive("on".equals(req.getParameter("active")) || "true".equals(req.getParameter("active")));
+                    exam.setDiagnostic("on".equals(req.getParameter("diagnostic"))
+                            || "true".equals(req.getParameter("diagnostic")));
+
+                    String qpsParam = req.getParameter("questionsPerSubject");
+                    if (exam.isDiagnostic()) {
+                        int qps = DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT;
+                        if (qpsParam != null && !qpsParam.isBlank()) {
+                            qps = Integer.parseInt(qpsParam);
+                        }
+                        exam.setQuestionsPerSubject(qps);
+                    } else {
+                        exam.setQuestionsPerSubject(null);
+                    }
 
                     String[] questionIdParams = req.getParameterValues("questionIds");
                     List<Long> questionIds = questionIdParams == null ? List.of() :

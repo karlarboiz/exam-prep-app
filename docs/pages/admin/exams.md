@@ -4,4 +4,4 @@
 **Route:** `/admin/exams`  
 **Feature:** [admin-exams](../../features/admin-exams/overview.md)
 
-Exam CRUD with subject select, duration, active checkbox, and scrollable question checkbox list (`.checkbox-list`).
+Exam CRUD with subject select, duration, active checkbox, **diagnostic** checkbox, questions-per-subject (when diagnostic), and scrollable question checkbox list for practice exams (hidden when diagnostic is checked).

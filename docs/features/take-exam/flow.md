@@ -24,8 +24,6 @@ POST action=submit
   → redirect /user/result?attemptId=N
 ```
 
-<<<<<<< Updated upstream
-=======
 ## UI timing
 
 - Shows one question at a time; Previous / Next allowed.
@@ -33,10 +31,11 @@ POST action=submit
 - Question timeout auto-advances; on the last question it auto-submits.
 - Overall deadline (`startedAt + durationMinutes`) still forces submit.
 
->>>>>>> Stashed changes
 ## Rules
 
 - Only the owning user may view/submit the attempt (403 otherwise).
 - Exam must be `active` to start.
+- Diagnostic exams (`is_diagnostic`) are **not** started via this route — use [diagnostic](../diagnostic/overview.md). `findActive()` excludes them from the dashboard list.
+- Questions come from `exam_questions` (fixed set).
 - Duration: `startedAt + durationMinutes`. Past deadline marks `EXPIRED` and still scores saved answers.
 - Score = (correct answers / total questions) × 100, 2 decimal places.

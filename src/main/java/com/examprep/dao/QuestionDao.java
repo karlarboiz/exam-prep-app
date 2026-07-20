@@ -69,6 +69,68 @@ public class QuestionDao {
         return questions;
     }
 
+    public List<Question> findByAttemptId(Long attemptId) throws SQLException {
+        String sql = SELECT_COLUMNS + """
+                FROM attempt_questions aq
+                JOIN questions q ON q.id = aq.question_id
+                JOIN subjects s ON s.id = q.subject_id
+                WHERE aq.attempt_id = ?
+                ORDER BY aq.sort_order
+                """;
+        List<Question> questions = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, attemptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    questions.add(mapRow(rs));
+                }
+            }
+        }
+        return questions;
+    }
+
+    public void setAttemptQuestions(Long attemptId, List<Long> questionIds) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement deletePs = conn.prepareStatement(
+                        "DELETE FROM attempt_questions WHERE attempt_id = ?")) {
+                    deletePs.setLong(1, attemptId);
+                    deletePs.executeUpdate();
+                }
+                String insertSql = "INSERT INTO attempt_questions (attempt_id, question_id, sort_order) VALUES (?, ?, ?)";
+                try (PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+                    int order = 1;
+                    for (Long questionId : questionIds) {
+                        insertPs.setLong(1, attemptId);
+                        insertPs.setLong(2, questionId);
+                        insertPs.setInt(3, order++);
+                        insertPs.addBatch();
+                    }
+                    insertPs.executeBatch();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    public boolean hasAttemptQuestions(Long attemptId) throws SQLException {
+        String sql = "SELECT 1 FROM attempt_questions WHERE attempt_id = ? LIMIT 1";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, attemptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public Optional<Question> findById(Long id) throws SQLException {
         String sql = SELECT_COLUMNS + """
                 FROM questions q

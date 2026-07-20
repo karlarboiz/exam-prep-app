@@ -22,7 +22,11 @@ public class RegisterServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User currentUser = WebUtil.getCurrentUser(req);
         if (currentUser != null) {
-            resp.sendRedirect(req.getContextPath() + "/user/dashboard");
+            if (currentUser.isDiagnosticCompleted()) {
+                resp.sendRedirect(req.getContextPath() + "/user/dashboard");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/user/diagnostic");
+            }
             return;
         }
 
@@ -83,7 +87,7 @@ public class RegisterServlet extends HttpServlet {
                     token.trim(), username.trim(), email.trim(), password);
             String sessionToken = authService.issueToken(user);
             WebUtil.setAuthCookie(resp, sessionToken);
-            resp.sendRedirect(req.getContextPath() + "/user/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/user/diagnostic");
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", e.getMessage());
             forwardWithForm(req, resp, token, username, email);

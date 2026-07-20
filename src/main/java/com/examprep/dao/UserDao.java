@@ -17,8 +17,11 @@ import java.util.Optional;
 
 public class UserDao {
 
+    private static final String SELECT_COLUMNS =
+            "SELECT id, username, email, password_hash, role, created_at, diagnostic_completed_at FROM users";
+
     public Optional<User> findById(Long id) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE id = ?";
+        String sql = SELECT_COLUMNS + " WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -32,7 +35,7 @@ public class UserDao {
     }
 
     public Optional<User> findByUsername(String username) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE username = ?";
+        String sql = SELECT_COLUMNS + " WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
@@ -46,7 +49,7 @@ public class UserDao {
     }
 
     public Optional<User> findByEmail(String email) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE email = ?";
+        String sql = SELECT_COLUMNS + " WHERE email = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -60,7 +63,7 @@ public class UserDao {
     }
 
     public List<User> findAll() throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users ORDER BY created_at DESC";
+        String sql = SELECT_COLUMNS + " ORDER BY created_at DESC";
         List<User> users = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -97,7 +100,7 @@ public class UserDao {
     }
 
     public Optional<User> findById(Connection conn, Long id) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE id = ?";
+        String sql = SELECT_COLUMNS + " WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -110,7 +113,7 @@ public class UserDao {
     }
 
     public Optional<User> findByUsername(Connection conn, String username) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE username = ?";
+        String sql = SELECT_COLUMNS + " WHERE username = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -123,7 +126,7 @@ public class UserDao {
     }
 
     public Optional<User> findByEmail(Connection conn, String email) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, role, created_at FROM users WHERE email = ?";
+        String sql = SELECT_COLUMNS + " WHERE email = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -133,6 +136,30 @@ public class UserDao {
             }
         }
         return Optional.empty();
+    }
+
+    public boolean isDiagnosticCompleted(Long userId) throws SQLException {
+        String sql = "SELECT diagnostic_completed_at FROM users WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getTimestamp("diagnostic_completed_at") != null;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void markDiagnosticCompleted(Long userId) throws SQLException {
+        String sql = "UPDATE users SET diagnostic_completed_at = ? WHERE id = ? AND diagnostic_completed_at IS NULL";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(2, userId);
+            ps.executeUpdate();
+        }
     }
 
     private User mapRow(ResultSet rs) throws SQLException {
@@ -145,6 +172,10 @@ public class UserDao {
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             user.setCreatedAt(createdAt.toLocalDateTime());
+        }
+        Timestamp diagnosticCompletedAt = rs.getTimestamp("diagnostic_completed_at");
+        if (diagnosticCompletedAt != null) {
+            user.setDiagnosticCompletedAt(diagnosticCompletedAt.toLocalDateTime());
         }
         return user;
     }

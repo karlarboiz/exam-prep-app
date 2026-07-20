@@ -7,6 +7,8 @@ public class Exam {
     private String title;
     private int durationMinutes;
     private boolean active;
+    private boolean diagnostic;
+    private Integer questionsPerSubject;
     private String subjectName;
     private int questionCount;
 
@@ -51,6 +53,22 @@ public class Exam {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isDiagnostic() {
+        return diagnostic;
+    }
+
+    public void setDiagnostic(boolean diagnostic) {
+        this.diagnostic = diagnostic;
+    }
+
+    public Integer getQuestionsPerSubject() {
+        return questionsPerSubject;
+    }
+
+    public void setQuestionsPerSubject(Integer questionsPerSubject) {
+        this.questionsPerSubject = questionsPerSubject;
     }
 
     public String getSubjectName() {

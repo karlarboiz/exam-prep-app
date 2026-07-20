@@ -10,7 +10,9 @@
 | passwordHash | String | BCrypt (via PasswordUtil) |
 | role | Role | ADMIN or USER |
 | createdAt | LocalDateTime | Registration time |
+| diagnosticCompletedAt | LocalDateTime | Set when placement diagnostic finishes; null until then |
 
 ## Helpers
 
 - `isAdmin()` → `role == Role.ADMIN`
+- `isDiagnosticCompleted()` → `diagnosticCompletedAt != null`
