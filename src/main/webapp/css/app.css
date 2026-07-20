@@ -1,4 +1,6 @@
 :root {
+    --font-heading: "Montserrat", sans-serif;
+    --font-body: "Outfit", sans-serif;
     --color-primary: #2563eb;
     --color-primary-dark: #1d4ed8;
     --color-danger: #dc2626;
@@ -20,7 +22,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-body);
     background: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
@@ -49,6 +51,7 @@ body {
 }
 
 .logo {
+    font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-primary);
@@ -90,8 +93,15 @@ body {
     font-size: 0.85rem;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
 h1 {
     font-size: 1.75rem;
+    font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
