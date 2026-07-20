@@ -41,6 +41,20 @@ public class SubjectDao {
         return Optional.empty();
     }
 
+    public Optional<Subject> findByNameIgnoreCase(String name) throws SQLException {
+        String sql = "SELECT id, name, description FROM subjects WHERE LOWER(name) = LOWER(?)";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public Subject create(String name, String description) throws SQLException {
         String sql = "INSERT INTO subjects (name, description) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection();

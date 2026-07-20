@@ -22,6 +22,7 @@
         <h2.version>2.2.224</h2.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <poi.version>5.2.5</poi.version>
     </properties>
 
     <dependencies>
@@ -79,6 +80,11 @@
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -125,6 +131,14 @@
                             </properties>
                         </deployable>
                     </deployables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>com.examprep.job.QuestionImportJob</mainClass>
                 </configuration>
             </plugin>
         </plugins>

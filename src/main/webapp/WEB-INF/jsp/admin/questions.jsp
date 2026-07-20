@@ -8,6 +8,19 @@
 <c:if test="${not empty error}">
     <div class="alert alert-error">${error}</div>
 </c:if>
+<c:if test="${not empty importSuccess}">
+    <div class="alert alert-success">${importSuccess}</div>
+</c:if>
+<c:if test="${not empty importErrors}">
+    <div class="alert alert-error">
+        <p>Import row errors:</p>
+        <ul>
+            <c:forEach var="err" items="${importErrors}">
+                <li>${err}</li>
+            </c:forEach>
+        </ul>
+    </div>
+</c:if>
 
 <div class="filter-bar">
     <form method="get" action="${ctx}/admin/questions">
@@ -18,6 +31,20 @@
                 <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}>${s.name}</option>
             </c:forEach>
         </select>
+    </form>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h2>Import from Excel</h2>
+    <p>Upload an <code>.xlsx</code> file with columns:
+        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation.</p>
+    <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
+        <input type="hidden" name="action" value="import">
+        <div class="form-group">
+            <label for="file">Excel file</label>
+            <input type="file" id="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Import</button>
     </form>
 </div>
 
@@ -73,6 +100,10 @@
                     <option value="MEDIUM" ${empty editQuestion || editQuestion.difficulty == 'MEDIUM' ? 'selected' : ''}>Medium</option>
                     <option value="HARD" ${editQuestion.difficulty == 'HARD' ? 'selected' : ''}>Hard</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="explanation">Explanation</label>
+                <textarea id="explanation" name="explanation" rows="3">${editQuestion.explanation}</textarea>
             </div>
             <button type="submit" class="btn btn-primary">
                 <c:choose><c:when test="${not empty editQuestion}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>

@@ -36,6 +36,9 @@
                 <p><strong>Correct answer:</strong> ${a.question.correctOption}
                     — ${a.question.getOptionText(a.question.correctOption)}</p>
             </c:if>
+            <c:if test="${not empty a.question.explanation}">
+                <p><strong>Explanation:</strong> ${a.question.explanation}</p>
+            </c:if>
         </div>
     </c:forEach>
 </div>
