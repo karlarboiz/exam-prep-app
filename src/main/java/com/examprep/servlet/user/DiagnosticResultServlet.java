@@ -1,5 +1,6 @@
 package com.examprep.servlet.user;
 
+import com.examprep.model.AttemptStatus;
 import com.examprep.model.DiagnosticResult;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.User;
@@ -32,6 +33,13 @@ public class DiagnosticResultServlet extends HttpServlet {
             ExamAttempt attempt = diagnosticService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId())) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            // Expired / abandoned attempts do not clear the gate — send user to retake
+            if (attempt.getStatus() != AttemptStatus.COMPLETED
+                    && !diagnosticService.isDiagnosticCompleted(user.getId())) {
+                resp.sendRedirect(req.getContextPath() + "/user/diagnostic?retake=1");
                 return;
             }
 

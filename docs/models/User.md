@@ -10,7 +10,7 @@
 | passwordHash | String | BCrypt (via PasswordUtil) |
 | role | Role | ADMIN or USER |
 | createdAt | LocalDateTime | Registration time |
-| diagnosticCompletedAt | LocalDateTime | Set when placement diagnostic finishes; null until then |
+| diagnosticCompletedAt | LocalDateTime | Set only when placement diagnostic status is `COMPLETED`; null until then (expired/abandoned do not set it) |
 
 ## Helpers
 
