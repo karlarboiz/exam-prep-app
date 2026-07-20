@@ -15,6 +15,7 @@ Project documentation is organized by concern:
 - [auth/](features/auth/login.md) — login / register / logout
 - [jwt-auth-filter/](features/jwt-auth-filter/jwt.md) — session JWT + public paths
 - Admin subjects / exams / questions / users
+- [question-import/](features/question-import/overview.md) — Excel bulk import into question bank
 - Take exam, results & history
 
 ```

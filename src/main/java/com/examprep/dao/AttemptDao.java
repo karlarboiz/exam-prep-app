@@ -123,7 +123,7 @@ public class AttemptDao {
         String sql = """
                 SELECT aa.attempt_id, aa.question_id, aa.selected_option, aa.is_correct,
                        q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty
+                       q.correct_option, q.difficulty, q.explanation
                 FROM attempt_answers aa
                 JOIN questions q ON q.id = aa.question_id
                 WHERE aa.attempt_id = ?
@@ -204,6 +204,7 @@ public class AttemptDao {
         question.setOptionD(rs.getString("option_d"));
         question.setCorrectOption(rs.getString("correct_option"));
         question.setDifficulty(rs.getString("difficulty"));
+        question.setExplanation(rs.getString("explanation"));
         answer.setQuestion(question);
         return answer;
     }

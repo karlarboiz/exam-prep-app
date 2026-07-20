@@ -1,9 +1,9 @@
-package com.examprep.model;
+package com.examprep.importing;
 
-public class Question {
+public class QuestionImportRow {
 
-    private Long id;
-    private Long subjectId;
+    private final int excelRowNumber;
+    private String subject;
     private String prompt;
     private String optionA;
     private String optionB;
@@ -12,25 +12,21 @@ public class Question {
     private String correctOption;
     private String difficulty;
     private String explanation;
-    private String subjectName;
 
-    public Question() {
+    public QuestionImportRow(int excelRowNumber) {
+        this.excelRowNumber = excelRowNumber;
     }
 
-    public Long getId() {
-        return id;
+    public int getExcelRowNumber() {
+        return excelRowNumber;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getSubject() {
+        return subject;
     }
 
-    public Long getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(Long subjectId) {
-        this.subjectId = subjectId;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public String getPrompt() {
@@ -95,23 +91,5 @@ public class Question {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
-    }
-
-    public String getSubjectName() {
-        return subjectName;
-    }
-
-    public void setSubjectName(String subjectName) {
-        this.subjectName = subjectName;
-    }
-
-    public String getOptionText(String option) {
-        return switch (option) {
-            case "A" -> optionA;
-            case "B" -> optionB;
-            case "C" -> optionC;
-            case "D" -> optionD;
-            default -> "";
-        };
     }
 }

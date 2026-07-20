@@ -8,9 +8,11 @@
 
 ## Actions
 
-CRUD for multiple-choice questions: prompt, options A–D, correct option, difficulty, and subject.
+CRUD for multiple-choice questions: prompt, options A–D, correct option, difficulty, optional explanation, and subject.
 
 Questions are later attached to exams (many-to-many via exam–question links).
+
+Bulk Excel import: see [question-import](../question-import/overview.md).
 
 ## Access
 

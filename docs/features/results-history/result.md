@@ -7,3 +7,4 @@ Result view highlights:
 - Score circle / summary from `ExamAttempt.scorePercent`
 - Status badge: `COMPLETED`, `EXPIRED`, or redirected away if still `IN_PROGRESS`
 - Review cards use [AttemptAnswer](../../models/AttemptAnswer.md) + nested [Question](../../models/Question.md)
+- When `Question.explanation` is present, show an **Explanation** line under the correct-answer hint

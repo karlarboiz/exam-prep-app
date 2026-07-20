@@ -14,10 +14,13 @@ import java.util.Optional;
 
 public class QuestionDao {
 
+    private static final String SELECT_COLUMNS = """
+            SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
+                   q.correct_option, q.difficulty, q.explanation, s.name AS subject_name
+            """;
+
     public List<Question> findAll() throws SQLException {
-        String sql = """
-                SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty, s.name AS subject_name
+        String sql = SELECT_COLUMNS + """
                 FROM questions q
                 JOIN subjects s ON s.id = q.subject_id
                 ORDER BY q.id
@@ -26,9 +29,7 @@ public class QuestionDao {
     }
 
     public List<Question> findBySubjectId(Long subjectId) throws SQLException {
-        String sql = """
-                SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty, s.name AS subject_name
+        String sql = SELECT_COLUMNS + """
                 FROM questions q
                 JOIN subjects s ON s.id = q.subject_id
                 WHERE q.subject_id = ?
@@ -48,9 +49,7 @@ public class QuestionDao {
     }
 
     public List<Question> findByExamId(Long examId) throws SQLException {
-        String sql = """
-                SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty, s.name AS subject_name
+        String sql = SELECT_COLUMNS + """
                 FROM exam_questions eq
                 JOIN questions q ON q.id = eq.question_id
                 JOIN subjects s ON s.id = q.subject_id
@@ -71,9 +70,7 @@ public class QuestionDao {
     }
 
     public Optional<Question> findById(Long id) throws SQLException {
-        String sql = """
-                SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty, s.name AS subject_name
+        String sql = SELECT_COLUMNS + """
                 FROM questions q
                 JOIN subjects s ON s.id = q.subject_id
                 WHERE q.id = ?
@@ -92,19 +89,13 @@ public class QuestionDao {
 
     public Question create(Question question) throws SQLException {
         String sql = """
-                INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d, correct_option, difficulty)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
+                                       correct_option, difficulty, explanation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setLong(1, question.getSubjectId());
-            ps.setString(2, question.getPrompt());
-            ps.setString(3, question.getOptionA());
-            ps.setString(4, question.getOptionB());
-            ps.setString(5, question.getOptionC());
-            ps.setString(6, question.getOptionD());
-            ps.setString(7, question.getCorrectOption());
-            ps.setString(8, question.getDifficulty());
+            bindQuestion(ps, question);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -115,23 +106,42 @@ public class QuestionDao {
         throw new SQLException("Failed to create question");
     }
 
+    public int createBatch(List<Question> questions) throws SQLException {
+        if (questions == null || questions.isEmpty()) {
+            return 0;
+        }
+        String sql = """
+                INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
+                                       correct_option, difficulty, explanation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Question question : questions) {
+                bindQuestion(ps, question);
+                ps.addBatch();
+            }
+            int[] results = ps.executeBatch();
+            int count = 0;
+            for (int result : results) {
+                if (result >= 0 || result == Statement.SUCCESS_NO_INFO) {
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+
     public void update(Question question) throws SQLException {
         String sql = """
                 UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
-                       option_d = ?, correct_option = ?, difficulty = ?
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, question.getSubjectId());
-            ps.setString(2, question.getPrompt());
-            ps.setString(3, question.getOptionA());
-            ps.setString(4, question.getOptionB());
-            ps.setString(5, question.getOptionC());
-            ps.setString(6, question.getOptionD());
-            ps.setString(7, question.getCorrectOption());
-            ps.setString(8, question.getDifficulty());
-            ps.setLong(9, question.getId());
+            bindQuestion(ps, question);
+            ps.setLong(10, question.getId());
             ps.executeUpdate();
         }
     }
@@ -143,6 +153,18 @@ public class QuestionDao {
             ps.setLong(1, id);
             ps.executeUpdate();
         }
+    }
+
+    private void bindQuestion(PreparedStatement ps, Question question) throws SQLException {
+        ps.setLong(1, question.getSubjectId());
+        ps.setString(2, question.getPrompt());
+        ps.setString(3, question.getOptionA());
+        ps.setString(4, question.getOptionB());
+        ps.setString(5, question.getOptionC());
+        ps.setString(6, question.getOptionD());
+        ps.setString(7, question.getCorrectOption());
+        ps.setString(8, question.getDifficulty());
+        ps.setString(9, question.getExplanation());
     }
 
     private List<Question> queryList(String sql) throws SQLException {
@@ -168,6 +190,7 @@ public class QuestionDao {
         question.setOptionD(rs.getString("option_d"));
         question.setCorrectOption(rs.getString("correct_option"));
         question.setDifficulty(rs.getString("difficulty"));
+        question.setExplanation(rs.getString("explanation"));
         question.setSubjectName(rs.getString("subject_name"));
         return question;
     }
