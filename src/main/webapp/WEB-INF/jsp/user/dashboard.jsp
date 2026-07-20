@@ -7,34 +7,36 @@
 <h1>Welcome, ${currentUser.username}</h1>
 <p class="subtitle">Choose a practice exam to begin preparing.</p>
 
-<div class="card">
-    <h2>Available Exams</h2>
-    <c:choose>
-        <c:when test="${empty exams}">
-            <p class="empty-state">No exams available yet. Check back later.</p>
-        </c:when>
-        <c:otherwise>
-            <div class="exam-grid">
-                <c:forEach var="exam" items="${exams}">
-                    <div class="exam-card">
-                        <h3>${exam.title}</h3>
-                        <p class="exam-meta">${exam.subjectName}</p>
-                        <p class="exam-meta">${exam.questionCount} questions &middot; ${exam.durationMinutes} minutes</p>
-                        <a href="${ctx}/user/exam?examId=${exam.id}" class="btn btn-primary">Start Exam</a>
-                    </div>
-                </c:forEach>
-            </div>
-        </c:otherwise>
-    </c:choose>
-</div>
+<div class="grid-2">
+    <div class="card">
+        <h2>Available Exams</h2>
+        <c:choose>
+            <c:when test="${empty exams}">
+                <p class="empty-state">No exams available yet. Check back later.</p>
+            </c:when>
+            <c:otherwise>
+                <div class="exam-grid">
+                    <c:forEach var="exam" items="${exams}">
+                        <div class="exam-card">
+                            <h3>${exam.title}</h3>
+                            <p class="exam-meta">${exam.subjectName}</p>
+                            <p class="exam-meta">${exam.questionCount} questions &middot; ${exam.durationMinutes} minutes</p>
+                            <a href="${ctx}/user/exam?examId=${exam.id}" class="btn btn-primary">Start Exam</a>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
 
-<div class="card">
-    <h2>Subjects</h2>
-    <ul class="subject-list">
-        <c:forEach var="subject" items="${subjects}">
-            <li><strong>${subject.name}</strong> — ${subject.description}</li>
-        </c:forEach>
-    </ul>
+    <div class="card">
+        <h2>Subjects</h2>
+        <ul class="subject-list">
+            <c:forEach var="subject" items="${subjects}">
+                <li><strong>${subject.name}</strong> — ${subject.description}</li>
+            </c:forEach>
+        </ul>
+    </div>
 </div>
 
 <c:if test="${not empty history}">

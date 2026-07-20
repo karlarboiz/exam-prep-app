@@ -391,7 +391,20 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.timer-slot {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.timer-label {
+    color: var(--color-muted);
+    font-size: 0.9rem;
 }
 
 .timer-value {
@@ -408,12 +421,23 @@ h2 {
     color: var(--color-danger);
 }
 
+.exam-progress {
+    margin: 0.5rem 0 0;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
 .question-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     padding: 1.25rem;
     margin-bottom: 1rem;
+}
+
+.question-card.is-hidden,
+.exam-nav .is-hidden {
+    display: none;
 }
 
 .question-prompt {
@@ -444,6 +468,15 @@ h2 {
 .option-letter {
     font-weight: 600;
     min-width: 1.5rem;
+}
+
+.exam-nav {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .exam-actions {

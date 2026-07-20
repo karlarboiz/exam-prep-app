@@ -4,4 +4,4 @@
 **Route:** `/user/dashboard`  
 **Servlet:** `DashboardServlet`
 
-Lists active exams in `.exam-grid` / `.exam-card` and optional subject list. CTA starts an exam (`/user/exam?examId=`).
+Available exams (`.exam-grid` / `.exam-card`) and subjects sit in `.grid-2`. Recent attempts stay full width below. CTA starts an exam (`/user/exam?examId=`).
