@@ -72,11 +72,65 @@
     const deadline = new Date('${deadline}');
     const timerEl = document.getElementById('timer');
     const examForm = document.getElementById('examForm');
+    const timerEl = document.getElementById('timer');
+    const questionTimerEl = document.getElementById('question-timer');
+    const progressEl = document.getElementById('exam-progress');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const cards = Array.from(document.querySelectorAll('.question-card'));
+    const questionCount = cards.length;
 
-    function updateTimer() {
-        const now = new Date();
-        const diff = deadline - now;
-        if (diff <= 0) {
+    let currentIndex = 0;
+    let questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+    let submitted = false;
+
+    function formatTime(ms) {
+        const totalSecs = Math.max(0, Math.floor(ms / 1000));
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+
+    function showQuestion(index) {
+        currentIndex = Math.max(0, Math.min(index, questionCount - 1));
+        cards.forEach(function (card, i) {
+            card.classList.toggle('is-hidden', i !== currentIndex);
+        });
+        progressEl.textContent = 'Question ' + (currentIndex + 1) + ' of ' + questionCount;
+        prevBtn.disabled = currentIndex === 0;
+        const isLast = currentIndex === questionCount - 1;
+        nextBtn.classList.toggle('is-hidden', isLast);
+        submitBtn.classList.toggle('is-hidden', !isLast);
+        questionEndsAt = Date.now() + secondsPerQuestion * 1000;
+        questionTimerEl.classList.remove('timer-warning', 'timer-expired');
+        updateTimers();
+    }
+
+    function goNext() {
+        if (currentIndex < questionCount - 1) {
+            showQuestion(currentIndex + 1);
+        } else {
+            submitExam();
+        }
+    }
+
+    function goPrev() {
+        if (currentIndex > 0) {
+            showQuestion(currentIndex - 1);
+        }
+    }
+
+    function submitExam() {
+        if (submitted) return;
+        submitted = true;
+        examForm.submit();
+    }
+
+    function updateTimers() {
+        const now = Date.now();
+        const overallDiff = deadline.getTime() - now;
+        if (overallDiff <= 0) {
             timerEl.textContent = '00:00';
             timerEl.classList.add('timer-expired');
             examForm.submit();

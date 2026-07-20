@@ -24,6 +24,16 @@ POST action=submit
   → redirect /user/result?attemptId=N
 ```
 
+<<<<<<< Updated upstream
+=======
+## UI timing
+
+- Shows one question at a time; Previous / Next allowed.
+- Per-question budget: `max(1, (durationMinutes × 60) / questionCount)` seconds; remaining time is preserved per question when navigating.
+- Question timeout auto-advances; on the last question it auto-submits.
+- Overall deadline (`startedAt + durationMinutes`) still forces submit.
+
+>>>>>>> Stashed changes
 ## Rules
 
 - Only the owning user may view/submit the attempt (403 otherwise).
