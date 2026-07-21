@@ -4,6 +4,7 @@ import com.examprep.importing.QuestionImportResult;
 import com.examprep.model.Question;
 import com.examprep.service.AdminService;
 import com.examprep.service.QuestionImportService;
+import com.examprep.util.IdCipher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,7 +30,12 @@ public class QuestionServlet extends HttpServlet {
             String editId = req.getParameter("edit");
 
             if (editId != null) {
-                adminService.getQuestion(Long.parseLong(editId)).ifPresent(q -> req.setAttribute("editQuestion", q));
+                try {
+                    adminService.getQuestion(IdCipher.dec(editId))
+                            .ifPresent(q -> req.setAttribute("editQuestion", q));
+                } catch (IllegalArgumentException ignored) {
+                    // Bad/garbage token — show create form instead of 500
+                }
             }
 
             if (subjectId != null && !subjectId.isBlank()) {
@@ -56,13 +62,13 @@ public class QuestionServlet extends HttpServlet {
                     if ("create".equals(action)) {
                         adminService.createQuestion(question);
                     } else {
-                        question.setId(Long.parseLong(req.getParameter("id")));
+                        question.setId(IdCipher.dec(req.getParameter("id")));
                         adminService.updateQuestion(question);
                     }
                     resp.sendRedirect(req.getContextPath() + "/admin/questions");
                 }
                 case "delete" -> {
-                    adminService.deleteQuestion(Long.parseLong(req.getParameter("id")));
+                    adminService.deleteQuestion(IdCipher.dec(req.getParameter("id")));
                     resp.sendRedirect(req.getContextPath() + "/admin/questions");
                 }
                 case "import" -> {

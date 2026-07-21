@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Exams" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -97,7 +98,7 @@
                     <td>${exam.diagnostic ? '—' : exam.questionCount}</td>
                     <td><span class="badge ${exam.active ? 'badge-success' : 'badge-muted'}">${exam.active ? 'Active' : 'Inactive'}</span></td>
                     <td class="actions">
-                        <a href="${ctx}/admin/exams?edit=${exam.id}" class="btn btn-sm">Edit</a>
+                        <a href="${ctx}/admin/exams?edit=${ep:enc(exam.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/exams" class="inline-form" onsubmit="return confirm('Delete this exam?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${exam.id}">

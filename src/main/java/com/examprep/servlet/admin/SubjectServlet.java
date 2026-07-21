@@ -1,6 +1,7 @@
 package com.examprep.servlet.admin;
 
 import com.examprep.service.AdminService;
+import com.examprep.util.IdCipher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,7 +20,12 @@ public class SubjectServlet extends HttpServlet {
         try {
             String editId = req.getParameter("edit");
             if (editId != null) {
-                adminService.getSubject(Long.parseLong(editId)).ifPresent(s -> req.setAttribute("editSubject", s));
+                try {
+                    long id = IdCipher.dec(editId);
+                    adminService.getSubject(id).ifPresent(s -> req.setAttribute("editSubject", s));
+                } catch (IllegalArgumentException ignored) {
+                    // Bad/garbage token — show create form instead of 500
+                }
             }
             req.setAttribute("subjects", adminService.getAllSubjects());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/subjects.jsp").forward(req, resp);
@@ -44,13 +50,13 @@ public class SubjectServlet extends HttpServlet {
                     adminService.createSubject(name.trim(), description != null ? description.trim() : "");
                 }
                 case "update" -> {
-                    Long id = Long.parseLong(req.getParameter("id"));
+                    Long id = IdCipher.dec(req.getParameter("id"));
                     String name = req.getParameter("name");
                     String description = req.getParameter("description");
                     adminService.updateSubject(id, name.trim(), description != null ? description.trim() : "");
                 }
                 case "delete" -> {
-                    Long id = Long.parseLong(req.getParameter("id"));
+                    Long id = IdCipher.dec(req.getParameter("id"));
                     adminService.deleteSubject(id);
                 }
                 default -> throw new IllegalArgumentException("Unknown action");

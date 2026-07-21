@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Subjects" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -46,7 +47,7 @@
                     <td>${subject.name}</td>
                     <td>${subject.description}</td>
                     <td class="actions">
-                        <a href="${ctx}/admin/subjects?edit=${subject.id}" class="btn btn-sm">Edit</a>
+                        <a href="${ctx}/admin/subjects?edit=${ep:enc(subject.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/subjects" class="inline-form" onsubmit="return confirm('Delete this subject?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${subject.id}">

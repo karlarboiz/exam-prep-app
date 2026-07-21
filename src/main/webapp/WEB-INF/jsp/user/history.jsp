@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="History" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -37,10 +38,10 @@
                         <td><span class="badge badge-${h.status}">${h.status}</span></td>
                         <td>
                             <c:if test="${h.status != 'IN_PROGRESS'}">
-                                <a href="${ctx}/user/result?attemptId=${h.id}" class="btn btn-sm">View Result</a>
+                                <a href="${ctx}/user/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View Result</a>
                             </c:if>
                             <c:if test="${h.status == 'IN_PROGRESS'}">
-                                <a href="${ctx}/user/exam?attemptId=${h.id}" class="btn btn-sm btn-primary">Continue</a>
+                                <a href="${ctx}/user/exam?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
                             </c:if>
                         </td>
                     </tr>

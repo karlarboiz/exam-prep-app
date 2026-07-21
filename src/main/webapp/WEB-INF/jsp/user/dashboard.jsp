@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Dashboard" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -21,7 +22,7 @@
                             <h3>${exam.title}</h3>
                             <p class="exam-meta">${exam.subjectName}</p>
                             <p class="exam-meta">${exam.questionCount} questions &middot; ${exam.durationMinutes} minutes</p>
-                            <a href="${ctx}/user/exam?examId=${exam.id}" class="btn btn-primary">Start Exam</a>
+                            <a href="${ctx}/user/exam?examId=${ep:enc(exam.id)}" class="btn btn-primary">Start Exam</a>
                         </div>
                     </c:forEach>
                 </div>
@@ -55,7 +56,7 @@
                     <td><span class="badge badge-${h.status}">${h.status}</span></td>
                     <td>
                         <c:if test="${h.status != 'IN_PROGRESS'}">
-                            <a href="${ctx}/user/result?attemptId=${h.id}" class="btn btn-sm">View</a>
+                            <a href="${ctx}/user/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View</a>
                         </c:if>
                     </td>
                 </tr>

@@ -5,6 +5,7 @@ import com.examprep.model.DiagnosticResult;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.User;
 import com.examprep.service.DiagnosticService;
+import com.examprep.util.IdCipher;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,7 +30,7 @@ public class DiagnosticResultServlet extends HttpServlet {
         }
 
         try {
-            Long attemptId = Long.parseLong(attemptIdParam);
+            Long attemptId = IdCipher.dec(attemptIdParam);
             ExamAttempt attempt = diagnosticService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId())) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
