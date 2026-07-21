@@ -20,6 +20,7 @@ public final class AppConfig {
         overrideFromEnv("DB_USERNAME", "db.username");
         overrideFromEnv("DB_PASSWORD", "db.password");
         overrideFromEnv("JWT_SECRET", "jwt.secret");
+        overrideFromEnv("ID_CIPHER_SECRET", "id.cipher.secret");
         overrideFromEnv("FUNNEL_API_KEY", "funnel.api.key");
     }
 
