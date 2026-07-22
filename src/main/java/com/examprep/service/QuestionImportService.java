@@ -77,7 +77,7 @@ public class QuestionImportService {
         if (existing.isPresent()) {
             return existing.get().getId();
         }
-        return subjectDao.create(name, null).getId();
+        return subjectDao.create(name, null, false, false).getId();
     }
 
     private Optional<String> validate(QuestionImportRow row) {

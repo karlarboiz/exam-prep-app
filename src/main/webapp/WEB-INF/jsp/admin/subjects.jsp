@@ -26,6 +26,20 @@
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="3">${editSubject.description}</textarea>
             </div>
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="professional" value="true"
+                           <c:if test="${editSubject.professional}">checked</c:if>>
+                    Professional
+                </label>
+            </div>
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="subProfessional" value="true"
+                           <c:if test="${editSubject.subProfessional}">checked</c:if>>
+                    Sub-Professional
+                </label>
+            </div>
             <button type="submit" class="btn btn-primary">
                 <c:choose><c:when test="${not empty editSubject}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>
             </button>
@@ -39,13 +53,21 @@
         <h2>All Subjects</h2>
         <table class="data-table">
             <thead>
-            <tr><th>Name</th><th>Description</th><th>Actions</th></tr>
+            <tr><th>Name</th><th>Description</th><th>Level</th><th>Actions</th></tr>
             </thead>
             <tbody>
             <c:forEach var="subject" items="${subjects}">
                 <tr>
                     <td>${subject.name}</td>
                     <td>${subject.description}</td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${subject.professional and subject.subProfessional}">Professional, Sub-Professional</c:when>
+                            <c:when test="${subject.professional}">Professional</c:when>
+                            <c:when test="${subject.subProfessional}">Sub-Professional</c:when>
+                            <c:otherwise>—</c:otherwise>
+                        </c:choose>
+                    </td>
                     <td class="actions">
                         <a href="${ctx}/admin/subjects?edit=${ep:enc(subject.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/subjects" class="inline-form" onsubmit="return confirm('Delete this subject?');">

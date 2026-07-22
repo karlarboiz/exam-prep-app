@@ -25,12 +25,14 @@ public class AdminService {
         return subjectDao.findById(id);
     }
 
-    public Subject createSubject(String name, String description) throws SQLException {
-        return subjectDao.create(name, description);
+    public Subject createSubject(String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        return subjectDao.create(name, description, professional, subProfessional);
     }
 
-    public void updateSubject(Long id, String name, String description) throws SQLException {
-        subjectDao.update(id, name, description);
+    public void updateSubject(Long id, String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        subjectDao.update(id, name, description, professional, subProfessional);
     }
 
     public void deleteSubject(Long id) throws SQLException {
