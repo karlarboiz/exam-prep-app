@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Exam Result" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -17,9 +18,9 @@
     </div>
     <div class="result-details">
         <p><strong>Status:</strong> <span class="badge badge-${attempt.status}">${attempt.status}</span></p>
-        <p><strong>Started:</strong> ${attempt.startedAt}</p>
+        <p><strong>Started:</strong> ${ep:fmt(attempt.startedAt)}</p>
         <c:if test="${attempt.completedAt != null}">
-            <p><strong>Completed:</strong> ${attempt.completedAt}</p>
+            <p><strong>Completed:</strong> ${ep:fmt(attempt.completedAt)}</p>
         </c:if>
     </div>
 </div>

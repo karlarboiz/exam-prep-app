@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Users" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -23,7 +24,7 @@
                         <c:otherwise>—</c:otherwise>
                     </c:choose>
                 </td>
-                <td>${u.createdAt}</td>
+                <td>${ep:fmt(u.createdAt)}</td>
             </tr>
         </c:forEach>
         </tbody>

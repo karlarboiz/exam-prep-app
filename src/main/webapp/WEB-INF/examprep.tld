@@ -11,4 +11,9 @@
         <function-class>com.examprep.util.IdCipher</function-class>
         <function-signature>java.lang.String enc(long)</function-signature>
     </function>
+    <function>
+        <name>fmt</name>
+        <function-class>com.examprep.util.DateFormats</function-class>
+        <function-signature>java.lang.String format(java.time.LocalDateTime)</function-signature>
+    </function>
 </taglib>
