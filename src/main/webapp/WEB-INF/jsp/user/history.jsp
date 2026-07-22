@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="History" scope="request"/>
@@ -32,8 +31,8 @@
                     <tr>
                         <td>${h.examTitle}</td>
                         <td>${h.subjectName}</td>
-                        <td>${h.startedAt}</td>
-                        <td>${h.completedAt != null ? h.completedAt : '-'}</td>
+                        <td>${ep:fmt(h.startedAt)}</td>
+                        <td>${h.completedAt != null ? ep:fmt(h.completedAt) : '-'}</td>
                         <td>${h.scorePercent != null ? h.scorePercent : '-'}%</td>
                         <td><span class="badge badge-${h.status}">${h.status}</span></td>
                         <td>
