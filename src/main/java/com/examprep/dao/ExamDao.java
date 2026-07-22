@@ -2,6 +2,7 @@ package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
 import com.examprep.model.Exam;
+import com.examprep.model.ExamLevel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +34,21 @@ public class ExamDao {
                 WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE
                 ORDER BY e.title
                 """;
+        return queryList(sql);
+    }
+
+    public List<Exam> findActiveByExamLevel(ExamLevel examLevel) throws SQLException {
+        if (examLevel == null) {
+            return findActive();
+        }
+        String levelColumn = examLevel == ExamLevel.PROFESSIONAL
+                ? "s.is_professional"
+                : "s.is_sub_professional";
+        String sql = SELECT_COLUMNS + """
+                WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE
+                  AND %s = TRUE
+                ORDER BY e.title
+                """.formatted(levelColumn);
         return queryList(sql);
     }
 

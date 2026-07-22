@@ -3,6 +3,7 @@ package com.examprep.dao;
 import com.examprep.config.DatabaseManager;
 import com.examprep.model.AccessGrant;
 import com.examprep.model.AccessGrantStatus;
+import com.examprep.model.ExamLevel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,11 +17,17 @@ import java.util.Optional;
 
 public class AccessGrantDao {
 
-    public AccessGrant create(String tokenHash, LocalDateTime expiresAt, String planCode, String sourceRef)
-            throws SQLException {
+    private static final String SELECT_COLUMNS = """
+            SELECT id, token_hash, status, expires_at, redeemed_at, user_id,
+                   plan_code, source_ref, exam_level, created_at
+            FROM access_grants
+            """;
+
+    public AccessGrant create(String tokenHash, LocalDateTime expiresAt, String planCode, String sourceRef,
+                              ExamLevel examLevel) throws SQLException {
         String sql = """
-                INSERT INTO access_grants (token_hash, status, expires_at, plan_code, source_ref)
-                VALUES (?, 'UNUSED', ?, ?, ?)
+                INSERT INTO access_grants (token_hash, status, expires_at, plan_code, source_ref, exam_level)
+                VALUES (?, 'UNUSED', ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,6 +35,11 @@ public class AccessGrantDao {
             ps.setTimestamp(2, Timestamp.valueOf(expiresAt));
             setNullableString(ps, 3, planCode);
             setNullableString(ps, 4, sourceRef);
+            if (examLevel != null) {
+                ps.setString(5, examLevel.name());
+            } else {
+                ps.setNull(5, Types.VARCHAR);
+            }
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -39,10 +51,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findById(Long id) throws SQLException {
-        String sql = """
-                SELECT id, token_hash, status, expires_at, redeemed_at, user_id, plan_code, source_ref, created_at
-                FROM access_grants WHERE id = ?
-                """;
+        String sql = SELECT_COLUMNS + " WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -56,10 +65,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findByTokenHash(String tokenHash) throws SQLException {
-        String sql = """
-                SELECT id, token_hash, status, expires_at, redeemed_at, user_id, plan_code, source_ref, created_at
-                FROM access_grants WHERE token_hash = ?
-                """;
+        String sql = SELECT_COLUMNS + " WHERE token_hash = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tokenHash);
@@ -73,9 +79,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findActiveByUserId(Long userId) throws SQLException {
-        String sql = """
-                SELECT id, token_hash, status, expires_at, redeemed_at, user_id, plan_code, source_ref, created_at
-                FROM access_grants
+        String sql = SELECT_COLUMNS + """
                 WHERE user_id = ? AND status = 'REDEEMED' AND expires_at > CURRENT_TIMESTAMP
                 ORDER BY expires_at DESC
                 LIMIT 1
@@ -93,9 +97,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findLatestRedeemedByUserId(Long userId) throws SQLException {
-        String sql = """
-                SELECT id, token_hash, status, expires_at, redeemed_at, user_id, plan_code, source_ref, created_at
-                FROM access_grants
+        String sql = SELECT_COLUMNS + """
                 WHERE user_id = ? AND status = 'REDEEMED'
                 ORDER BY expires_at DESC
                 LIMIT 1
@@ -155,6 +157,7 @@ public class AccessGrantDao {
         }
         grant.setPlanCode(rs.getString("plan_code"));
         grant.setSourceRef(rs.getString("source_ref"));
+        grant.setExamLevel(ExamLevel.fromString(rs.getString("exam_level")));
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             grant.setCreatedAt(createdAt.toLocalDateTime());

@@ -9,7 +9,7 @@
 <div class="card">
     <table class="data-table">
         <thead>
-        <tr><th>Username</th><th>Email</th><th>Role</th><th>Registered</th></tr>
+        <tr><th>Username</th><th>Email</th><th>Role</th><th>Exam level</th><th>Registered</th></tr>
         </thead>
         <tbody>
         <c:forEach var="u" items="${users}">
@@ -17,6 +17,12 @@
                 <td>${u.username}</td>
                 <td>${u.email}</td>
                 <td><span class="badge ${u.role == 'ADMIN' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
+                <td>
+                    <c:choose>
+                        <c:when test="${u.examLevel != null}">${u.examLevel.displayName()}</c:when>
+                        <c:otherwise>—</c:otherwise>
+                    </c:choose>
+                </td>
                 <td>${u.createdAt}</td>
             </tr>
         </c:forEach>

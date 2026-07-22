@@ -6,7 +6,12 @@
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
 
 <h1>Welcome, ${currentUser.username}</h1>
-<p class="subtitle">Choose a practice exam to begin preparing.</p>
+<p class="subtitle">
+    Choose a practice exam to begin preparing.
+    <c:if test="${not empty examLevel}">
+        <span class="badge badge-user">${examLevel.displayName()} track</span>
+    </c:if>
+</p>
 
 <div class="grid-2">
     <div class="card">

@@ -12,6 +12,7 @@ public class AccessGrant {
     private Long userId;
     private String planCode;
     private String sourceRef;
+    private ExamLevel examLevel;
     private LocalDateTime createdAt;
 
     public AccessGrant() {
@@ -79,6 +80,14 @@ public class AccessGrant {
 
     public void setSourceRef(String sourceRef) {
         this.sourceRef = sourceRef;
+    }
+
+    public ExamLevel getExamLevel() {
+        return examLevel;
+    }
+
+    public void setExamLevel(ExamLevel examLevel) {
+        this.examLevel = examLevel;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -5,6 +5,7 @@ import com.examprep.dao.AccessGrantDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AccessGrant;
 import com.examprep.model.AccessGrantStatus;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
 import com.examprep.util.PasswordUtil;
@@ -25,14 +26,18 @@ public class AccessGrantService {
     }
 
     public CreatedAccessToken createToken(LocalDateTime expiresAt, Integer durationDays,
-                                          String planCode, String sourceRef) throws SQLException {
+                                          String planCode, String sourceRef, ExamLevel examLevel)
+            throws SQLException {
+        if (examLevel == null) {
+            throw new IllegalArgumentException("examLevel is required (PROFESSIONAL or SUB_PROFESSIONAL)");
+        }
         LocalDateTime expiry = resolveExpiry(expiresAt, durationDays);
         if (!expiry.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("Expiration must be in the future");
         }
         String rawToken = TokenHashUtil.generateRawToken();
         String hash = TokenHashUtil.sha256(rawToken);
-        AccessGrant grant = accessGrantDao.create(hash, expiry, planCode, sourceRef);
+        AccessGrant grant = accessGrantDao.create(hash, expiry, planCode, sourceRef, examLevel);
         return new CreatedAccessToken(rawToken, grant);
     }
 
@@ -52,12 +57,16 @@ public class AccessGrantService {
         if (!grant.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("This access token has expired");
         }
+        if (grant.getExamLevel() == null) {
+            throw new IllegalArgumentException("This access token has no exam level assigned");
+        }
         return grant;
     }
 
     public User registerWithToken(String rawToken, String username, String email, String password)
             throws SQLException {
         AccessGrant grant = requireUnusedToken(rawToken);
+        ExamLevel examLevel = grant.getExamLevel();
 
         try (Connection conn = DatabaseManager.getConnection()) {
             boolean previousAutoCommit = conn.getAutoCommit();
@@ -70,7 +79,7 @@ public class AccessGrantService {
                     throw new IllegalArgumentException("Email already exists");
                 }
                 String hash = PasswordUtil.hash(password);
-                User user = userDao.create(conn, username, email, hash, Role.USER);
+                User user = userDao.create(conn, username, email, hash, Role.USER, examLevel);
                 accessGrantDao.redeem(conn, grant.getId(), user.getId());
                 conn.commit();
                 return user;

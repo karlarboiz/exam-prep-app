@@ -5,11 +5,14 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(10) NOT NULL CHECK (role IN ('ADMIN', 'USER')),
+    exam_level VARCHAR(20) CHECK (exam_level IS NULL OR exam_level IN ('PROFESSIONAL', 'SUB_PROFESSIONAL')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     diagnostic_completed_at TIMESTAMP
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS diagnostic_completed_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_level VARCHAR(20);
+
 
 -- Subjects
 CREATE TABLE IF NOT EXISTS subjects (
@@ -121,9 +124,12 @@ CREATE TABLE IF NOT EXISTS access_grants (
     user_id BIGINT,
     plan_code VARCHAR(50),
     source_ref VARCHAR(100),
+    exam_level VARCHAR(20) CHECK (exam_level IS NULL OR exam_level IN ('PROFESSIONAL', 'SUB_PROFESSIONAL')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+ALTER TABLE access_grants ADD COLUMN IF NOT EXISTS exam_level VARCHAR(20);
 
 CREATE INDEX IF NOT EXISTS idx_access_grants_user_id ON access_grants(user_id);
 CREATE INDEX IF NOT EXISTS idx_access_grants_status ON access_grants(status);

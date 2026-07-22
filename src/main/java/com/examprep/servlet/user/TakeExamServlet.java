@@ -44,7 +44,7 @@ public class TakeExamServlet extends HttpServlet {
 
             Long examId = IdCipher.dec(examIdParam);
             Exam exam = examService.getExam(examId).orElse(null);
-            if (exam == null || !exam.isActive() || exam.isDiagnostic()) {
+            if (exam == null || !examService.isExamAvailableForLevel(exam, user.getExamLevel())) {
                 resp.sendRedirect(req.getContextPath() + "/user/dashboard");
                 return;
             }
