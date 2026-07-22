@@ -20,9 +20,10 @@ public class DashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User user = WebUtil.getCurrentUser(req);
         try {
-            req.setAttribute("subjects", examService.getSubjects());
-            req.setAttribute("exams", examService.getActiveExams());
+            req.setAttribute("subjects", examService.getSubjects(user.getExamLevel()));
+            req.setAttribute("exams", examService.getActiveExams(user.getExamLevel()));
             req.setAttribute("history", examService.getUserHistory(user.getId()));
+            req.setAttribute("examLevel", user.getExamLevel());
             req.getRequestDispatcher("/WEB-INF/jsp/user/dashboard.jsp").forward(req, resp);
         } catch (Exception e) {
             throw new ServletException(e);

@@ -9,6 +9,7 @@ public class User {
     private String email;
     private String passwordHash;
     private Role role;
+    private ExamLevel examLevel;
     private LocalDateTime createdAt;
     private LocalDateTime diagnosticCompletedAt;
 
@@ -62,6 +63,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public ExamLevel getExamLevel() {
+        return examLevel;
+    }
+
+    public void setExamLevel(ExamLevel examLevel) {
+        this.examLevel = examLevel;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -8,6 +8,7 @@ import com.examprep.model.AttemptAnswer;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.Exam;
 import com.examprep.model.ExamAttempt;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Question;
 import com.examprep.model.Subject;
 
@@ -31,12 +32,35 @@ public class ExamService {
         return subjectDao.findAll();
     }
 
+    public List<Subject> getSubjects(ExamLevel examLevel) throws SQLException {
+        return subjectDao.findByExamLevel(examLevel);
+    }
+
     public List<Exam> getActiveExams() throws SQLException {
         return examDao.findActive();
     }
 
+    public List<Exam> getActiveExams(ExamLevel examLevel) throws SQLException {
+        return examDao.findActiveByExamLevel(examLevel);
+    }
+
     public Optional<Exam> getExam(Long examId) throws SQLException {
         return examDao.findById(examId);
+    }
+
+    public boolean isExamAvailableForLevel(Exam exam, ExamLevel examLevel) throws SQLException {
+        if (exam == null || exam.isDiagnostic() || !exam.isActive()) {
+            return false;
+        }
+        if (examLevel == null) {
+            return true;
+        }
+        Optional<Subject> subject = subjectDao.findById(exam.getSubjectId());
+        if (subject.isEmpty()) {
+            return false;
+        }
+        Subject s = subject.get();
+        return examLevel == ExamLevel.PROFESSIONAL ? s.isProfessional() : s.isSubProfessional();
     }
 
     public List<Question> getExamQuestions(Long examId) throws SQLException {

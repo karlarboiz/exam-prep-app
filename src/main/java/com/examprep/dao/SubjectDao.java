@@ -1,6 +1,7 @@
 package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Subject;
 
 import java.sql.Connection;
@@ -19,6 +20,25 @@ public class SubjectDao {
 
     public List<Subject> findAll() throws SQLException {
         String sql = "SELECT " + SELECT_COLS + " FROM subjects ORDER BY name";
+        List<Subject> subjects = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                subjects.add(mapRow(rs));
+            }
+        }
+        return subjects;
+    }
+
+    public List<Subject> findByExamLevel(ExamLevel examLevel) throws SQLException {
+        if (examLevel == null) {
+            return findAll();
+        }
+        String levelColumn = examLevel == ExamLevel.PROFESSIONAL
+                ? "is_professional"
+                : "is_sub_professional";
+        String sql = "SELECT " + SELECT_COLS + " FROM subjects WHERE " + levelColumn + " = TRUE ORDER BY name";
         List<Subject> subjects = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);

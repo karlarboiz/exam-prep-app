@@ -1,6 +1,7 @@
 package com.examprep.service;
 
 import com.examprep.dao.UserDao;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
 import com.examprep.util.JwtUtil;
@@ -30,7 +31,10 @@ public class AuthService {
         return JwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
     }
 
-    public User register(String username, String email, String password) throws SQLException {
+    public User register(String username, String email, String password, ExamLevel examLevel) throws SQLException {
+        if (examLevel == null) {
+            throw new IllegalArgumentException("Exam level is required");
+        }
         if (userDao.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
@@ -38,7 +42,7 @@ public class AuthService {
             throw new IllegalArgumentException("Email already exists");
         }
         String hash = PasswordUtil.hash(password);
-        return userDao.create(username, email, hash, Role.USER);
+        return userDao.create(username, email, hash, Role.USER, examLevel);
     }
 
     public Optional<User> findById(Long id) throws SQLException {

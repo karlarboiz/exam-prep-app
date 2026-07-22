@@ -9,6 +9,7 @@
 | email | String | Unique |
 | passwordHash | String | BCrypt (via PasswordUtil) |
 | role | Role | ADMIN or USER |
+| examLevel | ExamLevel | PROFESSIONAL or SUB_PROFESSIONAL for learners; null for admin |
 | createdAt | LocalDateTime | Registration time |
 | diagnosticCompletedAt | LocalDateTime | Set only when placement diagnostic status is `COMPLETED`; null until then (expired/abandoned do not set it) |
 

@@ -31,6 +31,11 @@
                     <input type="email" id="email" name="email" value="${email}" required>
                 </div>
                 <div class="form-group">
+                    <label for="examLevelDisplay">Exam level</label>
+                    <input type="text" id="examLevelDisplay" value="${examLevel.displayName}" readonly class="token-readonly">
+                    <p class="exam-meta">Set by your purchase — Professional or Sub-Professional content will match this track.</p>
+                </div>
+                <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required minlength="6">
                 </div>
