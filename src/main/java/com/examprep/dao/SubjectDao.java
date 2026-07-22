@@ -14,8 +14,11 @@ import java.util.Optional;
 
 public class SubjectDao {
 
+    private static final String SELECT_COLS =
+            "id, name, description, is_professional, is_sub_professional";
+
     public List<Subject> findAll() throws SQLException {
-        String sql = "SELECT id, name, description FROM subjects ORDER BY name";
+        String sql = "SELECT " + SELECT_COLS + " FROM subjects ORDER BY name";
         List<Subject> subjects = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -28,7 +31,7 @@ public class SubjectDao {
     }
 
     public Optional<Subject> findById(Long id) throws SQLException {
-        String sql = "SELECT id, name, description FROM subjects WHERE id = ?";
+        String sql = "SELECT " + SELECT_COLS + " FROM subjects WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -42,7 +45,7 @@ public class SubjectDao {
     }
 
     public Optional<Subject> findByNameIgnoreCase(String name) throws SQLException {
-        String sql = "SELECT id, name, description FROM subjects WHERE LOWER(name) = LOWER(?)";
+        String sql = "SELECT " + SELECT_COLS + " FROM subjects WHERE LOWER(name) = LOWER(?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
@@ -55,12 +58,15 @@ public class SubjectDao {
         return Optional.empty();
     }
 
-    public Subject create(String name, String description) throws SQLException {
-        String sql = "INSERT INTO subjects (name, description) VALUES (?, ?)";
+    public Subject create(String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        String sql = "INSERT INTO subjects (name, description, is_professional, is_sub_professional) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, name);
             ps.setString(2, description);
+            ps.setBoolean(3, professional);
+            ps.setBoolean(4, subProfessional);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -71,13 +77,16 @@ public class SubjectDao {
         throw new SQLException("Failed to create subject");
     }
 
-    public void update(Long id, String name, String description) throws SQLException {
-        String sql = "UPDATE subjects SET name = ?, description = ? WHERE id = ?";
+    public void update(Long id, String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        String sql = "UPDATE subjects SET name = ?, description = ?, is_professional = ?, is_sub_professional = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setString(2, description);
-            ps.setLong(3, id);
+            ps.setBoolean(3, professional);
+            ps.setBoolean(4, subProfessional);
+            ps.setLong(5, id);
             ps.executeUpdate();
         }
     }
@@ -96,6 +105,8 @@ public class SubjectDao {
         subject.setId(rs.getLong("id"));
         subject.setName(rs.getString("name"));
         subject.setDescription(rs.getString("description"));
+        subject.setProfessional(rs.getBoolean("is_professional"));
+        subject.setSubProfessional(rs.getBoolean("is_sub_professional"));
         return subject;
     }
 }

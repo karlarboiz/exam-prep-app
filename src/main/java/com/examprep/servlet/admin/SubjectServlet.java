@@ -42,18 +42,46 @@ public class SubjectServlet extends HttpServlet {
                 case "create" -> {
                     String name = req.getParameter("name");
                     String description = req.getParameter("description");
+                    boolean professional = req.getParameter("professional") != null;
+                    boolean subProfessional = req.getParameter("subProfessional") != null;
                     if (name == null || name.isBlank()) {
                         req.setAttribute("error", "Name is required");
                         doGet(req, resp);
                         return;
                     }
-                    adminService.createSubject(name.trim(), description != null ? description.trim() : "");
+                    if (!professional && !subProfessional) {
+                        req.setAttribute("error", "Select at least one level: Professional or Sub-Professional");
+                        doGet(req, resp);
+                        return;
+                    }
+                    adminService.createSubject(
+                            name.trim(),
+                            description != null ? description.trim() : "",
+                            professional,
+                            subProfessional);
                 }
                 case "update" -> {
                     Long id = IdCipher.dec(req.getParameter("id"));
                     String name = req.getParameter("name");
                     String description = req.getParameter("description");
-                    adminService.updateSubject(id, name.trim(), description != null ? description.trim() : "");
+                    boolean professional = req.getParameter("professional") != null;
+                    boolean subProfessional = req.getParameter("subProfessional") != null;
+                    if (name == null || name.isBlank()) {
+                        req.setAttribute("error", "Name is required");
+                        doGet(req, resp);
+                        return;
+                    }
+                    if (!professional && !subProfessional) {
+                        req.setAttribute("error", "Select at least one level: Professional or Sub-Professional");
+                        doGet(req, resp);
+                        return;
+                    }
+                    adminService.updateSubject(
+                            id,
+                            name.trim(),
+                            description != null ? description.trim() : "",
+                            professional,
+                            subProfessional);
                 }
                 case "delete" -> {
                     Long id = IdCipher.dec(req.getParameter("id"));

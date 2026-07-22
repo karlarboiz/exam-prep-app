@@ -5,6 +5,8 @@ public class Subject {
     private Long id;
     private String name;
     private String description;
+    private boolean professional;
+    private boolean subProfessional;
 
     public Subject() {
     }
@@ -37,5 +39,21 @@ public class Subject {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isProfessional() {
+        return professional;
+    }
+
+    public void setProfessional(boolean professional) {
+        this.professional = professional;
+    }
+
+    public boolean isSubProfessional() {
+        return subProfessional;
+    }
+
+    public void setSubProfessional(boolean subProfessional) {
+        this.subProfessional = subProfessional;
     }
 }
