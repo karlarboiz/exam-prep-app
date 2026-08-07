@@ -14,6 +14,8 @@ public class AccessGrant {
     private String sourceRef;
     private ExamLevel examLevel;
     private LocalDateTime createdAt;
+    /** Display helper when listing grants joined to users. */
+    private String username;
 
     public AccessGrant() {
     }
@@ -96,6 +98,14 @@ public class AccessGrant {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public boolean isActiveAt(LocalDateTime when) {

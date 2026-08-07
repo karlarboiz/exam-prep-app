@@ -13,14 +13,17 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class AccessGrantDao {
 
     private static final String SELECT_COLUMNS = """
-            SELECT id, token_hash, status, expires_at, redeemed_at, user_id,
-                   plan_code, source_ref, exam_level, created_at
-            FROM access_grants
+            SELECT g.id, g.token_hash, g.status, g.expires_at, g.redeemed_at, g.user_id,
+                   g.plan_code, g.source_ref, g.exam_level, g.created_at, u.username
+            FROM access_grants g
+            LEFT JOIN users u ON u.id = g.user_id
             """;
 
     public AccessGrant create(String tokenHash, LocalDateTime expiresAt, String planCode, String sourceRef,
@@ -51,7 +54,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findById(Long id) throws SQLException {
-        String sql = SELECT_COLUMNS + " WHERE id = ?";
+        String sql = SELECT_COLUMNS + " WHERE g.id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -65,7 +68,7 @@ public class AccessGrantDao {
     }
 
     public Optional<AccessGrant> findByTokenHash(String tokenHash) throws SQLException {
-        String sql = SELECT_COLUMNS + " WHERE token_hash = ?";
+        String sql = SELECT_COLUMNS + " WHERE g.token_hash = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tokenHash);
@@ -80,8 +83,8 @@ public class AccessGrantDao {
 
     public Optional<AccessGrant> findActiveByUserId(Long userId) throws SQLException {
         String sql = SELECT_COLUMNS + """
-                WHERE user_id = ? AND status = 'REDEEMED' AND expires_at > CURRENT_TIMESTAMP
-                ORDER BY expires_at DESC
+                WHERE g.user_id = ? AND g.status = 'REDEEMED' AND g.expires_at > CURRENT_TIMESTAMP
+                ORDER BY g.expires_at DESC
                 LIMIT 1
                 """;
         try (Connection conn = DatabaseManager.getConnection();
@@ -98,8 +101,8 @@ public class AccessGrantDao {
 
     public Optional<AccessGrant> findLatestRedeemedByUserId(Long userId) throws SQLException {
         String sql = SELECT_COLUMNS + """
-                WHERE user_id = ? AND status = 'REDEEMED'
-                ORDER BY expires_at DESC
+                WHERE g.user_id = ? AND g.status = 'REDEEMED'
+                ORDER BY g.expires_at DESC
                 LIMIT 1
                 """;
         try (Connection conn = DatabaseManager.getConnection();
@@ -112,6 +115,19 @@ public class AccessGrantDao {
             }
         }
         return Optional.empty();
+    }
+
+    public List<AccessGrant> findAll() throws SQLException {
+        String sql = SELECT_COLUMNS + " ORDER BY g.created_at DESC";
+        List<AccessGrant> grants = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                grants.add(mapRow(rs));
+            }
+        }
+        return grants;
     }
 
     public void redeem(Connection conn, Long grantId, Long userId) throws SQLException {
@@ -127,6 +143,23 @@ public class AccessGrantDao {
             if (updated != 1) {
                 throw new SQLException("Access grant could not be redeemed (already used or missing)");
             }
+        }
+    }
+
+    /**
+     * Marks a grant REVOKED. Unused tokens can no longer be redeemed; redeemed grants
+     * immediately lose active access even if {@code expires_at} is still in the future.
+     */
+    public boolean revoke(Long grantId) throws SQLException {
+        String sql = """
+                UPDATE access_grants
+                SET status = 'REVOKED'
+                WHERE id = ? AND status IN ('UNUSED', 'REDEEMED')
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, grantId);
+            return ps.executeUpdate() == 1;
         }
     }
 
@@ -162,6 +195,7 @@ public class AccessGrantDao {
         if (createdAt != null) {
             grant.setCreatedAt(createdAt.toLocalDateTime());
         }
+        grant.setUsername(rs.getString("username"));
         return grant;
     }
 }

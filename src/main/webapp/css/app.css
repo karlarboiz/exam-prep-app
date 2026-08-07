@@ -333,6 +333,11 @@ h2 {
 .badge-IN_PROGRESS { background: #fef3c7; color: var(--color-warning); }
 .badge-COMPLETED { background: #dcfce7; color: var(--color-success); }
 .badge-EXPIRED { background: #fee2e2; color: var(--color-danger); }
+.badge-diagnostic { background: #e0e7ff; color: #4338ca; }
+.badge-practice { background: #f1f5f9; color: var(--color-muted); }
+.badge-UNUSED { background: #fef3c7; color: var(--color-warning); }
+.badge-REDEEMED { background: #dcfce7; color: var(--color-success); }
+.badge-REVOKED { background: #fee2e2; color: var(--color-danger); }
 
 .exam-grid {
     display: grid;

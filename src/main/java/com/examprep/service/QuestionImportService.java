@@ -49,7 +49,12 @@ public class QuestionImportService {
             String subjectKey = row.getSubject().trim().toLowerCase(Locale.ROOT);
             Long subjectId = subjectCache.get(subjectKey);
             if (subjectId == null) {
-                subjectId = resolveOrCreateSubject(row.getSubject().trim());
+                try {
+                    subjectId = resolveOrCreateSubject(row);
+                } catch (IllegalArgumentException e) {
+                    result.addError("Row " + row.getExcelRowNumber() + ": " + e.getMessage());
+                    continue;
+                }
                 subjectCache.put(subjectKey, subjectId);
             }
 
@@ -72,12 +77,39 @@ public class QuestionImportService {
         return result;
     }
 
-    private Long resolveOrCreateSubject(String name) throws SQLException {
+    private Long resolveOrCreateSubject(QuestionImportRow row) throws SQLException {
+        String name = row.getSubject().trim();
         Optional<Subject> existing = subjectDao.findByNameIgnoreCase(name);
         if (existing.isPresent()) {
             return existing.get().getId();
         }
-        return subjectDao.create(name, null, false, false).getId();
+        boolean[] levels = resolveLevelFlags(row);
+        return subjectDao.create(name, null, levels[0], levels[1]).getId();
+    }
+
+    /**
+     * New subjects from import must be visible on at least one exam track.
+     * Optional Excel columns {@code is_professional} / {@code is_sub_professional} override;
+     * when both are omitted, both tracks default to true.
+     */
+    private boolean[] resolveLevelFlags(QuestionImportRow row) {
+        boolean hasProfessionalCol = row.getProfessional() != null && !row.getProfessional().isBlank();
+        boolean hasSubProfessionalCol = row.getSubProfessional() != null && !row.getSubProfessional().isBlank();
+        if (!hasProfessionalCol && !hasSubProfessionalCol) {
+            return new boolean[]{true, true};
+        }
+        boolean professional = hasProfessionalCol && parseBooleanFlag(row.getProfessional());
+        boolean subProfessional = hasSubProfessionalCol && parseBooleanFlag(row.getSubProfessional());
+        if (!professional && !subProfessional) {
+            throw new IllegalArgumentException(
+                    "subject level flags must enable Professional and/or Sub-Professional");
+        }
+        return new boolean[]{professional, subProfessional};
+    }
+
+    private boolean parseBooleanFlag(String raw) {
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        return value.equals("true") || value.equals("1") || value.equals("yes") || value.equals("y");
     }
 
     private Optional<String> validate(QuestionImportRow row) {

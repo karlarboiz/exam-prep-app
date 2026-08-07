@@ -7,7 +7,18 @@
 **Service:** `ExamService.getUserHistory`  
 **Page:** [history.jsp](../../pages/user/history.md)
 
-Lists the current user's exam attempts with status, score, and timestamps.
+Lists the current user's exam attempts with type (Diagnostic / Practice), status, score, and timestamps.
+
+### Routing by attempt type
+
+| Attempt | Status | Link |
+|---------|--------|------|
+| Practice | not `IN_PROGRESS` | `/user/result?attemptId=…` |
+| Practice | `IN_PROGRESS` | `/user/exam?attemptId=…` |
+| Diagnostic | not `IN_PROGRESS` | `/user/diagnostic/result?attemptId=…` |
+| Diagnostic | `IN_PROGRESS` | `/user/diagnostic?attemptId=…` |
+
+`ExamAttempt.isDiagnostic` comes from joined `exams.is_diagnostic`.
 
 ## Result detail
 
@@ -16,7 +27,7 @@ Lists the current user's exam attempts with status, score, and timestamps.
 **Service:** `ExamService.getAttempt` + `getAttemptAnswers`  
 **Page:** [result.jsp](../../pages/user/result.md)
 
-Shows score percent, attempt status, and per-question review (selected vs correct).
+Shows score percent, attempt status, and per-question review (selected vs correct) for **practice** exams. Diagnostic results use `/user/diagnostic/result`.
 
 ## Access
 
