@@ -17,17 +17,18 @@ Provide **either** `expiresAt` **or** `durationDays`.
 | planCode | string | no | Funnel plan label |
 | sourceRef | string | no | Order / payment id for support |
 
-Example:
+Example (typical post-exam review window of 3 days — funnel chooses duration):
 
 ```json
 {
-  "durationDays": 30,
+  "durationDays": 3,
   "examLevel": "PROFESSIONAL",
   "planCode": "standard",
   "sourceRef": "order_123"
 }
 ```
 
+Access is a **one-time purchase** ending at `expiresAt`; there is no renewal for the same account after expiry.
 ## Success response — `201`
 
 ```json

@@ -17,7 +17,7 @@ Both call `QuestionImportService`.
 
 1. Parse `.xlsx` via `ExcelQuestionParser` (Apache POI).
 2. Validate each data row (required fields, lengths, `correct_option`, difficulty).
-3. Resolve subject by name (trim, case-insensitive); create subject if missing.
+3. Resolve subject by name (trim, case-insensitive); create subject if missing (see level flags below).
 4. Insert valid questions (JDBC batch).
 5. Return `QuestionImportResult`: imported count + per-row errors (partial success).
 
@@ -33,8 +33,16 @@ Header row (exact column names), one question per data row:
 | `correct_option` | yes | `A` / `B` / `C` / `D` |
 | `difficulty` | no | `EASY` / `MEDIUM` / `HARD` (default `MEDIUM`) |
 | `explanation` | yes | ≤ 2000; shown on result review |
+| `is_professional` | no | `true` / `false` / `1` / `0` / `yes` / `no` — used only when creating a **new** subject |
+| `is_sub_professional` | no | same as above |
 
 Format: `.xlsx` only.
+
+### Subject level flags on create
+
+- If both level columns are omitted (or blank) when creating a new subject → both tracks default to **true** so imported content is visible to Professional and Sub-Professional students.
+- If either column is provided → parsed booleans must enable at least one track.
+- Existing subjects matched by name are **not** updated; their level flags stay as configured in admin.
 
 ## CLI
 
@@ -46,6 +54,6 @@ Exit `0` when at least one row imported and the file was readable. Non-zero if t
 
 ## Related
 
-- Model: [Question](../../models/Question.md)
+- Model: [Question](../../models/Question.md), [Subject](../../models/Subject.md)
 - Admin page: [questions](../../pages/admin/questions.md)
 - Result review: [result](../results-history/result.md)

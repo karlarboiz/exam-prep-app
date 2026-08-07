@@ -4,4 +4,4 @@
 **Route:** `/user/history`  
 **Feature:** [history](../../features/results-history/history.md)
 
-Table of past attempts with status badges and links to result detail.
+Table of past attempts with type badges (`.badge-diagnostic` / `.badge-practice`), status badges, and type-aware Continue / View Result links.

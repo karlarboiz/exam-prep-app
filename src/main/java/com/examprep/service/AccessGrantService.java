@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 public class AccessGrantService {
@@ -98,6 +99,29 @@ public class AccessGrantService {
 
     public Optional<AccessGrant> findLatestRedeemed(Long userId) throws SQLException {
         return accessGrantDao.findLatestRedeemedByUserId(userId);
+    }
+
+    public List<AccessGrant> listAll() throws SQLException {
+        return accessGrantDao.findAll();
+    }
+
+    /**
+     * Revokes an UNUSED or REDEEMED grant. Already-revoked grants are a no-op error.
+     * Revoking a redeemed grant ends quiz access immediately.
+     */
+    public AccessGrant revoke(Long grantId) throws SQLException {
+        if (grantId == null) {
+            throw new IllegalArgumentException("Grant id is required");
+        }
+        AccessGrant grant = accessGrantDao.findById(grantId)
+                .orElseThrow(() -> new IllegalArgumentException("Access grant not found"));
+        if (grant.getStatus() == AccessGrantStatus.REVOKED) {
+            throw new IllegalArgumentException("Access grant is already revoked");
+        }
+        if (!accessGrantDao.revoke(grantId)) {
+            throw new IllegalArgumentException("Access grant could not be revoked");
+        }
+        return accessGrantDao.findById(grantId).orElseThrow();
     }
 
     private LocalDateTime resolveExpiry(LocalDateTime expiresAt, Integer durationDays) {

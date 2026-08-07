@@ -17,7 +17,17 @@
     <div class="container header-inner">
         <a href="${ctx}/" class="logo">Exam Prep App</a>
         <c:if test="${not empty currentUser}">
-            <nav class="main-nav">
+            <button type="button"
+                    class="nav-toggle"
+                    id="nav-toggle"
+                    aria-expanded="false"
+                    aria-controls="main-nav"
+                    aria-label="Toggle navigation">
+                <span class="nav-toggle-bar" aria-hidden="true"></span>
+                <span class="nav-toggle-bar" aria-hidden="true"></span>
+                <span class="nav-toggle-bar" aria-hidden="true"></span>
+            </button>
+            <nav class="main-nav" id="main-nav">
                 <c:choose>
                     <c:when test="${currentUser.role == 'ADMIN'}">
                         <a href="${ctx}/admin/dashboard">Dashboard</a>
@@ -25,6 +35,7 @@
                         <a href="${ctx}/admin/questions">Questions</a>
                         <a href="${ctx}/admin/exams">Exams</a>
                         <a href="${ctx}/admin/users">Users</a>
+                        <a href="${ctx}/admin/access-grants">Access grants</a>
                     </c:when>
                     <c:otherwise>
                         <a href="${ctx}/user/dashboard">Dashboard</a>
@@ -37,4 +48,25 @@
         </c:if>
     </div>
 </header>
+<script>
+(function () {
+    var toggle = document.getElementById('nav-toggle');
+    var nav = document.getElementById('main-nav');
+    if (!toggle || !nav) return;
+
+    toggle.addEventListener('click', function () {
+        var open = nav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.classList.toggle('is-active', open);
+    });
+
+    nav.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            nav.classList.remove('is-open');
+            toggle.classList.remove('is-active');
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+})();
+</script>
 <main class="container main-content">

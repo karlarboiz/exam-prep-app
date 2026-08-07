@@ -1,7 +1,9 @@
-# Enforce subscription access
+# Enforce one-time purchase access
 
 **Filter:** `com.examprep.filter.SubscriptionFilter` (runs after `JwtAuthFilter`)  
 **Service:** `AccessGrantService.hasActiveAccess`
+
+> Naming note: the filter class is still called `SubscriptionFilter` for historical reasons. Product-wise this is a **one-time purchase access period**, not a renewable subscription.
 
 ## Who is checked
 
@@ -14,6 +16,8 @@
 
 If the user has no active grant → redirect to `/user/subscription-expired`.
 
+Revoking a redeemed grant (status → `REVOKED`) also ends access immediately, even if `expires_at` is still in the future.
+
 ## Filter order
 
 1. `JwtAuthFilter` — session identity  
@@ -23,8 +27,9 @@ If the user has no active grant → redirect to `/user/subscription-expired`.
 ## Relation to session JWT
 
 - Login JWT proves **who** you are (cookie `access_token`).
-- Access grant proves **whether** the subscription still allows quizzes/materials.
+- Access grant proves **whether** the one-time purchase still allows quizzes/materials.
 - Login may still succeed after expiry so the expired page can show the end date; quiz routes stay blocked.
+- There is **no** renewal or attach-new-token flow for an existing account — access ending after the review window is expected.
 
 ## Page
 

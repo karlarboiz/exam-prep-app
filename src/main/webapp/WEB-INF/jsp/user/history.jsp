@@ -18,6 +18,7 @@
                 <thead>
                 <tr>
                     <th>Exam</th>
+                    <th>Type</th>
                     <th>Subject</th>
                     <th>Started</th>
                     <th>Completed</th>
@@ -30,6 +31,16 @@
                 <c:forEach var="h" items="${history}">
                     <tr>
                         <td>${h.examTitle}</td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${h.diagnostic}">
+                                    <span class="badge badge-diagnostic">Diagnostic</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge badge-practice">Practice</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
                         <td>${h.subjectName}</td>
                         <td>${ep:fmt(h.startedAt)}</td>
                         <td>${h.completedAt != null ? ep:fmt(h.completedAt) : '-'}</td>
@@ -37,10 +48,24 @@
                         <td><span class="badge badge-${h.status}">${h.status}</span></td>
                         <td>
                             <c:if test="${h.status != 'IN_PROGRESS'}">
-                                <a href="${ctx}/user/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View Result</a>
+                                <c:choose>
+                                    <c:when test="${h.diagnostic}">
+                                        <a href="${ctx}/user/diagnostic/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View Result</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${ctx}/user/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View Result</a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:if>
                             <c:if test="${h.status == 'IN_PROGRESS'}">
-                                <a href="${ctx}/user/exam?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
+                                <c:choose>
+                                    <c:when test="${h.diagnostic}">
+                                        <a href="${ctx}/user/diagnostic?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${ctx}/user/exam?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:if>
                         </td>
                     </tr>

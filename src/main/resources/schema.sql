@@ -136,9 +136,9 @@ CREATE INDEX IF NOT EXISTS idx_access_grants_status ON access_grants(status);
 
 -- Seed admin user is created programmatically on startup if missing (admin / admin123)
 
--- Seed sample subject
-MERGE INTO subjects (id, name, description) KEY(id) VALUES
-(1, 'General Knowledge', 'Basic general knowledge questions for practice');
+-- Seed sample subject (visible to both exam tracks)
+MERGE INTO subjects (id, name, description, is_professional, is_sub_professional) KEY(id) VALUES
+(1, 'General Knowledge', 'Basic general knowledge questions for practice', TRUE, TRUE);
 
 -- Seed sample questions
 MERGE INTO questions (id, subject_id, prompt, option_a, option_b, option_c, option_d, correct_option, difficulty) KEY(id) VALUES
