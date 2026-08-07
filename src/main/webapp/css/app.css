@@ -42,12 +42,16 @@ body {
     border-bottom: 1px solid var(--color-border);
     padding: 1rem 0;
     box-shadow: var(--shadow);
+    position: relative;
+    z-index: 100;
 }
 
 .header-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .logo {
@@ -56,6 +60,41 @@ body {
     font-weight: 700;
     color: var(--color-primary);
     text-decoration: none;
+}
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    cursor: pointer;
+}
+
+.nav-toggle-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .main-nav {
@@ -288,6 +327,49 @@ h2 {
 @media (max-width: 768px) {
     .grid-2 {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .nav-toggle {
+        display: flex;
+        margin-left: auto;
+    }
+
+    .main-nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .main-nav.is-open {
+        display: flex;
+    }
+
+    .main-nav a,
+    .main-nav .user-badge {
+        display: block;
+        padding: 0.85rem 0.15rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .main-nav a:last-child {
+        border-bottom: none;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+
+    .main-nav .user-badge {
+        color: var(--color-muted);
+        font-size: 0.8rem;
+    }
+
+    .main-nav .btn {
+        width: 100%;
     }
 }
 
