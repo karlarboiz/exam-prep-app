@@ -21,3 +21,4 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Seed subject visible on both exam levels | `SubjectDaoTest` |
 | Attempt `isDiagnostic` joined from exam | `AttemptDaoTest` |
 | Import creates leveled subjects | `QuestionImportServiceTest` |
+| Import rejects both-false level flags | `QuestionImportServiceTest` |

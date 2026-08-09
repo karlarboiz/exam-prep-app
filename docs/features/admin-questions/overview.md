@@ -12,7 +12,7 @@ CRUD for multiple-choice questions: prompt, options A–D, correct option, diffi
 
 Questions are later attached to exams (many-to-many via exam–question links).
 
-Bulk Excel import: see [question-import](../question-import/overview.md).
+Bulk Excel import: see [question-import](../question-import/overview.md). When import creates a missing subject, both Professional and Sub-Professional flags default to true so the subject is not hidden from dashboards.
 
 ## Access
 
