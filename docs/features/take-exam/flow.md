@@ -21,22 +21,15 @@ POST action=answer
 
 POST action=submit
   → submitExam with all answers
+  → persist an attempt_answers row for every exam question
+       blank / missing → selected_option NULL, is_correct false
   → redirect /user/result?attemptId=N
 ```
 
-<<<<<<< Updated upstream
-=======
-## UI timing
-
-- Shows one question at a time; Previous / Next allowed.
-- Per-question budget: `max(1, (durationMinutes × 60) / questionCount)` seconds; remaining time is preserved per question when navigating.
-- Question timeout auto-advances; on the last question it auto-submits.
-- Overall deadline (`startedAt + durationMinutes`) still forces submit.
-
->>>>>>> Stashed changes
 ## Rules
 
 - Only the owning user may view/submit the attempt (403 otherwise).
 - Exam must be `active` to start.
-- Duration: `startedAt + durationMinutes`. Past deadline marks `EXPIRED` and still scores saved answers.
-- Score = (correct answers / total questions) × 100, 2 decimal places.
+- Duration: `startedAt + durationMinutes`. Past deadline marks `EXPIRED` and still scores the full question set.
+- Score = (correct answers / total questions) × 100, 2 decimal places. Unanswered count as incorrect.
+- Result [answer review](../results-history/result.md) lists every question, including unanswered (“Not answered”).

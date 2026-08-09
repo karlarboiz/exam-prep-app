@@ -30,8 +30,14 @@
         <div class="review-card ${a.correct ? 'correct' : 'incorrect'}">
             <h3>Question ${status.index + 1}</h3>
             <p>${a.question.prompt}</p>
-            <p><strong>Your answer:</strong> ${a.selectedOption != null ? a.selectedOption : 'Not answered'}
-                — ${a.question.getOptionText(a.selectedOption)}</p>
+            <p><strong>Your answer:</strong>
+                <c:choose>
+                    <c:when test="${a.selectedOption != null}">
+                        ${a.selectedOption} — ${a.question.getOptionText(a.selectedOption)}
+                    </c:when>
+                    <c:otherwise>Not answered</c:otherwise>
+                </c:choose>
+            </p>
             <c:if test="${!a.correct}">
                 <p><strong>Correct answer:</strong> ${a.question.correctOption}
                     — ${a.question.getOptionText(a.question.correctOption)}</p>

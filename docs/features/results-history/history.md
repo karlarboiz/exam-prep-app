@@ -16,7 +16,7 @@ Lists the current user's exam attempts with status, score, and timestamps.
 **Service:** `ExamService.getAttempt` + `getAttemptAnswers`  
 **Page:** [result.jsp](../../pages/user/result.md)
 
-Shows score percent, attempt status, and per-question review (selected vs correct).
+Shows score percent, attempt status, and per-question review (selected vs correct). Review includes **unanswered** questions (shown as “Not answered”; they already count as incorrect in the score).
 
 ## Access
 

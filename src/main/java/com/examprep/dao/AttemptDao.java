@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +114,11 @@ public class AttemptDao {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, attemptId);
             ps.setLong(2, questionId);
-            ps.setString(3, selectedOption);
+            if (selectedOption == null) {
+                ps.setNull(3, Types.CHAR);
+            } else {
+                ps.setString(3, selectedOption);
+            }
             ps.setBoolean(4, isCorrect);
             ps.executeUpdate();
         }

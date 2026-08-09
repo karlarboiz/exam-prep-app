@@ -97,6 +97,9 @@ public class ExamService {
             if (selected != null && !selected.isBlank()) {
                 boolean correct = question.getCorrectOption().equalsIgnoreCase(selected);
                 attemptDao.saveAnswer(attemptId, question.getId(), selected.toUpperCase(), correct);
+            } else {
+                // Persist unanswered so answer review matches the score denominator
+                attemptDao.saveAnswer(attemptId, question.getId(), null, false);
             }
         }
 
