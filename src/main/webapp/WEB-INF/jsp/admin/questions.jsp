@@ -38,7 +38,9 @@
 <div class="card" style="margin-bottom: 1.5rem;">
     <h2>Import from Excel</h2>
     <p>Upload an <code>.xlsx</code> file with columns:
-        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation.</p>
+        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation,
+        and optional <code>is_professional</code> / <code>is_sub_professional</code>
+        (used only when the subject is created; omit both to enable both exam tracks).</p>
     <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
         <input type="hidden" name="action" value="import">
         <div class="form-group">

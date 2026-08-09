@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestionImportServiceTest extends DatabaseTestSupport {
@@ -41,7 +42,18 @@ class QuestionImportServiceTest extends DatabaseTestSupport {
         assertEquals(1, result.getImportedCount());
         Subject subject = subjectDao.findByNameIgnoreCase("Imported Science").orElseThrow();
         assertTrue(subject.isProfessional());
-        assertTrue(!subject.isSubProfessional());
+        assertFalse(subject.isSubProfessional());
+    }
+
+    @Test
+    void importRejectsBothLevelFlagsFalse() throws Exception {
+        byte[] xlsx = buildWorkbook("false", "false");
+        QuestionImportResult result = importService.importFromExcel(new ByteArrayInputStream(xlsx));
+
+        assertEquals(0, result.getImportedCount());
+        assertFalse(result.getErrors().isEmpty());
+        assertTrue(result.getErrors().get(0).contains("subject level flags"));
+        assertTrue(subjectDao.findByNameIgnoreCase("Imported Science").isEmpty());
     }
 
     private byte[] buildWorkbook(String professional, String subProfessional) throws Exception {

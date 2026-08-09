@@ -41,8 +41,10 @@ Format: `.xlsx` only.
 ### Subject level flags on create
 
 - If both level columns are omitted (or blank) when creating a new subject → both tracks default to **true** so imported content is visible to Professional and Sub-Professional students.
-- If either column is provided → parsed booleans must enable at least one track.
+- If either column is provided → parsed booleans must enable at least one track; both false is rejected as a row error and the subject is not created.
 - Existing subjects matched by name are **not** updated; their level flags stay as configured in admin.
+
+`schema.sql` also repairs any subjects that already have both flags false (legacy import bug) by enabling both tracks on startup.
 
 ## CLI
 
