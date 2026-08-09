@@ -37,6 +37,15 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <filter>
+        <filter-name>DiagnosticFilter</filter-name>
+        <filter-class>com.examprep.filter.DiagnosticFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>DiagnosticFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

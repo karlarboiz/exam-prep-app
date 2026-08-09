@@ -33,6 +33,15 @@ public final class SimpleJson {
         return Optional.empty();
     }
 
+    public static Optional<Long> longField(String json, String field) {
+        Pattern p = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*(-?\\d+)");
+        Matcher m = p.matcher(json);
+        if (m.find()) {
+            return Optional.of(Long.parseLong(m.group(1)));
+        }
+        return Optional.empty();
+    }
+
     public static Optional<LocalDateTime> dateTimeField(String json, String field) {
         return stringField(json, field).flatMap(value -> {
             try {

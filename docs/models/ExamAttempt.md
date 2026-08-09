@@ -14,5 +14,10 @@
 | examTitle | String | Display helper |
 | subjectName | String | Display helper |
 | durationMinutes | int | Copied/joined from exam for deadline checks |
+| diagnostic | boolean | Joined from `exams.is_diagnostic`; drives history links |
 
 Deadline = `startedAt.plusMinutes(durationMinutes)`.
+
+For **diagnostic** attempts, the question set is `attempt_questions`, not `exam_questions`. Subject breakdown is stored in [DiagnosticSubjectScore](DiagnosticSubjectScore.md). Only `COMPLETED` clears the placement gate; `EXPIRED` requires a retake — see [diagnostic flow](../features/diagnostic/flow.md).
+
+History must route diagnostic Continue / View Result to `/user/diagnostic` and `/user/diagnostic/result` respectively — see [history](../features/results-history/history.md).

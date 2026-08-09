@@ -2,6 +2,7 @@ package com.examprep.servlet.api;
 
 import com.examprep.config.AppConfig;
 import com.examprep.model.AccessGrant;
+import com.examprep.model.ExamLevel;
 import com.examprep.service.AccessGrantService;
 import com.examprep.util.SimpleJson;
 import jakarta.servlet.ServletException;
@@ -34,22 +35,46 @@ public class CreateAccessTokenServlet extends HttpServlet {
         String planCode = SimpleJson.stringField(body, "planCode").orElse(null);
         String sourceRef = SimpleJson.stringField(body, "sourceRef").orElse(null);
 
+        ExamLevel examLevel;
+        try {
+            examLevel = parseExamLevel(SimpleJson.stringField(body, "examLevel").orElse(null));
+        } catch (IllegalArgumentException e) {
+            writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, SimpleJson.object("error", e.getMessage()));
+            return;
+        }
+
         try {
             AccessGrantService.CreatedAccessToken created =
-                    accessGrantService.createToken(expiresAt, durationDays, planCode, sourceRef);
+                    accessGrantService.createToken(expiresAt, durationDays, planCode, sourceRef, examLevel);
             AccessGrant grant = created.grant();
             String expiresAtIso = grant.getExpiresAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             writeJson(resp, HttpServletResponse.SC_CREATED, SimpleJson.object(
                     "token", created.rawToken(),
                     "expiresAt", expiresAtIso,
                     "id", String.valueOf(grant.getId()),
-                    "status", grant.getStatus().name()
+                    "status", grant.getStatus().name(),
+                    "examLevel", grant.getExamLevel().name()
             ));
         } catch (IllegalArgumentException e) {
             writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, SimpleJson.object("error", e.getMessage()));
         } catch (Exception e) {
             writeJson(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     SimpleJson.object("error", "Failed to create access token"));
+        }
+    }
+
+    private static ExamLevel parseExamLevel(String value) {
+        try {
+            ExamLevel examLevel = ExamLevel.fromString(value);
+            if (examLevel == null) {
+                throw new IllegalArgumentException("examLevel is required (PROFESSIONAL or SUB_PROFESSIONAL)");
+            }
+            return examLevel;
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().contains("required")) {
+                throw e;
+            }
+            throw new IllegalArgumentException("examLevel must be PROFESSIONAL or SUB_PROFESSIONAL");
         }
     }
 
