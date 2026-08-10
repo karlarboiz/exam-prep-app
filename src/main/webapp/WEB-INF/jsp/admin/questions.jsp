@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Questions" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -7,6 +8,19 @@
 <h1>Questions</h1>
 <c:if test="${not empty error}">
     <div class="alert alert-error">${error}</div>
+</c:if>
+<c:if test="${not empty importSuccess}">
+    <div class="alert alert-success">${importSuccess}</div>
+</c:if>
+<c:if test="${not empty importErrors}">
+    <div class="alert alert-error">
+        <p>Import row errors:</p>
+        <ul>
+            <c:forEach var="err" items="${importErrors}">
+                <li>${err}</li>
+            </c:forEach>
+        </ul>
+    </div>
 </c:if>
 
 <div class="filter-bar">
@@ -18,6 +32,22 @@
                 <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}>${s.name}</option>
             </c:forEach>
         </select>
+    </form>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h2>Import from Excel</h2>
+    <p>Upload an <code>.xlsx</code> file with columns:
+        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation,
+        and optional <code>is_professional</code> / <code>is_sub_professional</code>
+        (used only when the subject is created; omit both to enable both exam tracks).</p>
+    <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
+        <input type="hidden" name="action" value="import">
+        <div class="form-group">
+            <label for="file">Excel file</label>
+            <input type="file" id="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Import</button>
     </form>
 </div>
 
@@ -74,6 +104,10 @@
                     <option value="HARD" ${editQuestion.difficulty == 'HARD' ? 'selected' : ''}>Hard</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="explanation">Explanation</label>
+                <textarea id="explanation" name="explanation" rows="3">${editQuestion.explanation}</textarea>
+            </div>
             <button type="submit" class="btn btn-primary">
                 <c:choose><c:when test="${not empty editQuestion}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>
             </button>
@@ -96,7 +130,7 @@
                     <td>${q.prompt}</td>
                     <td>${q.correctOption}</td>
                     <td class="actions">
-                        <a href="${ctx}/admin/questions?edit=${q.id}" class="btn btn-sm">Edit</a>
+                        <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${q.id}">

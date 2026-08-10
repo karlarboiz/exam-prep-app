@@ -15,6 +15,7 @@ public class ExamAttempt {
     private String examTitle;
     private String subjectName;
     private int durationMinutes;
+    private boolean diagnostic;
 
     public ExamAttempt() {
     }
@@ -97,5 +98,13 @@ public class ExamAttempt {
 
     public void setDurationMinutes(int durationMinutes) {
         this.durationMinutes = durationMinutes;
+    }
+
+    public boolean isDiagnostic() {
+        return diagnostic;
+    }
+
+    public void setDiagnostic(boolean diagnostic) {
+        this.diagnostic = diagnostic;
     }
 }

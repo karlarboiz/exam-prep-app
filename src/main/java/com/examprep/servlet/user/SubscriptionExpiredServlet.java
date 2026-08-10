@@ -2,6 +2,7 @@ package com.examprep.servlet.user;
 
 import com.examprep.model.User;
 import com.examprep.service.AccessGrantService;
+import com.examprep.util.DateFormats;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 
 @WebServlet("/user/subscription-expired")
 public class SubscriptionExpiredServlet extends HttpServlet {
@@ -28,8 +28,7 @@ public class SubscriptionExpiredServlet extends HttpServlet {
             accessGrantService.findLatestRedeemed(user.getId()).ifPresent(grant -> {
                 req.setAttribute("expiredGrant", grant);
                 if (grant.getExpiresAt() != null) {
-                    req.setAttribute("expiresAtLabel",
-                            grant.getExpiresAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                    req.setAttribute("expiresAtLabel", DateFormats.format(grant.getExpiresAt()));
                 }
             });
             req.getRequestDispatcher("/WEB-INF/jsp/user/subscription-expired.jsp").forward(req, resp);

@@ -25,12 +25,14 @@ public class AdminService {
         return subjectDao.findById(id);
     }
 
-    public Subject createSubject(String name, String description) throws SQLException {
-        return subjectDao.create(name, description);
+    public Subject createSubject(String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        return subjectDao.create(name, description, professional, subProfessional);
     }
 
-    public void updateSubject(Long id, String name, String description) throws SQLException {
-        subjectDao.update(id, name, description);
+    public void updateSubject(Long id, String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        subjectDao.update(id, name, description, professional, subProfessional);
     }
 
     public void deleteSubject(Long id) throws SQLException {
@@ -70,7 +72,18 @@ public class AdminService {
     }
 
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
+        if (exam.isDiagnostic()) {
+            if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
+                exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
+            }
+        }
         Exam created = examDao.create(exam);
+        if (exam.isDiagnostic()) {
+            if (exam.isActive()) {
+                examDao.deactivateOtherDiagnostics(created.getId());
+            }
+            return examDao.findById(created.getId()).orElse(created);
+        }
         if (questionIds != null && !questionIds.isEmpty()) {
             examDao.setExamQuestions(created.getId(), questionIds);
         }
@@ -78,6 +91,17 @@ public class AdminService {
     }
 
     public void updateExam(Exam exam, List<Long> questionIds) throws SQLException {
+        if (exam.isDiagnostic()) {
+            if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
+                exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
+            }
+            examDao.update(exam);
+            if (exam.isActive()) {
+                examDao.deactivateOtherDiagnostics(exam.getId());
+            }
+            examDao.setExamQuestions(exam.getId(), List.of());
+            return;
+        }
         examDao.update(exam);
         if (questionIds != null) {
             examDao.setExamQuestions(exam.getId(), questionIds);

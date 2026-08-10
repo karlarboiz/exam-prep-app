@@ -2,13 +2,13 @@
 
 Java servlet exam practice app (JSP + H2).
 
-Student access is **subscription-token gated**: the funnel calls this app to create a one-time access token; users redeem it at registration. The locked grant’s `expires_at` controls how long quizzes remain available.
+Student access is **one-time purchase token gated** (not a renewable subscription): the funnel calls this app to create a one-time access token; users redeem it at registration. The locked grant’s `expires_at` controls how long quizzes remain available — typically prep time plus a short post-exam review window (e.g. 3 days after the exam), after which access ends.
 
 ## CI/CD
 
 GitHub Actions workflows:
 
-- **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`/`master`/`develop`: JDK 17 + `mvn package`, uploads `exam-prep-app.war`
+- **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`/`master`/`develop`: JDK 17 + `mvn package` (includes tests), uploads `exam-prep-app.war`
 - **Docker** (`.github/workflows/docker.yml`) — on push to `main`/`master`: builds image and pushes to `ghcr.io/<owner>/exam-prep-app`
 
 Local Docker run (after build):
@@ -31,11 +31,12 @@ Start with:
 
 Then:
 
-- **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter
+- **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter, testing
 - **models/** — domain objects (including AccessGrant)
 - **pages/** — JSP screen notes
 - **ui-rules/** — split styling notes (summarized in the UI guide)
 
 ## Funnel API (brief)
 
-`POST /api/access-tokens` with header `X-Api-Key: <funnel.api.key>`. See [docs/features/access-grants/create-token-api.md](docs/features/access-grants/create-token-api.md).
+- `POST /api/access-tokens` — create token (`X-Api-Key`). See [create-token-api](docs/features/access-grants/create-token-api.md).
+- `POST /api/access-tokens/revoke` — revoke by id. See [revoke-token-api](docs/features/access-grants/revoke-token-api.md).

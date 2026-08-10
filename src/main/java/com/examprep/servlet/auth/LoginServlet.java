@@ -58,8 +58,12 @@ public class LoginServlet extends HttpServlet {
     private void redirectToDashboard(User user, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (user.isAdmin()) {
             resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
-        } else {
-            resp.sendRedirect(req.getContextPath() + "/user/dashboard");
+            return;
         }
+        if (!user.isDiagnosticCompleted()) {
+            resp.sendRedirect(req.getContextPath() + "/user/diagnostic");
+            return;
+        }
+        resp.sendRedirect(req.getContextPath() + "/user/dashboard");
     }
 }

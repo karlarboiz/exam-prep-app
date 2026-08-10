@@ -22,7 +22,7 @@ public final class DatabaseManager {
     private DatabaseManager() {
     }
 
-    public static void init() {
+    public static synchronized void init() {
         if (dataSource != null) {
             return;
         }
@@ -33,6 +33,25 @@ public final class DatabaseManager {
         config.setDriverClassName(AppConfig.get("db.driver"));
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
+        dataSource = new HikariDataSource(config);
+        runSchema();
+    }
+
+    /**
+     * Test helper: replace the pool with an isolated in-memory H2 database and re-run schema.
+     * Uses a unique database name each call so prior test data cannot leak
+     * ({@code DB_CLOSE_DELAY=-1} keeps named in-memory DBs alive after pool shutdown).
+     */
+    public static synchronized void reinitForTesting() {
+        shutdown();
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:h2:mem:examprep_test_" + System.nanoTime()
+                + ";MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
+        config.setUsername("sa");
+        config.setPassword("");
+        config.setDriverClassName("org.h2.Driver");
+        config.setMaximumPoolSize(5);
+        config.setMinimumIdle(1);
         dataSource = new HikariDataSource(config);
         runSchema();
     }
