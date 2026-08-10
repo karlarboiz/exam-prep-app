@@ -22,12 +22,19 @@ App: http://localhost:8080
 
 ## Documentation
 
-Full project docs live under [`docs/`](docs/README.md):
+Full project docs live under [`docs/`](docs/README.md).
+
+Start with:
+
+- [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md) — inventory, build order, pre-coding checklist
+- [docs/UI-GUIDE.md](docs/UI-GUIDE.md) — colors, layout, components, screen map
+
+Then:
 
 - **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter
 - **models/** — domain objects (including AccessGrant)
 - **pages/** — JSP screen notes
-- **ui-rules/** — colors, layout, forms, components
+- **ui-rules/** — split styling notes (summarized in the UI guide)
 
 ## Funnel API (brief)
 
