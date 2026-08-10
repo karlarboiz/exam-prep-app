@@ -106,6 +106,9 @@ public class Question {
     }
 
     public String getOptionText(String option) {
+        if (option == null) {
+            return "";
+        }
         return switch (option) {
             case "A" -> optionA;
             case "B" -> optionB;

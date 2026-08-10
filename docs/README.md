@@ -1,13 +1,18 @@
 # Exam Prep App — Documentation
 
-Project documentation is organized by concern:
+**Start here before coding:**
+
+1. [PRE-IMPLEMENTATION.md](PRE-IMPLEMENTATION.md) — inventory, dependency order, checklists, smoke paths
+2. [UI-GUIDE.md](UI-GUIDE.md) — tokens, layout, components, screen map
+
+Then drill into the folders below as needed.
 
 | Folder | Purpose |
 |--------|---------|
 | [features/](features/) | How each capability works (servlets, services, flows) |
 | [models/](models/) | Domain objects and enums |
 | [pages/](pages/) | JSP screens and their routes |
-| [ui-rules/](ui-rules/) | Styling and UX conventions |
+| [ui-rules/](ui-rules/) | Split styling notes (also summarized in UI guide) |
 
 ## Features
 
@@ -22,6 +27,8 @@ Project documentation is organized by concern:
 
 ```
 docs/
+├── PRE-IMPLEMENTATION.md   ← ordered task guide
+├── UI-GUIDE.md             ← visual system front door
 ├── features/
 │   ├── access-grants/
 │   ├── auth/

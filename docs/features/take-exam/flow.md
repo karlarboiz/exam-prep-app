@@ -21,6 +21,8 @@ POST action=answer
 
 POST action=submit
   → submitExam with all answers
+  → persist an attempt_answers row for every exam question
+       blank / missing → selected_option NULL, is_correct false
   → redirect /user/result?attemptId=N
 ```
 
