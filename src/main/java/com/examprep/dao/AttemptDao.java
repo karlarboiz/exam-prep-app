@@ -21,15 +21,16 @@ import java.util.Optional;
 
 public class AttemptDao {
 
+    private static final String ATTEMPT_SELECT = """
+            SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
+                   e.title AS exam_title, e.duration_minutes, e.is_diagnostic, s.name AS subject_name
+            FROM exam_attempts a
+            JOIN exams e ON e.id = a.exam_id
+            JOIN subjects s ON s.id = e.subject_id
+            """;
+
     public Optional<ExamAttempt> findById(Long id) throws SQLException {
-        String sql = """
-                SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
-                       e.title AS exam_title, e.duration_minutes, s.name AS subject_name
-                FROM exam_attempts a
-                JOIN exams e ON e.id = a.exam_id
-                JOIN subjects s ON s.id = e.subject_id
-                WHERE a.id = ?
-                """;
+        String sql = ATTEMPT_SELECT + " WHERE a.id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -43,12 +44,7 @@ public class AttemptDao {
     }
 
     public Optional<ExamAttempt> findInProgress(Long userId, Long examId) throws SQLException {
-        String sql = """
-                SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
-                       e.title AS exam_title, e.duration_minutes, s.name AS subject_name
-                FROM exam_attempts a
-                JOIN exams e ON e.id = a.exam_id
-                JOIN subjects s ON s.id = e.subject_id
+        String sql = ATTEMPT_SELECT + """
                 WHERE a.user_id = ? AND a.exam_id = ? AND a.status = 'IN_PROGRESS'
                 """;
         try (Connection conn = DatabaseManager.getConnection();
@@ -65,12 +61,7 @@ public class AttemptDao {
     }
 
     public List<ExamAttempt> findByUserId(Long userId) throws SQLException {
-        String sql = """
-                SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
-                       e.title AS exam_title, e.duration_minutes, s.name AS subject_name
-                FROM exam_attempts a
-                JOIN exams e ON e.id = a.exam_id
-                JOIN subjects s ON s.id = e.subject_id
+        String sql = ATTEMPT_SELECT + """
                 WHERE a.user_id = ?
                 ORDER BY a.started_at DESC
                 """;
@@ -128,9 +119,10 @@ public class AttemptDao {
         String sql = """
                 SELECT aa.attempt_id, aa.question_id, aa.selected_option, aa.is_correct,
                        q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                       q.correct_option, q.difficulty
+                       q.correct_option, q.difficulty, q.explanation, s.name AS subject_name
                 FROM attempt_answers aa
                 JOIN questions q ON q.id = aa.question_id
+                JOIN subjects s ON s.id = q.subject_id
                 WHERE aa.attempt_id = ?
                 ORDER BY aa.question_id
                 """;
@@ -170,6 +162,16 @@ public class AttemptDao {
         }
     }
 
+    public void updateStartedAt(Long attemptId, LocalDateTime startedAt) throws SQLException {
+        String sql = "UPDATE exam_attempts SET started_at = ? WHERE id = ? AND status = 'IN_PROGRESS'";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(startedAt));
+            ps.setLong(2, attemptId);
+            ps.executeUpdate();
+        }
+    }
+
     private ExamAttempt mapAttempt(ResultSet rs) throws SQLException {
         ExamAttempt attempt = new ExamAttempt();
         attempt.setId(rs.getLong("id"));
@@ -189,6 +191,7 @@ public class AttemptDao {
         attempt.setExamTitle(rs.getString("exam_title"));
         attempt.setSubjectName(rs.getString("subject_name"));
         attempt.setDurationMinutes(rs.getInt("duration_minutes"));
+        attempt.setDiagnostic(rs.getBoolean("is_diagnostic"));
         return attempt;
     }
 
@@ -209,6 +212,8 @@ public class AttemptDao {
         question.setOptionD(rs.getString("option_d"));
         question.setCorrectOption(rs.getString("correct_option"));
         question.setDifficulty(rs.getString("difficulty"));
+        question.setExplanation(rs.getString("explanation"));
+        question.setSubjectName(rs.getString("subject_name"));
         answer.setQuestion(question);
         return answer;
     }

@@ -6,6 +6,7 @@ import com.examprep.model.ExamAttempt;
 import com.examprep.model.Question;
 import com.examprep.model.User;
 import com.examprep.service.ExamService;
+import com.examprep.util.IdCipher;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,7 +33,7 @@ public class TakeExamServlet extends HttpServlet {
 
         try {
             if (attemptIdParam != null) {
-                showExamPage(Long.parseLong(attemptIdParam), user, req, resp);
+                showExamPage(IdCipher.dec(attemptIdParam), user, req, resp);
                 return;
             }
 
@@ -41,15 +42,15 @@ public class TakeExamServlet extends HttpServlet {
                 return;
             }
 
-            Long examId = Long.parseLong(examIdParam);
+            Long examId = IdCipher.dec(examIdParam);
             Exam exam = examService.getExam(examId).orElse(null);
-            if (exam == null || !exam.isActive()) {
+            if (exam == null || !examService.isExamAvailableForLevel(exam, user.getExamLevel())) {
                 resp.sendRedirect(req.getContextPath() + "/user/dashboard");
                 return;
             }
 
             ExamAttempt attempt = examService.startExam(user.getId(), examId);
-            resp.sendRedirect(req.getContextPath() + "/user/exam?attemptId=" + attempt.getId());
+            resp.sendRedirect(req.getContextPath() + "/user/exam?attemptId=" + IdCipher.enc(attempt.getId()));
         } catch (IllegalStateException e) {
             req.setAttribute("error", e.getMessage());
             resp.sendRedirect(req.getContextPath() + "/user/dashboard");
@@ -62,7 +63,7 @@ public class TakeExamServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User user = WebUtil.getCurrentUser(req);
         String action = req.getParameter("action");
-        Long attemptId = Long.parseLong(req.getParameter("attemptId"));
+        Long attemptId = IdCipher.dec(req.getParameter("attemptId"));
 
         try {
             ExamAttempt attempt = examService.getAttempt(attemptId);
@@ -74,7 +75,7 @@ public class TakeExamServlet extends HttpServlet {
             if ("submit".equals(action)) {
                 Map<Long, String> answers = collectAnswers(req, attemptId);
                 ExamAttempt completed = examService.submitExam(attemptId, answers);
-                resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + completed.getId());
+                resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + IdCipher.enc(completed.getId()));
                 return;
             }
 
@@ -84,10 +85,14 @@ public class TakeExamServlet extends HttpServlet {
                 if (selected != null && !selected.isBlank()) {
                     examService.saveAnswer(attemptId, questionId, selected);
                 }
+                if ("1".equals(req.getParameter("ajax"))) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    return;
+                }
                 showExamPage(attemptId, user, req, resp);
             }
         } catch (IllegalStateException e) {
-            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + attemptId);
+            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + IdCipher.enc(attemptId));
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -102,22 +107,26 @@ public class TakeExamServlet extends HttpServlet {
         }
 
         if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
-            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + attemptId);
+            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + IdCipher.enc(attemptId));
             return;
         }
 
         if (examService.isExpired(attempt)) {
             examService.submitExam(attemptId, examService.getAnswerMap(attemptId));
-            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + attemptId);
+            resp.sendRedirect(req.getContextPath() + "/user/result?attemptId=" + IdCipher.enc(attemptId));
             return;
         }
 
         List<Question> questions = examService.getExamQuestions(attempt.getExamId());
         Map<Long, String> answers = examService.getAnswerMap(attemptId);
+        int secondsPerQuestion = questions.isEmpty()
+                ? 1
+                : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());
 
         req.setAttribute("attempt", attempt);
         req.setAttribute("questions", questions);
         req.setAttribute("answers", answers);
+        req.setAttribute("secondsPerQuestion", secondsPerQuestion);
         req.setAttribute("deadline", examService.getDeadline(attempt).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         req.getRequestDispatcher("/WEB-INF/jsp/user/take-exam.jsp").forward(req, resp);
     }

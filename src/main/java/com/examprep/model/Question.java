@@ -11,6 +11,7 @@ public class Question {
     private String optionD;
     private String correctOption;
     private String difficulty;
+    private String explanation;
     private String subjectName;
 
     public Question() {
@@ -86,6 +87,14 @@ public class Question {
 
     public void setDifficulty(String difficulty) {
         this.difficulty = difficulty;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 
     public String getSubjectName() {

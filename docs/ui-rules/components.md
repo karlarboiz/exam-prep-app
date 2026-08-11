@@ -39,3 +39,5 @@ Reusable patterns from `app.css`:
 - `.score-circle`, `.score-value`, `.result-summary`
 - `.error-page` — 403/404
 - `.alert-warning` — amber warning alert (expired subscription)
+- `.intro-modal`, `.intro-modal-panel`, `.intro-modal-backdrop` — placement diagnostic intro overlay
+- `.exam-shell.is-intro-pending` — dims exam content while intro is visible

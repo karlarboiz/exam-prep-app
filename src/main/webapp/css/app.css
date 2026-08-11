@@ -1,4 +1,6 @@
 :root {
+    --font-heading: "Montserrat", sans-serif;
+    --font-body: "Outfit", sans-serif;
     --color-primary: #2563eb;
     --color-primary-dark: #1d4ed8;
     --color-danger: #dc2626;
@@ -20,7 +22,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-body);
     background: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
@@ -40,19 +42,59 @@ body {
     border-bottom: 1px solid var(--color-border);
     padding: 1rem 0;
     box-shadow: var(--shadow);
+    position: relative;
+    z-index: 100;
 }
 
 .header-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .logo {
+    font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-primary);
     text-decoration: none;
+}
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    cursor: pointer;
+}
+
+.nav-toggle-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+
+.nav-toggle.is-active .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .main-nav {
@@ -90,8 +132,15 @@ body {
     font-size: 0.85rem;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
 h1 {
     font-size: 1.75rem;
+    font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
@@ -217,6 +266,18 @@ h2 {
     border: 1px solid #fde68a;
 }
 
+.alert-error {
+    background: #fef2f2;
+    color: var(--color-danger);
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background: #f0fdf4;
+    color: var(--color-success);
+    border: 1px solid #bbf7d0;
+}
+
 .token-readonly {
     background: var(--color-bg);
     color: var(--color-muted);
@@ -269,6 +330,49 @@ h2 {
     }
 }
 
+@media (max-width: 900px) {
+    .nav-toggle {
+        display: flex;
+        margin-left: auto;
+    }
+
+    .main-nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .main-nav.is-open {
+        display: flex;
+    }
+
+    .main-nav a,
+    .main-nav .user-badge {
+        display: block;
+        padding: 0.85rem 0.15rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .main-nav a:last-child {
+        border-bottom: none;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+
+    .main-nav .user-badge {
+        color: var(--color-muted);
+        font-size: 0.8rem;
+    }
+
+    .main-nav .btn {
+        width: 100%;
+    }
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -311,6 +415,11 @@ h2 {
 .badge-IN_PROGRESS { background: #fef3c7; color: var(--color-warning); }
 .badge-COMPLETED { background: #dcfce7; color: var(--color-success); }
 .badge-EXPIRED { background: #fee2e2; color: var(--color-danger); }
+.badge-diagnostic { background: #e0e7ff; color: #4338ca; }
+.badge-practice { background: #f1f5f9; color: var(--color-muted); }
+.badge-UNUSED { background: #fef3c7; color: var(--color-warning); }
+.badge-REDEEMED { background: #dcfce7; color: var(--color-success); }
+.badge-REVOKED { background: #fee2e2; color: var(--color-danger); }
 
 .exam-grid {
     display: grid;
@@ -391,7 +500,20 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.timer-slot {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.timer-label {
+    color: var(--color-muted);
+    font-size: 0.9rem;
 }
 
 .timer-value {
@@ -408,12 +530,23 @@ h2 {
     color: var(--color-danger);
 }
 
+.exam-progress {
+    margin: 0.5rem 0 0;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
 .question-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     padding: 1.25rem;
     margin-bottom: 1rem;
+}
+
+.question-card.is-hidden,
+.exam-nav .is-hidden {
+    display: none;
 }
 
 .question-prompt {
@@ -444,6 +577,15 @@ h2 {
 .option-letter {
     font-weight: 600;
     min-width: 1.5rem;
+}
+
+.exam-nav {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .exam-actions {
@@ -495,6 +637,73 @@ h2 {
 }
 
 .error-page h1 {
+    margin-bottom: 1rem;
+}
+
+/* Diagnostic intro modal */
+.exam-shell.is-intro-pending {
+    pointer-events: none;
+    user-select: none;
+    filter: blur(1px);
+    opacity: 0.45;
+}
+
+.intro-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.intro-modal.is-hidden {
+    display: none;
+}
+
+.intro-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.intro-modal-panel {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    max-width: 32rem;
+    width: 100%;
+    padding: 1.75rem 1.5rem;
+}
+
+.intro-modal-panel h2 {
+    margin-bottom: 0.5rem;
+}
+
+.intro-lead {
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+}
+
+.intro-list {
+    margin: 0 0 1.25rem 1.25rem;
+    color: var(--color-text);
+}
+
+.intro-list li {
+    margin-bottom: 0.5rem;
+}
+
+.intro-countdown {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-muted);
+}
+
+.intro-retake-note {
     margin-bottom: 1rem;
 }
 
