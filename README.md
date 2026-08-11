@@ -26,8 +26,9 @@ Full project docs live under [`docs/`](docs/README.md).
 
 Start with:
 
-- [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md) — inventory, build order, pre-coding checklist
-- [docs/UI-GUIDE.md](docs/UI-GUIDE.md) — colors, layout, components, screen map
+- [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md) — start-task guide (build order, checklist, smoke paths)
+- [docs/feature-tracker/](docs/feature-tracker/README.md) — Done / Pending status by category
+- [docs/UI-GUIDE.md](docs/UI-GUIDE.md) — UI tokens, layout, components, screen map
 
 Then:
 
