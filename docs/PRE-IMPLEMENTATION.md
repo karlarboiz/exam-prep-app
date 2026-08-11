@@ -1,6 +1,8 @@
 # Pre-implementation guide
 
-Read this **before writing or changing code**. It is the ordered checklist for this app: what exists, what depends on what, and the steps to take for any new work.
+Read this **before writing or changing code**. It is the ordered checklist for starting a task: what the stack is, what depends on what, and the steps to take before you implement.
+
+It is **not** the place to track missing or pending product work. Status of features (Done / Pending) lives in [feature-tracker/](feature-tracker/README.md).
 
 Companion: [UI guide](UI-GUIDE.md) · Index: [docs README](README.md)
 
@@ -23,77 +25,25 @@ Config: `src/main/resources/app.properties` · Schema: `src/main/resources/schem
 
 ## How to use this doc
 
-1. Confirm the **current inventory** (below) matches what you are about to touch.
-2. For **new features**, walk the **pre-implementation checklist** top to bottom — do not skip layers.
-3. Follow the **build / dependency order** so models and schema land before servlets and JSPs.
-4. Before UI work, skim the [UI guide](UI-GUIDE.md) and reuse existing classes.
-5. After implementation, update the matching doc under `features/`, `models/`, or `pages/`.
+1. Confirm you are touching the right area (routes, models, filters) for the task.
+2. Check [feature-tracker/](feature-tracker/README.md) for the item’s status and notes.
+3. Walk the **pre-implementation checklist** top to bottom — do not skip layers.
+4. Follow the **build / dependency order** so models and schema land before servlets and JSPs.
+5. Before UI work, skim the [UI guide](UI-GUIDE.md) and reuse existing classes.
+6. After implementation: update feature docs under `features/` / `models/` / `pages/`, then sync [feature-tracker](#feature-tracker-after-every-task) (required).
 
 ---
 
-## Current inventory (as of docs)
+## Feature-tracker after every task
 
-Use this as a readiness map. Items marked done are already in source + documented.
+Every time a task is implemented (or deliberately deferred), sync [feature-tracker/](feature-tracker/README.md):
 
-### Foundation
+1. **Search** the category files under `docs/feature-tracker/` for the task (or a clear match by wording).
+2. **If it is present** — set **Status** to **Done** when the work shipped, or leave / set **Pending** if it is not finished (partial work, blocked, or explicitly out of scope for this change). Update **Notes** when helpful.
+3. **If it is not present** — add a new row in the **category file that fits best** (auth, access-grants, admin-content, exam-results, security, diagnostic, or a new category file + link from [feature-tracker/README.md](feature-tracker/README.md) if none fit).
+4. Do this even for small fixes that close a tracked gap — the tracker is the source of truth for Done / Pending.
 
-| Item | Status | Docs / location |
-|------|--------|-----------------|
-| Maven WAR, JDK 17, Tomcat-oriented packaging | Done | Root [README](../README.md), `pom.xml` |
-| H2 schema + seed (admin, sample subject/exam) | Done | `schema.sql`, `SeedData` |
-| App config + DB pool on startup | Done | `AppConfig`, `DatabaseManager`, `AppContextListener` |
-| Character encoding filter | Done | `CharacterEncodingFilter` |
-| Shared chrome (header / footer) + `app.css` | Done | [UI guide](UI-GUIDE.md), [layout](ui-rules/layout.md) |
-
-### Domain models
-
-| Model | Status | Doc |
-|-------|--------|-----|
-| User, Role | Done | [User](models/User.md), [Role](models/Role.md) |
-| Subject | Done | [Subject](models/Subject.md) |
-| Question | Done | [Question](models/Question.md) |
-| Exam (+ exam_questions) | Done | [Exam](models/Exam.md) |
-| ExamAttempt, AttemptStatus | Done | [ExamAttempt](models/ExamAttempt.md), [AttemptStatus](models/AttemptStatus.md) |
-| AttemptAnswer | Done | [AttemptAnswer](models/AttemptAnswer.md) |
-| AccessGrant, AccessGrantStatus | Done | [AccessGrant](models/AccessGrant.md), [AccessGrantStatus](models/AccessGrantStatus.md) |
-
-### Auth & access
-
-| Capability | Status | Doc |
-|------------|--------|-----|
-| Login / logout / register | Done | [login](features/auth/login.md), [logout](features/auth/logout.md), [register](features/auth/register.md) |
-| JWT session filter | Done | [jwt](features/jwt-auth-filter/jwt.md) |
-| Funnel create-token API | Done | [create-token-api](features/access-grants/create-token-api.md) |
-| One-time token redeem at register | Done | [redeem](features/access-grants/redeem.md) |
-| Subscription gate on `/user/**` | Done | [enforce-access](features/access-grants/enforce-access.md) |
-| Subscription-expired page | Done | [page](pages/user/subscription-expired.md) |
-
-### Admin
-
-| Capability | Status | Doc |
-|------------|--------|-----|
-| Admin dashboard | Done | [overview page](pages/admin/dashboard.md) |
-| Subjects CRUD | Done | [admin-subjects](features/admin-subjects/overview.md) |
-| Questions CRUD | Done | [admin-questions](features/admin-questions/overview.md) |
-| Exams CRUD (+ question attach) | Done | [admin-exams](features/admin-exams/overview.md) |
-| Users admin | Done | [admin-users](features/admin-users/overview.md) |
-| Access-grants admin UI | **Not in source** | Cargo/target had a stale JSP only — no servlet/page docs yet |
-
-### Student flow
-
-| Capability | Status | Doc |
-|------------|--------|-----|
-| User dashboard (active exams) | Done | [dashboard](pages/user/dashboard.md) |
-| Take exam (timer, answer, submit) | Done | [flow](features/take-exam/flow.md) |
-| Result + answer review | Done | [result](features/results-history/result.md) |
-| History | Done | [history](features/results-history/history.md) |
-| Diagnostic exam / result pages | **Not in source** | Only appeared under `target/` cargo work — treat as out of scope until specified |
-
-### Ops
-
-| Item | Status |
-|------|--------|
-| CI (`mvn package`) + Docker / GHCR workflows | Done (see root README) |
+Do **not** put backlog lists in this pre-implementation guide; only update the tracker files.
 
 ---
 
@@ -111,7 +61,8 @@ Build or change work **down this stack**. Do not start a servlet before its mode
 6. JSP page (reuse UI guide classes)
 7. Seed / sample data (if demos need it)
 8. Docs update (feature + page + model as needed)
-9. Manual smoke (login → capability → logout / expiry)
+9. Feature-tracker sync (update existing row, or add row in best-fit category)
+10. Manual smoke (login → capability → logout / expiry)
 ```
 
 ### Feature build sequence (historical / greenfield order)
@@ -138,6 +89,7 @@ Copy this into the PR/task notes and tick before coding.
 - [ ] Actor: `ADMIN` / `USER` / funnel (API key) / anonymous
 - [ ] Primary route(s) and HTTP methods
 - [ ] Out of scope explicitly listed
+- [ ] Matching row in [feature-tracker/](feature-tracker/README.md) identified (or added)
 
 ### B. Data
 
@@ -163,7 +115,8 @@ Copy this into the PR/task notes and tick before coding.
 ### E. Docs & verify
 
 - [ ] Feature doc under `docs/features/…` written or updated
-- [ ] Links from this file / [docs README](README.md) if it is a new area
+- [ ] Feature-tracker synced (see [Feature-tracker after every task](#feature-tracker-after-every-task)): existing row updated to Done or Pending, **or** new row added in the best-fit category file
+- [ ] Links from [docs README](README.md) if it is a new area
 - [ ] Smoke path written (steps below)
 
 ---
@@ -207,14 +160,15 @@ Run these after any auth, grant, or exam change.
 | Fields / enums | `docs/models/` |
 | JSP route + markup notes | `docs/pages/…` |
 | Visual system | [UI-GUIDE.md](UI-GUIDE.md) + `docs/ui-rules/` |
-| This ordered checklist | **this file** |
+| Feature Done / Pending status | [feature-tracker/](feature-tracker/README.md) |
+| This ordered start-task checklist | **this file** |
 
 ---
 
-## Gaps / do-not-assume
+## Do-not-assume
 
-- **Diagnostic** JSPs under cargo `target/` are not part of `src/` — do not document or extend until product-specified.
-- **Admin access-grants UI** is not implemented in source; grants today are created via funnel API + redeem.
 - Prefer extending existing CSS tokens/classes over new hex values or parallel stylesheets.
+- Cargo/`target/` artifacts are not product source — confirm something exists under `src/` before documenting or extending it.
+- For what is Pending vs Done, trust [feature-tracker/](feature-tracker/README.md), not memory.
 
-When in doubt: update this inventory first, then implement in dependency order.
+When in doubt: run this checklist, then implement in dependency order, then update the tracker.
