@@ -10,3 +10,8 @@ Subjects, questions, exams, and bulk import.
 | Users admin list | Done | [admin-users](../features/admin-users/overview.md) |
 | Excel question import | Done | CLI + admin upload |
 | Excel import: subject level flags (no both-false / empty dashboard) | Done | New subjects default both tracks true; both-false rejected; schema backfill for stuck subjects |
+| Users admin: edit exam level / role | Done | Inline role + exam level; delete with last-admin / self guards |
+| Excel import sample template | Done | `GET /admin/questions?action=template` |
+| Excel import upsert / de-dupe | Done | Match subject + prompt (case-insensitive); later rows win |
+| Question bank Excel export | Done | `GET /admin/questions?action=export` (optional `subjectId`) |
+| Reorder questions on a practice exam | Done | Up/Down on `/admin/exams`; stored as `exam_questions.sort_order` |

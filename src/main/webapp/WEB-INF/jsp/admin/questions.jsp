@@ -35,12 +35,23 @@
     </form>
 </div>
 
-<div class="card" style="margin-bottom: 1.5rem;">
+<div class="card">
     <h2>Import from Excel</h2>
     <p>Upload an <code>.xlsx</code> file with columns:
         subject, prompt, option_a–d, correct_option, difficulty (optional), explanation,
         and optional <code>is_professional</code> / <code>is_sub_professional</code>
-        (used only when the subject is created; omit both to enable both exam tracks).</p>
+        (used only when the subject is created; omit both to enable both exam tracks).
+        Matching subject + prompt updates the existing question instead of inserting a duplicate.</p>
+    <div class="actions import-actions">
+        <a href="${ctx}/admin/questions?action=template" class="btn btn-outline">Download template</a>
+        <c:url var="exportUrl" value="/admin/questions">
+            <c:param name="action" value="export"/>
+            <c:if test="${not empty filterSubjectId}">
+                <c:param name="subjectId" value="${filterSubjectId}"/>
+            </c:if>
+        </c:url>
+        <a href="${exportUrl}" class="btn btn-outline">Export questions</a>
+    </div>
     <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
         <input type="hidden" name="action" value="import">
         <div class="form-group">

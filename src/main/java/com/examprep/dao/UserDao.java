@@ -146,6 +146,47 @@ public class UserDao {
         return Optional.empty();
     }
 
+    public int countByRole(Role role) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM users WHERE role = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public void updateRoleAndExamLevel(Long id, Role role, ExamLevel examLevel, boolean resetDiagnostic)
+            throws SQLException {
+        String sql = resetDiagnostic
+                ? "UPDATE users SET role = ?, exam_level = ?, diagnostic_completed_at = NULL WHERE id = ?"
+                : "UPDATE users SET role = ?, exam_level = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role.name());
+            if (examLevel != null) {
+                ps.setString(2, examLevel.name());
+            } else {
+                ps.setNull(2, Types.VARCHAR);
+            }
+            ps.setLong(3, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void delete(Long id) throws SQLException {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        }
+    }
+
     public boolean isDiagnosticCompleted(Long userId) throws SQLException {
         String sql = "SELECT diagnostic_completed_at FROM users WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();

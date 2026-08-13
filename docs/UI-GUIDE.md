@@ -82,6 +82,8 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 - Helpers: `.hint` · Login/register switch: `.auth-link`.
 - Register / admin mint token display: `.token-readonly` (monospace).
 - Admin filters: `.filter-bar` · Multi-select questions: `.checkbox-list` / `.checkbox-item`.
+- Practice exam order: `.exam-question-row` with Up/Down.
+- Users admin row editors: `.table-inline-form`.
 
 ---
 
