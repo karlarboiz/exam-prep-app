@@ -30,14 +30,14 @@
                 <label>
                     <input type="checkbox" name="professional" value="true"
                            <c:if test="${editSubject.professional}">checked</c:if>>
-                    Professional
+                    <p>Professional</p>
                 </label>
             </div>
             <div class="form-group checkbox-group">
                 <label>
                     <input type="checkbox" name="subProfessional" value="true"
                            <c:if test="${editSubject.subProfessional}">checked</c:if>>
-                    Sub-Professional
+                    <p>Sub-Professional</p>
                 </label>
             </div>
             <button type="submit" class="btn btn-primary">
