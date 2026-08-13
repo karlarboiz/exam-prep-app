@@ -14,7 +14,7 @@
 | `.alert` + `.alert-warning` | Subscription / soft warnings |
 | `.hint` | Small muted helper under forms |
 | `.auth-link` | Centered link row (login ↔ register) |
-| `.token-readonly` | Read-only access token on register (monospace) |
+| `.token-readonly` | Read-only access token on register and admin mint success (monospace) |
 
 ## Inline admin actions
 

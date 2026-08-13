@@ -80,7 +80,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 - Auth screens: wrap in `.auth-card` (max-width 420px, centered).
 - Errors: `.alert.alert-error` · Soft warnings: `.alert.alert-warning`.
 - Helpers: `.hint` · Login/register switch: `.auth-link`.
-- Register token display: `.token-readonly` (monospace); real value posts via hidden `token`.
+- Register / admin mint token display: `.token-readonly` (monospace).
 - Admin filters: `.filter-bar` · Multi-select questions: `.checkbox-list` / `.checkbox-item`.
 
 ---
@@ -139,6 +139,7 @@ Use existing pages as the visual reference before inventing new layouts.
 | Questions | `/admin/questions` | [questions](pages/admin/questions.md) |
 | Exams | `/admin/exams` | [exams](pages/admin/exams.md) |
 | Users | `/admin/users` | [users](pages/admin/users.md) |
+| Access grants | `/admin/access-grants` | [access-grants](pages/admin/access-grants.md) |
 
 ### Layout partials
 

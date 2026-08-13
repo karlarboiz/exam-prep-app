@@ -41,7 +41,7 @@ Access is a **one-time purchase** ending at `expiresAt`; there is no renewal for
 }
 ```
 
-Show the buyer a link such as `/register?token=<token>`. The raw token is **not** stored in the DB. On registration, `users.exam_level` is copied from this grant (not chosen by the user).
+Show the buyer a link such as `/register?token=<token>`. The raw token is **not** stored in the DB. On registration, `users.exam_level` is copied from this grant (not chosen by the user). Admins can mint the same kind of token from `/admin/access-grants` without this API.
 
 ## Errors
 

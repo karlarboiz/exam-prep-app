@@ -130,6 +130,7 @@ Run these after any auth, grant, or exam change.
 1. Login `admin` / seeded password → `/admin/dashboard`
 2. Create subject → question → exam (attach questions, set active)
 3. Confirm user list loads
+4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
 
 ### Funnel → student
 
