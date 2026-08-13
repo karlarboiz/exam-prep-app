@@ -149,6 +149,27 @@ public class QuestionDao {
         return Optional.empty();
     }
 
+    public Optional<Question> findBySubjectIdAndPromptIgnoreCase(Long subjectId, String prompt) throws SQLException {
+        String sql = SELECT_COLUMNS + """
+                FROM questions q
+                JOIN subjects s ON s.id = q.subject_id
+                WHERE q.subject_id = ? AND LOWER(TRIM(q.prompt)) = LOWER(TRIM(?))
+                ORDER BY q.id
+                LIMIT 1
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, subjectId);
+            ps.setString(2, prompt);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public Question create(Question question) throws SQLException {
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
@@ -205,6 +226,33 @@ public class QuestionDao {
             bindQuestion(ps, question);
             ps.setLong(10, question.getId());
             ps.executeUpdate();
+        }
+    }
+
+    public int updateBatch(List<Question> questions) throws SQLException {
+        if (questions == null || questions.isEmpty()) {
+            return 0;
+        }
+        String sql = """
+                UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
+                WHERE id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Question question : questions) {
+                bindQuestion(ps, question);
+                ps.setLong(10, question.getId());
+                ps.addBatch();
+            }
+            int[] results = ps.executeBatch();
+            int count = 0;
+            for (int result : results) {
+                if (result >= 0 || result == Statement.SUCCESS_NO_INFO) {
+                    count++;
+                }
+            }
+            return count;
         }
     }
 

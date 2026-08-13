@@ -18,7 +18,7 @@ Subjects group questions and exams. At least one level flag must be true for stu
 
 ## Import
 
-Excel question import creates missing subjects with **both** flags `TRUE` by default, or uses optional `is_professional` / `is_sub_professional` columns — see [question-import](../features/question-import/overview.md).
+Excel question import creates missing subjects with **both** flags `TRUE` by default, or uses optional `is_professional` / `is_sub_professional` columns. Re-import updates an existing question when subject + prompt match — see [question-import](../features/question-import/overview.md).
 
 ## Legacy repair
 

@@ -15,10 +15,15 @@ import jakarta.servlet.http.Part;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 
 @WebServlet("/admin/questions")
 @MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 12 * 1024 * 1024)
 public class QuestionServlet extends HttpServlet {
+
+    private static final String XLSX_CONTENT_TYPE =
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     private final AdminService adminService = new AdminService();
     private final QuestionImportService importService = new QuestionImportService();
@@ -26,6 +31,17 @@ public class QuestionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            String downloadAction = req.getParameter("action");
+            if ("template".equals(downloadAction)) {
+                writeExcel(resp, "question-import-template.xlsx", importService::writeTemplate);
+                return;
+            }
+            if ("export".equals(downloadAction)) {
+                List<Question> questions = loadFilteredQuestions(req.getParameter("subjectId"));
+                writeExcel(resp, "questions.xlsx", out -> importService.exportQuestions(questions, out));
+                return;
+            }
+
             String subjectId = req.getParameter("subjectId");
             String editId = req.getParameter("edit");
 
@@ -96,16 +112,49 @@ public class QuestionServlet extends HttpServlet {
         try (InputStream in = filePart.getInputStream()) {
             QuestionImportResult result = importService.importFromExcel(in);
             req.setAttribute("importCount", result.getImportedCount());
+            req.setAttribute("updateCount", result.getUpdatedCount());
             if (result.hasErrors()) {
                 req.setAttribute("importErrors", result.getErrors());
             }
-            if (result.getImportedCount() == 0 && result.hasErrors()) {
-                req.setAttribute("error", "Import completed with no rows inserted. See errors below.");
-            } else if (result.getImportedCount() > 0) {
-                req.setAttribute("importSuccess",
-                        "Imported " + result.getImportedCount() + " question(s).");
+            boolean wroteRows = result.getImportedCount() > 0 || result.getUpdatedCount() > 0;
+            if (!wroteRows && result.hasErrors()) {
+                req.setAttribute("error", "Import completed with no rows inserted or updated. See errors below.");
+            } else if (wroteRows) {
+                req.setAttribute("importSuccess", importSuccessMessage(result));
             }
         }
+    }
+
+    private static String importSuccessMessage(QuestionImportResult result) {
+        StringBuilder message = new StringBuilder();
+        if (result.getImportedCount() > 0) {
+            message.append("Imported ").append(result.getImportedCount()).append(" question(s).");
+        }
+        if (result.getUpdatedCount() > 0) {
+            if (!message.isEmpty()) {
+                message.append(' ');
+            }
+            message.append("Updated ").append(result.getUpdatedCount()).append(" existing question(s).");
+        }
+        return message.toString();
+    }
+
+    private List<Question> loadFilteredQuestions(String subjectId) throws Exception {
+        if (subjectId != null && !subjectId.isBlank()) {
+            return adminService.getQuestionsBySubject(Long.parseLong(subjectId));
+        }
+        return adminService.getAllQuestions();
+    }
+
+    private void writeExcel(HttpServletResponse resp, String filename, ExcelBody writer) throws Exception {
+        resp.setContentType(XLSX_CONTENT_TYPE);
+        resp.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        writer.write(resp.getOutputStream());
+    }
+
+    @FunctionalInterface
+    private interface ExcelBody {
+        void write(OutputStream out) throws Exception;
     }
 
     private Question buildQuestion(HttpServletRequest req) {

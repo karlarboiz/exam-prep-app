@@ -8,7 +8,10 @@ import com.examprep.model.Question;
 import com.examprep.model.Subject;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class AdminService {
@@ -69,6 +72,26 @@ public class AdminService {
 
     public Optional<Exam> getExam(Long id) throws SQLException {
         return examDao.findById(id);
+    }
+
+    public List<Question> getQuestionsForExamForm(List<Long> selectedIds) throws SQLException {
+        List<Question> bank = getAllQuestions();
+        if (selectedIds == null || selectedIds.isEmpty()) {
+            return bank;
+        }
+        Map<Long, Question> remaining = new LinkedHashMap<>();
+        for (Question question : bank) {
+            remaining.put(question.getId(), question);
+        }
+        List<Question> ordered = new ArrayList<>();
+        for (Long id : selectedIds) {
+            Question question = remaining.remove(id);
+            if (question != null) {
+                ordered.add(question);
+            }
+        }
+        ordered.addAll(remaining.values());
+        return ordered;
     }
 
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
