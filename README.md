@@ -41,3 +41,4 @@ Then:
 
 - `POST /api/access-tokens` — create token (`X-Api-Key`). See [create-token-api](docs/features/access-grants/create-token-api.md).
 - `POST /api/access-tokens/revoke` — revoke by id. See [revoke-token-api](docs/features/access-grants/revoke-token-api.md).
+- Admin mint / list / revoke: `/admin/access-grants`. See [admin-access-grants](docs/features/access-grants/admin-access-grants.md).
