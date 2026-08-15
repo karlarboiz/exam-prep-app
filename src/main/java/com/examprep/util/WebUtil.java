@@ -1,5 +1,6 @@
 package com.examprep.util;
 
+import com.examprep.config.AppConfig;
 import com.examprep.model.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +18,12 @@ public final class WebUtil {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(60 * 60 * 24);
-        response.addCookie(cookie);
+        
+        boolean secure = AppConfig.getBoolean("cookie.secure", false);
+        cookie.setSecure(secure);
+        
+        String sameSite = AppConfig.get("cookie.samesite", "Lax");
+        response.setHeader("Set-Cookie", buildSetCookieHeader(cookie, sameSite));
     }
 
     public static void clearAuthCookie(HttpServletResponse response) {
@@ -25,7 +31,36 @@ public final class WebUtil {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        
+        boolean secure = AppConfig.getBoolean("cookie.secure", false);
+        cookie.setSecure(secure);
+        
+        String sameSite = AppConfig.get("cookie.samesite", "Lax");
+        response.setHeader("Set-Cookie", buildSetCookieHeader(cookie, sameSite));
+    }
+
+    private static String buildSetCookieHeader(Cookie cookie, String sameSite) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(cookie.getName()).append("=").append(cookie.getValue());
+        sb.append("; Path=").append(cookie.getPath());
+        
+        if (cookie.getMaxAge() >= 0) {
+            sb.append("; Max-Age=").append(cookie.getMaxAge());
+        }
+        
+        if (cookie.isHttpOnly()) {
+            sb.append("; HttpOnly");
+        }
+        
+        if (cookie.getSecure()) {
+            sb.append("; Secure");
+        }
+        
+        if (sameSite != null && !sameSite.isBlank()) {
+            sb.append("; SameSite=").append(sameSite);
+        }
+        
+        return sb.toString();
     }
 
     public static String getTokenFromCookie(HttpServletRequest request) {
