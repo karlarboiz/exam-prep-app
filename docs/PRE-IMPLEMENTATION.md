@@ -146,6 +146,13 @@ Run these after any auth, grant, or exam change.
 2. Login still works; quiz routes stay blocked
 3. Admin routes remain reachable for `ADMIN`
 
+### Account
+
+1. Login as admin or student → header **Account** → `/account`
+2. Profile shows username / email (read-only)
+3. Wrong current password → error, old password still works
+4. Valid change → success banner; login with the new password works
+
 ### Negative
 
 1. `/register` without token → empty state, no form

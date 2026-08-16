@@ -42,6 +42,7 @@
                         <a href="${ctx}/user/history">History</a>
                     </c:otherwise>
                 </c:choose>
+                <a href="${ctx}/account">Account</a>
                 <span class="user-badge">${currentUser.username} (${currentUser.role})</span>
                 <a href="${ctx}/logout" class="btn btn-outline">Logout</a>
             </nav>

@@ -61,6 +61,39 @@ class AuthServiceTest extends DatabaseTestSupport {
     }
 
     @Test
+    void changePasswordUpdatesHash() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+
+        authService.changePassword(student.getId(), "password123", "newpass1", "newpass1");
+
+        assertTrue(authService.authenticate("pat", "newpass1").isPresent());
+        assertTrue(authService.authenticate("pat", "password123").isEmpty());
+    }
+
+    @Test
+    void changePasswordRejectsWrongCurrentPassword() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), "wrong", "newpass1", "newpass1"));
+        assertTrue(ex.getMessage().toLowerCase().contains("current password"));
+        assertTrue(authService.authenticate("pat", "password123").isPresent());
+    }
+
+    @Test
+    void changePasswordRejectsMismatchAndReuse() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+
+        IllegalArgumentException mismatch = assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), "password123", "newpass1", "newpass2"));
+        assertTrue(mismatch.getMessage().toLowerCase().contains("match"));
+
+        IllegalArgumentException reuse = assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), "password123", "password123", "password123"));
+        assertTrue(reuse.getMessage().toLowerCase().contains("different"));
+    }
+
+    @Test
     void canPromoteAndDeleteAnotherUser() throws Exception {
         User admin = createAdmin("boss");
         User student = createStudent("pat", ExamLevel.PROFESSIONAL);

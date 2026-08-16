@@ -6,6 +6,7 @@ Site header: logo, main nav, optional user badge. Included by content JSPs. Styl
 
 Admin nav includes Dashboard, Subjects, Questions, Exams, Users, and **Access grants**.
 User nav includes Dashboard and History.
+Both roles include **Account** (`/account`) before the user badge.
 
 ## Mobile navigation
 

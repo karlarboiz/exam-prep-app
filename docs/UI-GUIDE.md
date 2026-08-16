@@ -120,6 +120,7 @@ Use existing pages as the visual reference before inventing new layouts.
 |--------|-------|----------|
 | Login | `/login` | [login](pages/auth/login.md) |
 | Register | `/register` | [register](pages/auth/register.md) |
+| Account | `/account` | [account](pages/auth/account.md) |
 | 403 / 404 | error pages | [403](pages/error/403.md), [404](pages/error/404.md) |
 
 ### Student
