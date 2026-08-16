@@ -25,6 +25,7 @@ Then drill into the folders below as needed.
 - Admin subjects / exams / questions / users / [access grants](features/access-grants/admin-access-grants.md)
 - [question-import/](features/question-import/overview.md) — Excel bulk import into question bank
 - Take exam, results & history
+- [examinee-tracking/](features/examinee-tracking/overview.md) — tab-leave integrity signals
 - [testing/](features/testing/overview.md) — automated JUnit tests
 
 ```

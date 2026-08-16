@@ -4,7 +4,7 @@
 
 Site header: logo, main nav, optional user badge. Included by content JSPs. Styles: `.site-header`, `.logo`, `.main-nav`, `.nav-toggle`.
 
-Admin nav includes Dashboard, Subjects, Questions, Exams, Users, and **Access grants**.
+Admin nav includes Dashboard, Subjects, Questions, Exams, Users, **Access grants**, and **Integrity**.
 User nav includes Dashboard and History.
 Both roles include **Account** (`/account`) before the user badge.
 

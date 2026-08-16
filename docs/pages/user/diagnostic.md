@@ -6,7 +6,7 @@
 
 ## Intro
 
-On a fresh attempt, an `.intro-modal` covers the page for up to **10 seconds** (or until **Start now**): what the diagnostic is, timing rules, and that unfinished/expired attempts require a retake. A `?retake=1` visit shows an amber warning that the previous attempt did not count. After begin, the exam shell is interactive and dual timers start.
+On a fresh attempt, an `.intro-modal` covers the page for up to **10 seconds** (or until **Start now**): what the diagnostic is, timing rules, that unfinished/expired attempts require a retake, and that leaving the page after start is recorded. A `?retake=1` visit shows an amber warning that the previous attempt did not count. After begin, the exam shell is interactive, dual timers start, and leave tracking is enabled. Intro-period tab changes are not logged.
 
 ## Exam UI
 

@@ -42,8 +42,9 @@ For each subject with ≥ 1 question, sample up to `questions_per_subject` IDs (
 ## Answer / submit
 
 ```
-POST action=begin   → beginDiagnostic (start clock after intro)
+POST action=begin   → beginDiagnostic (start clock after intro; enables integrity tracking)
 POST action=answer  → saveAnswer (AJAX supported)
+POST action=behavior → record LEAVE/RETURN (ignored until begin)
 POST action=submit  → submitDiagnostic
   → overall score from attempt_questions size
   → diagnostic_subject_scores snapshot + bands

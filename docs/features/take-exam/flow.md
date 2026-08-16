@@ -19,6 +19,10 @@ GET ?attemptId=N
 POST action=answer
   → saveAnswer for one question
 
+POST action=behavior
+  → record LEAVE/RETURN for the current question (CSRF, owner, IN_PROGRESS)
+  → JSON `{ recorded, leaveCount, suspectLeaveCount }`
+
 POST action=submit
   → submitExam with all answers
   → persist an attempt_answers row for every exam question

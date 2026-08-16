@@ -106,7 +106,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 ### Badges
 
 `.badge-success`, `.badge-muted`, `.badge-admin`, `.badge-user`,  
-`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`
+`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`
 
 ---
 
@@ -143,6 +143,7 @@ Use existing pages as the visual reference before inventing new layouts.
 | Exams | `/admin/exams` | [exams](pages/admin/exams.md) |
 | Users | `/admin/users` | [users](pages/admin/users.md) |
 | Access grants | `/admin/access-grants` | [access-grants](pages/admin/access-grants.md) |
+| Integrity | `/admin/integrity` | [integrity](pages/admin/integrity.md) |
 
 ### Layout partials
 

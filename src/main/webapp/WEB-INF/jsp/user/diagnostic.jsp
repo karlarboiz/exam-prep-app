@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Placement Diagnostic" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -8,6 +9,7 @@
     <div class="exam-header">
         <h1>${attempt.examTitle}</h1>
         <p class="exam-meta">Placement diagnostic &middot; ${questions.size()} questions</p>
+        <p class="hint exam-integrity-note">Leaving this page (changing tabs or using the menu) is recorded for exam integrity.</p>
         <p class="exam-progress" id="exam-progress">Question 1 of ${questions.size()}</p>
         <div class="timer-bar">
             <div class="timer-slot">
@@ -22,11 +24,12 @@
     </div>
 
     <form id="examForm" method="post" action="${ctx}/user/diagnostic" class="exam-form">
+        <ep:csrf/>
         <input type="hidden" name="attemptId" value="${attempt.id}">
         <input type="hidden" name="action" value="submit">
 
         <c:forEach var="q" items="${questions}" varStatus="status">
-            <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}">
+            <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}" data-question-id="${q.id}">
                 <h3>Question ${status.index + 1} <c:if test="${not empty q.subjectName}"><span class="exam-meta">(${q.subjectName})</span></c:if></h3>
                 <p class="question-prompt">${q.prompt}</p>
                 <div class="options">
@@ -90,6 +93,7 @@
             <li>You will answer <strong>${questions.size()}</strong> sampled questions across subjects.</li>
             <li>There is an overall time limit and a per-question timer.</li>
             <li>You must finish in one sitting. Leaving unfinished or running out of time means you will have to retake it.</li>
+            <li>After you start, leaving this page (changing tabs or using the menu) is recorded for exam integrity.</li>
             <li>Submit only when you are done — answers cannot be changed afterward.</li>
         </ul>
         <p class="intro-countdown">Starting in <span id="introCountdown">10</span>s</p>
@@ -98,6 +102,9 @@
 </div>
 </c:if>
 
+<%@ include file="/WEB-INF/jsp/user/integrity-warning.jsp" %>
+
+<script src="${ctx}/js/exam-tracking.js"></script>
 <script>
     const ctx = '${ctx}';
     const attemptId = '${attempt.id}';
@@ -166,9 +173,49 @@
         }
     }
 
+    function csrfToken() {
+        const el = document.querySelector('input[name="_csrf"]');
+        return el ? el.value : '';
+    }
+
+    function currentQuestionId() {
+        const card = cards[currentIndex];
+        return card ? card.getAttribute('data-question-id') : null;
+    }
+
+    function showIntegrityWarning(leaveCount) {
+        const modal = document.getElementById('integrityWarning');
+        const countEl = document.getElementById('integrityLeaveCount');
+        if (countEl && typeof leaveCount === 'number') {
+            countEl.textContent = String(leaveCount);
+        }
+        if (modal) {
+            modal.classList.remove('is-hidden');
+        }
+    }
+
+    function startTracking() {
+        if (!window.ExamTracking) return;
+        ExamTracking.init({
+            ctx: ctx,
+            attemptId: attemptId,
+            endpoint: '/user/diagnostic',
+            csrfToken: csrfToken(),
+            leaveCount: ${attempt.leaveCount},
+            getQuestionId: currentQuestionId,
+            getRemainingMs: function () {
+                return Math.max(0, questionEndsAt - Date.now());
+            },
+            onReturn: showIntegrityWarning
+        });
+    }
+
     function submitExam() {
         if (submitted) return;
         submitted = true;
+        if (window.ExamTracking) {
+            ExamTracking.disable();
+        }
         examForm.submit();
     }
 
@@ -211,9 +258,15 @@
             questionId: String(questionId),
             selectedOption: option
         });
+        if (csrfToken()) {
+            body.set('_csrf', csrfToken());
+        }
         fetch(ctx + '/user/diagnostic', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': csrfToken()
+            },
             body: body.toString()
         }).then(function (res) {
             if (res.redirected || res.status === 403) {
@@ -236,6 +289,7 @@
         showQuestion(0);
         timerInterval = setInterval(updateTimers, 1000);
         updateTimers();
+        startTracking();
     }
 
     function beginAndStart() {
@@ -244,9 +298,15 @@
             ajax: '1',
             attemptId: attemptId
         });
+        if (csrfToken()) {
+            body.set('_csrf', csrfToken());
+        }
         fetch(ctx + '/user/diagnostic', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': csrfToken()
+            },
             body: body.toString()
         }).then(function (res) {
             if (res.redirected) {
@@ -269,6 +329,13 @@
 
     prevBtn.addEventListener('click', goPrev);
     nextBtn.addEventListener('click', goNext);
+
+    const warningBtn = document.getElementById('integrityWarningBtn');
+    if (warningBtn) {
+        warningBtn.addEventListener('click', function () {
+            document.getElementById('integrityWarning').classList.add('is-hidden');
+        });
+    }
 
     if (showIntro) {
         const countdownEl = document.getElementById('introCountdown');
