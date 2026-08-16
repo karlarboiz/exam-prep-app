@@ -5,6 +5,7 @@ import com.examprep.model.Exam;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.Question;
 import com.examprep.model.User;
+import com.examprep.service.BehaviorTrackingService;
 import com.examprep.service.ExamService;
 import com.examprep.util.IdCipher;
 import com.examprep.util.WebUtil;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class TakeExamServlet extends HttpServlet {
 
     private final ExamService examService = new ExamService();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -69,6 +71,11 @@ public class TakeExamServlet extends HttpServlet {
             ExamAttempt attempt = examService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId())) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            if ("behavior".equals(action)) {
+                BehaviorIngest.handle(req, resp, user.getId(), attemptId);
                 return;
             }
 
@@ -123,10 +130,14 @@ public class TakeExamServlet extends HttpServlet {
                 ? 1
                 : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());
 
+        boolean returnedFromLeave = behaviorTrackingService.acknowledgeReturnIfAway(user.getId(), attemptId);
+        attempt = examService.getAttempt(attemptId);
+
         req.setAttribute("attempt", attempt);
         req.setAttribute("questions", questions);
         req.setAttribute("answers", answers);
         req.setAttribute("secondsPerQuestion", secondsPerQuestion);
+        req.setAttribute("showReturnWarning", returnedFromLeave);
         req.setAttribute("deadline", examService.getDeadline(attempt).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         req.getRequestDispatcher("/WEB-INF/jsp/user/take-exam.jsp").forward(req, resp);
     }

@@ -40,7 +40,7 @@ Every time a task is implemented (or deliberately deferred), sync [feature-track
 
 1. **Search** the category files under `docs/feature-tracker/` for the task (or a clear match by wording).
 2. **If it is present** — set **Status** to **Done** when the work shipped, or leave / set **Pending** if it is not finished (partial work, blocked, or explicitly out of scope for this change). Update **Notes** when helpful.
-3. **If it is not present** — add a new row in the **category file that fits best** (auth, access-grants, admin-content, exam-results, security, diagnostic, or a new category file + link from [feature-tracker/README.md](feature-tracker/README.md) if none fit).
+3. **If it is not present** — add a new row in the **category file that fits best** (auth, access-grants, admin-content, exam-results, examinee-tracking, security, diagnostic, or a new category file + link from [feature-tracker/README.md](feature-tracker/README.md) if none fit).
 4. Do this even for small fixes that close a tracked gap — the tracker is the source of truth for Done / Pending.
 
 Do **not** put backlog lists in this pre-implementation guide; only update the tracker files.
@@ -132,6 +132,7 @@ Run these after any auth, grant, or exam change.
 3. Confirm user list loads; change a student's exam level or role
 4. `/admin/questions` → download template, import, export
 4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
+5. `/admin/integrity` → flagged list loads (empty or with suspect leaves)
 
 ### Funnel → student
 

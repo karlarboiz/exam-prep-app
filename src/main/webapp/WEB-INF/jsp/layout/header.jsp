@@ -36,6 +36,7 @@
                         <a href="${ctx}/admin/exams">Exams</a>
                         <a href="${ctx}/admin/users">Users</a>
                         <a href="${ctx}/admin/access-grants">Access grants</a>
+                        <a href="${ctx}/admin/integrity">Integrity</a>
                     </c:when>
                     <c:otherwise>
                         <a href="${ctx}/user/dashboard">Dashboard</a>

@@ -502,6 +502,11 @@ h2 {
 .badge-UNUSED { background: #fef3c7; color: var(--color-warning); }
 .badge-REDEEMED { background: #dcfce7; color: var(--color-success); }
 .badge-REVOKED { background: #fee2e2; color: var(--color-danger); }
+.badge-suspect { background: #fee2e2; color: var(--color-danger); }
+
+.exam-integrity-note {
+    margin-top: 0.5rem;
+}
 
 .exam-grid {
     display: grid;

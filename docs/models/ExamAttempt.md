@@ -15,6 +15,10 @@
 | subjectName | String | Display helper |
 | durationMinutes | int | Copied/joined from exam for deadline checks |
 | diagnostic | boolean | Joined from `exams.is_diagnostic`; drives history links |
+| leaveCount | int | Cached count of `LEAVE` events; refreshed on each event and on submit |
+| suspectLeaveCount | int | Cached count of suspect leaves (unanswered HARD). Admin flagged list uses `> 0` |
+| integrityTracking | boolean | When false, ingest ignores events. Diagnostic starts false until intro `begin` |
+| username | String | Join helper for admin integrity views |
 
 Deadline = `startedAt.plusMinutes(durationMinutes)`.
 

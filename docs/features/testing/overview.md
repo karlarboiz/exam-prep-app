@@ -22,6 +22,8 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Logged-in password change | `AuthServiceTest` |
 | Seed subject visible on both exam levels | `SubjectDaoTest` |
 | Attempt `isDiagnostic` joined from exam | `AttemptDaoTest` |
+| Suspect leave flag rules | `BehaviorIntegrityTest` |
+| Leave ingest, intro ignore, summary | `BehaviorTrackingServiceTest` |
 | Import creates leveled subjects | `QuestionImportServiceTest` |
 | Import rejects both-false level flags | `QuestionImportServiceTest` |
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
