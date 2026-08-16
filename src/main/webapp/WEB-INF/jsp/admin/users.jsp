@@ -24,6 +24,7 @@
                 <td>${ep:fmt(u.createdAt)}</td>
                 <td>
                     <form method="post" action="${ctx}/admin/users" class="table-inline-form">
+                        <ep:csrf/>
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="id" value="${ep:enc(u.id)}">
                         <label class="sr-only" for="role-${u.id}">Role</label>
@@ -47,6 +48,7 @@
                     <c:if test="${u.id != currentUser.id}">
                         <form method="post" action="${ctx}/admin/users" class="inline-form"
                               onsubmit="return confirm('Delete this user and their exam attempts?');">
+                            <ep:csrf/>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${ep:enc(u.id)}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>

@@ -7,6 +7,7 @@
 <div class="error-page">
     <h1>403 — Forbidden</h1>
     <p>You do not have permission to access this page.</p>
+    <p class="hint">If you just submitted a form, go back and try again — the page may have expired.</p>
     <a href="${ctx}/" class="btn btn-primary">Go Home</a>
 </div>
 

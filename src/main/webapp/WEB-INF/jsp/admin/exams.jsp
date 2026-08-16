@@ -14,6 +14,7 @@
     <div class="card">
         <h2><c:choose><c:when test="${not empty editExam}">Edit Exam</c:when><c:otherwise>Create Exam</c:otherwise></c:choose></h2>
         <form method="post" action="${ctx}/admin/exams" class="form" id="examForm">
+            <ep:csrf/>
             <input type="hidden" name="action" value="${not empty editExam ? 'update' : 'create'}">
             <c:if test="${not empty editExam}">
                 <input type="hidden" name="id" value="${editExam.id}">
@@ -108,6 +109,7 @@
                     <td class="actions">
                         <a href="${ctx}/admin/exams?edit=${ep:enc(exam.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/exams" class="inline-form" onsubmit="return confirm('Delete this exam?');">
+                            <ep:csrf/>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${exam.id}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>

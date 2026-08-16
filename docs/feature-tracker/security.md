@@ -11,6 +11,6 @@ Secrets, cookies, and related production defaults.
 | Timing attack protection for API keys | Done | `SecurityUtil.constantTimeEquals` uses constant-time comparison via SHA-256 hashing in `CreateAccessTokenServlet` and `RevokeAccessTokenServlet` |
 | H2 console disabled by default | Done | `h2.console.enabled` defaults to `false` in `app.properties` with security warning |
 | Sensitive files excluded from git | Done | `.gitignore` updated to exclude `*.env`, `.env*`, `*.key`, `*.pem`, `*.log` |
-| CSRF protection | Pending | No CSRF token validation implemented. Forms vulnerable to cross-site request forgery |
-| Rate limiting on API endpoints | Pending | `/api/access-tokens` and `/api/access-tokens/revoke` lack rate limiting. Vulnerable to brute force and DoS |
-| Admin password policy | Pending | Default admin `admin/admin123` created on first run. Should require password change or use env-based credentials |
+| CSRF protection | Done | `CsrfFilter` validates tokens on POST/PUT/DELETE requests. `CsrfUtil` for token generation/validation. Use `<ep:csrf/>` tag in forms. API endpoints exempt |
+| Rate limiting on API endpoints | Done | `ApiRateLimitFilter` implements sliding window rate limiting. Default: 10 requests per minute per IP. Configurable via `rate.limit.api.max.requests` and `rate.limit.api.window.minutes` |
+| Admin password policy | Done | Admin credentials configurable via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables. Production deployments require `ADMIN_PASSWORD` to be set, otherwise startup fails |
