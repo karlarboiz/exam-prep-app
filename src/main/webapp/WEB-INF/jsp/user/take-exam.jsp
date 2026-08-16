@@ -29,9 +29,9 @@
     <input type="hidden" name="action" value="submit">
 
     <c:forEach var="q" items="${questions}" varStatus="status">
-        <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}" data-question-id="${q.id}">
         <div class="question-card${status.index == 0 ? '' : ' is-hidden'}${empty q.imageUrl ? '' : ' has-image'}"
              data-index="${status.index}"
+             data-question-id="${q.id}"
              data-has-image="${not empty q.imageUrl}">
             <h3>Question ${status.index + 1}</h3>
             <p class="question-prompt">${q.prompt}</p>
