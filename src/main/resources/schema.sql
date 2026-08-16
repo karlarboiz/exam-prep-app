@@ -43,11 +43,13 @@ CREATE TABLE IF NOT EXISTS questions (
     correct_option CHAR(1) NOT NULL CHECK (correct_option IN ('A', 'B', 'C', 'D')),
     difficulty VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
     explanation VARCHAR(2000),
+    image_url VARCHAR(500),
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
--- Existing H2 file DBs created before explanation existed
+-- Existing H2 file DBs created before explanation / image_url existed
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS explanation VARCHAR(2000);
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS image_url VARCHAR(500);
 
 -- Exams
 CREATE TABLE IF NOT EXISTS exams (

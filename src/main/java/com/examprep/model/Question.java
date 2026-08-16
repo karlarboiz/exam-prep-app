@@ -12,6 +12,7 @@ public class Question {
     private String correctOption;
     private String difficulty;
     private String explanation;
+    private String imageUrl;
     private String subjectName;
 
     public Question() {
@@ -95,6 +96,14 @@ public class Question {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getSubjectName() {
