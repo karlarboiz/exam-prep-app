@@ -54,6 +54,7 @@
         <a href="${exportUrl}" class="btn btn-outline">Export questions</a>
     </div>
     <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
+        <ep:csrf/>
         <input type="hidden" name="action" value="import">
         <div class="form-group">
             <label for="file">Excel file</label>
@@ -67,6 +68,7 @@
     <div class="card">
         <h2><c:choose><c:when test="${not empty editQuestion}">Edit Question</c:when><c:otherwise>Add Question</c:otherwise></c:choose></h2>
         <form method="post" action="${ctx}/admin/questions" class="form">
+            <ep:csrf/>
             <input type="hidden" name="action" value="${not empty editQuestion ? 'update' : 'create'}">
             <c:if test="${not empty editQuestion}">
                 <input type="hidden" name="id" value="${editQuestion.id}">
@@ -167,6 +169,7 @@
                     <td class="actions">
                         <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
+                            <ep:csrf/>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${q.id}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
