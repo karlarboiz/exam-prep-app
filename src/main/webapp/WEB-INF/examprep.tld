@@ -16,4 +16,8 @@
         <function-class>com.examprep.util.DateFormats</function-class>
         <function-signature>java.lang.String format(java.time.LocalDateTime)</function-signature>
     </function>
+    <tag-file>
+        <name>csrf</name>
+        <path>/WEB-INF/tags/csrf.tag</path>
+    </tag-file>
 </taglib>
