@@ -68,6 +68,27 @@ public class AuthService {
         userDao.updateRoleAndExamLevel(targetId, role, examLevel, resetDiagnostic);
     }
 
+    public void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword)
+            throws SQLException {
+        if (isBlank(currentPassword) || isBlank(newPassword) || isBlank(confirmPassword)) {
+            throw new IllegalArgumentException("All password fields are required");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("New passwords do not match");
+        }
+        if (newPassword.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+        if (currentPassword.equals(newPassword)) {
+            throw new IllegalArgumentException("New password must be different from the current password");
+        }
+        User user = requireUser(userId);
+        if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        userDao.updatePasswordHash(userId, PasswordUtil.hash(newPassword));
+    }
+
     public void deleteUser(Long actorId, Long targetId) throws SQLException {
         User target = requireUser(targetId);
         if (actorId != null && actorId.equals(target.getId())) {
@@ -77,6 +98,10 @@ public class AuthService {
             throw new IllegalArgumentException("Cannot remove the last admin");
         }
         userDao.delete(targetId);
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private User requireUser(Long targetId) throws SQLException {
