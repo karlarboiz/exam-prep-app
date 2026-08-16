@@ -9,7 +9,7 @@
 <p class="subtitle">
     Choose a practice exam to begin preparing.
     <c:if test="${not empty examLevel}">
-        <span class="badge badge-user">${examLevel.displayName()} track</span>
+        <span class="badge badge-user">${examLevel.displayName} track</span>
     </c:if>
 </p>
 
