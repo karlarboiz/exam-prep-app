@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Questions" scope="request"/>
@@ -108,6 +109,24 @@
                 <label for="explanation">Explanation</label>
                 <textarea id="explanation" name="explanation" rows="3">${editQuestion.explanation}</textarea>
             </div>
+            <div class="form-group">
+                <label for="imageUrl">Diagram image URL</label>
+                <input type="text" id="imageUrl" name="imageUrl" value="${editQuestion.imageUrl}"
+                       maxlength="500" placeholder="https://… or /media/diagram.png" autocomplete="off">
+                <p class="field-hint">Optional. Shown with the question stem for word problems. Leave blank for text-only items.</p>
+                <figure id="imagePreview" class="question-figure admin-image-preview${empty editQuestion.imageUrl ? ' is-hidden' : ''}" data-question-image>
+                    <button type="button" class="question-image-trigger" aria-label="Enlarge diagram preview">
+                        <img class="question-image" id="imagePreviewImg"
+                             <c:if test="${not empty editQuestion.imageUrl}">
+                             src="${fn:startsWith(editQuestion.imageUrl, '/') ? ctx.concat(editQuestion.imageUrl) : editQuestion.imageUrl}"
+                             </c:if>
+                             alt="Question diagram preview"
+                             loading="lazy">
+                    </button>
+                    <figcaption class="question-image-hint">Preview — tap to enlarge</figcaption>
+                    <p class="question-image-fallback" hidden>Diagram could not be loaded. Check the URL.</p>
+                </figure>
+            </div>
             <button type="submit" class="btn btn-primary">
                 <c:choose><c:when test="${not empty editQuestion}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>
             </button>
@@ -127,7 +146,12 @@
             <c:forEach var="q" items="${questions}">
                 <tr>
                     <td>${q.subjectName}</td>
-                    <td>${q.prompt}</td>
+                    <td>
+                        ${q.prompt}
+                        <c:if test="${not empty q.imageUrl}">
+                            <span class="badge badge-muted">Image</span>
+                        </c:if>
+                    </td>
                     <td>${q.correctOption}</td>
                     <td class="actions">
                         <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
@@ -144,4 +168,39 @@
     </div>
 </div>
 
+<script src="${ctx}/js/question-image.js"></script>
+<script>
+(function () {
+    var input = document.getElementById('imageUrl');
+    var preview = document.getElementById('imagePreview');
+    var img = document.getElementById('imagePreviewImg');
+    if (!input || !preview || !img) return;
+
+    function resolveSrc(value) {
+        var url = (value || '').trim();
+        if (!url) return '';
+        if (url.charAt(0) === '/') return '${ctx}' + url;
+        return url;
+    }
+
+    function refreshPreview() {
+        var src = resolveSrc(input.value);
+        preview.classList.remove('is-broken', 'is-loaded');
+        if (!src) {
+            preview.classList.add('is-hidden');
+            img.removeAttribute('src');
+            return;
+        }
+        preview.classList.remove('is-hidden');
+        img.src = src;
+        if (window.ExamQuestionImages) {
+            delete preview.dataset.imageBound;
+            ExamQuestionImages.init(preview.parentNode);
+        }
+    }
+
+    input.addEventListener('input', refreshPreview);
+    refreshPreview();
+})();
+</script>
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

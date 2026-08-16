@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Diagnostic Result" scope="request"/>
@@ -62,6 +63,10 @@
                 </c:if>
             </h3>
             <p>${a.question.prompt}</p>
+            <c:set var="imageUrl" value="${a.question.imageUrl}"/>
+            <c:set var="imageAlt" value="Diagram for question ${status.index + 1}"/>
+            <c:set var="imageLoading" value="lazy"/>
+            <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
             <p><strong>Your answer:</strong> ${a.selectedOption != null ? a.selectedOption : 'Not answered'}
                 — ${a.question.getOptionText(a.selectedOption)}</p>
             <c:if test="${!a.correct}">
@@ -78,5 +83,7 @@
 <div class="action-links">
     <a href="${ctx}/user/dashboard" class="btn btn-primary">Continue to Dashboard</a>
 </div>
+
+<script src="${ctx}/js/question-image.js"></script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

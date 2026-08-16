@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Placement Diagnostic" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -26,9 +27,15 @@
         <input type="hidden" name="action" value="submit">
 
         <c:forEach var="q" items="${questions}" varStatus="status">
-            <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}">
+            <div class="question-card${status.index == 0 ? '' : ' is-hidden'}${empty q.imageUrl ? '' : ' has-image'}"
+                 data-index="${status.index}"
+                 data-has-image="${not empty q.imageUrl}">
                 <h3>Question ${status.index + 1} <c:if test="${not empty q.subjectName}"><span class="exam-meta">(${q.subjectName})</span></c:if></h3>
                 <p class="question-prompt">${q.prompt}</p>
+                <c:set var="imageUrl" value="${q.imageUrl}"/>
+                <c:set var="imageAlt" value="Diagram for question ${status.index + 1}"/>
+                <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>
+                <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
                 <div class="options">
                     <label class="option-label">
                         <input type="radio" name="answer_${q.id}" value="A"
@@ -98,6 +105,7 @@
 </div>
 </c:if>
 
+<script src="${ctx}/js/question-image.js"></script>
 <script>
     const ctx = '${ctx}';
     const attemptId = '${attempt.id}';
@@ -149,6 +157,9 @@
         submitBtn.classList.toggle('is-hidden', !isLast);
         questionEndsAt = Date.now() + remainingMs[currentIndex];
         questionTimerEl.classList.remove('timer-warning', 'timer-expired');
+        if (window.ExamQuestionImages) {
+            ExamQuestionImages.prepareCard(cards[currentIndex]);
+        }
         updateTimers();
     }
 

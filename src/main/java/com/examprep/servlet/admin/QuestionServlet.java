@@ -5,6 +5,7 @@ import com.examprep.model.Question;
 import com.examprep.service.AdminService;
 import com.examprep.service.QuestionImportService;
 import com.examprep.util.IdCipher;
+import com.examprep.util.ImageUrls;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -123,6 +124,7 @@ public class QuestionServlet extends HttpServlet {
         if (explanation != null && !explanation.isBlank()) {
             question.setExplanation(explanation.trim());
         }
+        question.setImageUrl(ImageUrls.normalize(req.getParameter("imageUrl")));
         return question;
     }
 }
