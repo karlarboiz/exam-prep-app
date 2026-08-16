@@ -55,16 +55,24 @@
                        min="1">
             </div>
             <div class="form-group" id="questionPickerGroup">
-                <label>Select Questions</label>
-                <div class="checkbox-list">
+                <label>Select and order questions</label>
+                <p class="exam-meta">Checked questions are included. Use Up/Down to set the order students see.</p>
+                <div class="checkbox-list exam-question-list" id="examQuestionList">
                     <c:forEach var="q" items="${questions}">
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="questionIds" value="${q.id}"
-                                <c:forEach var="selId" items="${selectedQuestionIds}">
-                                    <c:if test="${selId == q.id}">checked</c:if>
-                                </c:forEach>>
-                            [${q.subjectName}] ${q.prompt}
-                        </label>
+                        <div class="exam-question-row">
+                            <label class="checkbox-item">
+                                <input type="checkbox" class="exam-q-check" name="questionIds" value="${q.id}"
+                                    <c:forEach var="selId" items="${selectedQuestionIds}">
+                                        <c:if test="${selId == q.id}">checked</c:if>
+                                    </c:forEach>
+                                    onchange="onExamQuestionCheck(this)">
+                                [${q.subjectName}] ${q.prompt}
+                            </label>
+                            <div class="exam-q-order-actions">
+                                <button type="button" class="btn btn-sm btn-outline" onclick="moveExamQuestion(this, -1)">Up</button>
+                                <button type="button" class="btn btn-sm btn-outline" onclick="moveExamQuestion(this, 1)">Down</button>
+                            </div>
+                        </div>
                     </c:forEach>
                 </div>
             </div>
@@ -117,6 +125,38 @@
         var isDiagnostic = document.getElementById('diagnostic').checked;
         document.getElementById('questionsPerSubjectGroup').style.display = isDiagnostic ? '' : 'none';
         document.getElementById('questionPickerGroup').style.display = isDiagnostic ? 'none' : '';
+    }
+    function moveExamQuestion(btn, dir) {
+        var row = btn.closest('.exam-question-row');
+        if (!row) return;
+        var sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling;
+        if (!sibling) return;
+        if (dir < 0) {
+            row.parentNode.insertBefore(row, sibling);
+        } else {
+            row.parentNode.insertBefore(sibling, row);
+        }
+    }
+    function onExamQuestionCheck(cb) {
+        var row = cb.closest('.exam-question-row');
+        var list = row && row.parentNode;
+        if (!row || !list) return;
+        if (cb.checked) {
+            var lastChecked = null;
+            list.querySelectorAll('.exam-question-row').forEach(function (r) {
+                var check = r.querySelector('.exam-q-check');
+                if (check && check.checked && r !== row) {
+                    lastChecked = r;
+                }
+            });
+            if (lastChecked) {
+                lastChecked.after(row);
+            } else {
+                list.insertBefore(row, list.firstChild);
+            }
+        } else {
+            list.appendChild(row);
+        }
     }
     toggleDiagnosticFields();
 </script>

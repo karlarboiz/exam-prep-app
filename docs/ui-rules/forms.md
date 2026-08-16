@@ -14,14 +14,16 @@
 | `.alert` + `.alert-warning` | Subscription / soft warnings |
 | `.hint` | Small muted helper under forms |
 | `.auth-link` | Centered link row (login ↔ register) |
-| `.token-readonly` | Read-only access token on register (monospace) |
+| `.token-readonly` | Read-only access token on register and admin mint success (monospace) |
 
 ## Inline admin actions
 
 - `.inline-form` for delete/update buttons inside tables.
+- `.table-inline-form` for compact selects + Save in admin user rows.
 - `.actions` for horizontal button groups.
 - `.filter-bar` for subject/filter selects above tables.
 - `.checkbox-list` + `.checkbox-item` for multi-select question lists when editing exams.
+- `.exam-question-row` + `.exam-q-order-actions` for Up/Down order on practice exams.
 
 ## Registration token
 
