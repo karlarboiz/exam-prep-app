@@ -26,6 +26,8 @@ public final class AppConfig {
         overrideFromEnv("JWT_SECRET", "jwt.secret");
         overrideFromEnv("ID_CIPHER_SECRET", "id.cipher.secret");
         overrideFromEnv("FUNNEL_API_KEY", "funnel.api.key");
+        overrideFromEnv("ADMIN_USERNAME", "admin.username");
+        overrideFromEnv("ADMIN_PASSWORD", "admin.password");
         
         validateSecurityConfig();
     }
