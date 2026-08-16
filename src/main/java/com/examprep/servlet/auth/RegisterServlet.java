@@ -100,7 +100,7 @@ public class RegisterServlet extends HttpServlet {
             User user = accessGrantService.registerWithToken(
                     token.trim(), username.trim(), email.trim(), password);
             String sessionToken = authService.issueToken(user);
-            WebUtil.setAuthCookie(resp, sessionToken);
+            WebUtil.setAuthCookie(req, resp, sessionToken);
             resp.sendRedirect(req.getContextPath() + "/user/diagnostic");
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", e.getMessage());

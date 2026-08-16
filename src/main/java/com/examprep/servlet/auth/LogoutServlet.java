@@ -14,7 +14,7 @@ public class LogoutServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        WebUtil.clearAuthCookie(resp);
+        WebUtil.clearAuthCookie(req, resp);
         resp.sendRedirect(req.getContextPath() + "/login");
     }
 

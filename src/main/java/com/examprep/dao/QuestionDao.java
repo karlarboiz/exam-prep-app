@@ -16,7 +16,7 @@ public class QuestionDao {
 
     private static final String SELECT_COLUMNS = """
             SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                   q.correct_option, q.difficulty, q.explanation, s.name AS subject_name
+                   q.correct_option, q.difficulty, q.explanation, q.image_url, s.name AS subject_name
             """;
 
     public List<Question> findAll() throws SQLException {
@@ -173,8 +173,8 @@ public class QuestionDao {
     public Question create(Question question) throws SQLException {
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -195,8 +195,8 @@ public class QuestionDao {
         }
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -218,13 +218,13 @@ public class QuestionDao {
     public void update(Question question) throws SQLException {
         String sql = """
                 UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
-                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?, image_url = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindQuestion(ps, question);
-            ps.setLong(10, question.getId());
+            ps.setLong(11, question.getId());
             ps.executeUpdate();
         }
     }
@@ -275,6 +275,7 @@ public class QuestionDao {
         ps.setString(7, question.getCorrectOption());
         ps.setString(8, question.getDifficulty());
         ps.setString(9, question.getExplanation());
+        ps.setString(10, question.getImageUrl());
     }
 
     private List<Question> queryList(String sql) throws SQLException {
@@ -301,6 +302,7 @@ public class QuestionDao {
         question.setCorrectOption(rs.getString("correct_option"));
         question.setDifficulty(rs.getString("difficulty"));
         question.setExplanation(rs.getString("explanation"));
+        question.setImageUrl(rs.getString("image_url"));
         question.setSubjectName(rs.getString("subject_name"));
         return question;
     }

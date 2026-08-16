@@ -13,54 +13,40 @@ public final class WebUtil {
 
     public static final String CURRENT_USER_ATTR = "currentUser";
 
-    public static void setAuthCookie(HttpServletResponse response, String token) {
+    public static void setAuthCookie(HttpServletRequest request, HttpServletResponse response, String token) {
+        addAuthCookie(request, response, token, 60 * 60 * 24);
+    }
+
+    public static void clearAuthCookie(HttpServletRequest request, HttpServletResponse response) {
+        addAuthCookie(request, response, "", 0);
+    }
+
+    /**
+     * Ngrok and other HTTPS proxies terminate TLS before Tomcat, so {@code request.isSecure()}
+     * is often false. Honor {@code X-Forwarded-Proto} and mark the cookie Secure + SameSite=Lax
+     * so browsers keep the session on the public https:// host.
+     */
+    private static void addAuthCookie(HttpServletRequest request, HttpServletResponse response,
+                                      String token, int maxAge) {
         Cookie cookie = new Cookie(JwtUtil.COOKIE_NAME, token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(60 * 60 * 24);
-        
-        boolean secure = AppConfig.getBoolean("cookie.secure", false);
-        cookie.setSecure(secure);
-        
-        String sameSite = AppConfig.get("cookie.samesite", "Lax");
-        response.setHeader("Set-Cookie", buildSetCookieHeader(cookie, sameSite));
+        cookie.setMaxAge(maxAge);
+        cookie.setSecure(isHttps(request));
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
     }
 
-    public static void clearAuthCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(JwtUtil.COOKIE_NAME, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        
-        boolean secure = AppConfig.getBoolean("cookie.secure", false);
-        cookie.setSecure(secure);
-        
-        String sameSite = AppConfig.get("cookie.samesite", "Lax");
-        response.setHeader("Set-Cookie", buildSetCookieHeader(cookie, sameSite));
-    }
-
-    private static String buildSetCookieHeader(Cookie cookie, String sameSite) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(cookie.getName()).append("=").append(cookie.getValue());
-        sb.append("; Path=").append(cookie.getPath());
-        
-        if (cookie.getMaxAge() >= 0) {
-            sb.append("; Max-Age=").append(cookie.getMaxAge());
+    static boolean isHttps(HttpServletRequest request) {
+        if (request.isSecure()) {
+            return true;
         }
-        
-        if (cookie.isHttpOnly()) {
-            sb.append("; HttpOnly");
+        String forwarded = request.getHeader("X-Forwarded-Proto");
+        if (forwarded == null || forwarded.isBlank()) {
+            return false;
         }
-        
-        if (cookie.getSecure()) {
-            sb.append("; Secure");
-        }
-        
-        if (sameSite != null && !sameSite.isBlank()) {
-            sb.append("; SameSite=").append(sameSite);
-        }
-        
-        return sb.toString();
+        String first = forwarded.split(",")[0].trim();
+        return "https".equalsIgnoreCase(first);
     }
 
     public static String getTokenFromCookie(HttpServletRequest request) {
