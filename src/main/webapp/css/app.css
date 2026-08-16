@@ -21,6 +21,10 @@
     padding: 0;
 }
 
+html {
+    overflow-x: clip;
+}
+
 body {
     font-family: var(--font-body);
     background: var(--color-bg);
@@ -29,12 +33,23 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+img,
+svg,
+video {
+    max-width: 100%;
 }
 
 .container {
+    width: 100%;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 max(1.5rem, env(safe-area-inset-right, 0px));
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    min-width: 0;
 }
 
 .site-header {
@@ -52,6 +67,7 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 0.75rem;
+    min-width: 0;
 }
 
 .logo {
@@ -60,6 +76,7 @@ body {
     font-weight: 700;
     color: var(--color-primary);
     text-decoration: none;
+    min-width: 0;
 }
 
 .nav-toggle {
@@ -74,6 +91,7 @@ body {
     border-radius: var(--radius);
     background: var(--color-surface);
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .nav-toggle-bar {
@@ -120,7 +138,10 @@ body {
 
 .main-content {
     flex: 1;
-    padding: 2rem 1.5rem;
+    padding: 2rem max(1.5rem, env(safe-area-inset-right, 0px));
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    min-width: 0;
+    width: 100%;
 }
 
 .site-footer {
@@ -161,16 +182,22 @@ h2 {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--shadow);
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .auth-card {
     max-width: 420px;
+    width: 100%;
     margin: 2rem auto;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     padding: 2rem;
     box-shadow: var(--shadow);
+    min-width: 0;
 }
 
 .auth-link {
@@ -201,14 +228,19 @@ h2 {
 .form-group select,
 .form-group textarea {
     width: 100%;
+    max-width: 100%;
     padding: 0.6rem 0.75rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
 .form-group textarea {
     resize: vertical;
+}
+
+input[type="file"] {
+    max-width: 100%;
 }
 
 .checkbox-group label {
@@ -299,6 +331,8 @@ h2 {
     color: var(--color-muted);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .expired-panel {
@@ -317,17 +351,19 @@ h2 {
     padding: 0.65rem 0.75rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
-}
-
-.data-table th {
-    font-weight: 600;
-    background: var(--color-bg);
+    overflow-wrap: anywhere;
 }
 
 .actions {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.data-table th {
+    font-weight: 600;
+    background: var(--color-bg);
 }
 
 .inline-form {
@@ -373,6 +409,7 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.35rem 0;
     border-bottom: 1px solid var(--color-border);
@@ -404,6 +441,10 @@ h2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+}
+
+.grid-2 > * {
+    min-width: 0;
 }
 
 @media (max-width: 768px) {
@@ -457,7 +498,7 @@ h2 {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -510,7 +551,7 @@ h2 {
 
 .exam-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
     gap: 1rem;
 }
 
@@ -555,7 +596,15 @@ h2 {
     margin-bottom: 1rem;
 }
 
+.filter-bar form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .filter-bar select {
+    max-width: 100%;
     padding: 0.4rem 0.6rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -639,6 +688,12 @@ h2 {
 .question-prompt {
     margin-bottom: 1rem;
     font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.option-text {
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 .field-hint {
@@ -802,6 +857,12 @@ body.has-lightbox {
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     cursor: pointer;
+    min-width: 0;
+}
+
+.option-label input {
+    flex-shrink: 0;
+    margin-top: 0.25rem;
 }
 
 .option-label:hover {
@@ -830,12 +891,13 @@ body.has-lightbox {
 .result-summary {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 2rem;
 }
 
 .score-circle {
     text-align: center;
-    min-width: 120px;
+    min-width: 0;
 }
 
 .score-value {
@@ -946,4 +1008,131 @@ code {
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
     font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    }
+
+    .main-content {
+        padding: 1.25rem max(1rem, env(safe-area-inset-right, 0px));
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    }
+
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+    }
+
+    .card,
+    .auth-card,
+    .question-card,
+    .review-card,
+    .exam-card,
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .auth-card {
+        margin: 0.5rem auto;
+        padding: 1.25rem 1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .timer-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+    }
+
+    .timer-slot {
+        justify-content: space-between;
+    }
+
+    .timer-value {
+        font-size: 1.25rem;
+    }
+
+    .result-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .score-value {
+        font-size: 2rem;
+    }
+
+    .exam-nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .exam-nav .btn {
+        width: 100%;
+    }
+
+    .exam-nav .btn-lg,
+    .exam-nav [type="submit"] {
+        grid-column: 1 / -1;
+    }
+
+    .action-links .btn,
+    .import-actions .btn {
+        flex: 1 1 12rem;
+    }
+
+    .option-label {
+        padding: 0.75rem 0.7rem;
+    }
+
+    .intro-modal,
+    .image-lightbox {
+        padding: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .intro-modal-panel {
+        max-height: calc(100dvh - 1.5rem);
+        overflow-y: auto;
+        padding: 1.25rem 1rem;
+    }
+
+    .image-lightbox-img {
+        max-height: calc(100dvh - 5rem);
+    }
+
+    .question-card.has-image .question-image,
+    .question-image {
+        max-height: 14rem;
+    }
+
+    .logo {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .btn-lg {
+        width: 100%;
+    }
 }
