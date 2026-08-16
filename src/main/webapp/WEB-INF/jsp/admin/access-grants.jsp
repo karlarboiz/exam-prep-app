@@ -24,7 +24,7 @@
             <input type="text" id="registerLink" value="${ctx}${registerPath}" readonly class="token-readonly">
         </div>
         <p class="exam-meta">
-            Exam level: ${createdGrant.examLevel.displayName()}
+            Exam level: ${createdGrant.examLevel.displayName}
             · Expires: ${ep:fmt(createdGrant.expiresAt)}
         </p>
         <a href="${ctx}${registerPath}" class="btn btn-primary">Open register link</a>
@@ -98,7 +98,7 @@
                         <td><span class="badge badge-${g.status}">${g.status}</span></td>
                         <td>
                             <c:choose>
-                                <c:when test="${g.examLevel != null}">${g.examLevel.displayName()}</c:when>
+                                <c:when test="${g.examLevel != null}">${g.examLevel.displayName}</c:when>
                                 <c:otherwise>—</c:otherwise>
                             </c:choose>
                         </td>
