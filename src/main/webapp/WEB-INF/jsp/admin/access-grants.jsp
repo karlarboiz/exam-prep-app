@@ -34,6 +34,7 @@
 <div class="card">
     <h2>Mint token</h2>
     <form method="post" action="${ctx}/admin/access-grants" class="form">
+        <ep:csrf/>
         <input type="hidden" name="action" value="create">
         <div class="grid-2">
             <div class="form-group">
@@ -115,6 +116,7 @@
                             <c:if test="${g.status == 'UNUSED' || g.status == 'REDEEMED'}">
                                 <form method="post" action="${ctx}/admin/access-grants" class="inline-form"
                                       onsubmit="return confirm('Revoke this access grant?');">
+                                    <ep:csrf/>
                                     <input type="hidden" name="action" value="revoke">
                                     <input type="hidden" name="id" value="${g.id}">
                                     <button type="submit" class="btn btn-sm btn-danger">Revoke</button>

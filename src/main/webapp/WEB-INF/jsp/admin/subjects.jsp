@@ -14,6 +14,7 @@
     <div class="card">
         <h2><c:choose><c:when test="${not empty editSubject}">Edit Subject</c:when><c:otherwise>Add Subject</c:otherwise></c:choose></h2>
         <form method="post" action="${ctx}/admin/subjects" class="form">
+            <ep:csrf/>
             <input type="hidden" name="action" value="${not empty editSubject ? 'update' : 'create'}">
             <c:if test="${not empty editSubject}">
                 <input type="hidden" name="id" value="${editSubject.id}">
@@ -71,6 +72,7 @@
                     <td class="actions">
                         <a href="${ctx}/admin/subjects?edit=${ep:enc(subject.id)}" class="btn btn-sm">Edit</a>
                         <form method="post" action="${ctx}/admin/subjects" class="inline-form" onsubmit="return confirm('Delete this subject?');">
+                            <ep:csrf/>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="${subject.id}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
