@@ -5,6 +5,7 @@ import com.examprep.util.RateLimiter;
 import com.examprep.util.SimpleJson;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -23,6 +24,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ApiRateLimitFilter implements Filter {
 
+    private final static int SC_TOO_MANY_REQUESTS = 429;
+
     private static final Set<String> RATE_LIMITED_PATHS = Set.of(
             "/api/access-tokens",
             "/api/access-tokens/revoke"
@@ -32,7 +35,7 @@ public class ApiRateLimitFilter implements Filter {
     private ScheduledExecutorService cleanupExecutor;
 
     @Override
-    public void init() {
+    public void init(FilterConfig filterConfig) {
         int maxRequests = AppConfig.getInt("rate.limit.api.max.requests", 10);
         long windowMinutes = AppConfig.getInt("rate.limit.api.window.minutes", 1);
         rateLimiter = new RateLimiter(maxRequests, windowMinutes * 60 * 1000);
@@ -73,7 +76,7 @@ public class ApiRateLimitFilter implements Filter {
         if (!rateLimiter.tryAcquire(clientIp)) {
             int remaining = rateLimiter.getRemainingRequests(clientIp);
             resp.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
-            resp.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);
+            resp.setStatus(SC_TOO_MANY_REQUESTS);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(SimpleJson.object("error", "Rate limit exceeded. Please try again later."));
