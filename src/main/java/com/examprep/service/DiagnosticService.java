@@ -7,6 +7,7 @@ import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AttemptAnswer;
+import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.DiagnosticResult;
 import com.examprep.model.DiagnosticSubjectScore;
@@ -67,7 +68,7 @@ public class DiagnosticService {
                 .map(User::getExamLevel)
                 .orElse(null);
 
-        ExamAttempt attempt = attemptDao.create(userId, exam.getId());
+        ExamAttempt attempt = attemptDao.create(userId, exam.getId(), AttemptKind.DIAGNOSTIC, null, null);
         behaviorTrackingService.disableTracking(attempt.getId());
         List<Long> sampledIds = sampleQuestionIds(exam, examLevel);
         if (sampledIds.isEmpty()) {

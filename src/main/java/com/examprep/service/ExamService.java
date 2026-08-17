@@ -50,7 +50,7 @@ public class ExamService {
     }
 
     public boolean isExamAvailableForLevel(Exam exam, ExamLevel examLevel) throws SQLException {
-        if (exam == null || exam.isDiagnostic() || !exam.isActive()) {
+        if (exam == null || exam.isDiagnostic() || exam.isWeekly() || !exam.isActive()) {
             return false;
         }
         if (examLevel == null) {

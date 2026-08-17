@@ -2,6 +2,7 @@ package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
 import com.examprep.model.AttemptAnswer;
+import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.Question;
@@ -24,7 +25,10 @@ public class AttemptDao {
     private static final String ATTEMPT_SELECT = """
             SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
                    a.leave_count, a.suspect_leave_count, a.integrity_tracking,
-                   e.title AS exam_title, e.duration_minutes, e.is_diagnostic, s.name AS subject_name,
+                   a.attempt_kind, a.regimen_id,
+                   e.title AS exam_title,
+                   COALESCE(a.duration_minutes_override, e.duration_minutes) AS duration_minutes,
+                   e.is_diagnostic, e.is_weekly, s.name AS subject_name,
                    u.username
             FROM exam_attempts a
             JOIN exams e ON e.id = a.exam_id
@@ -82,12 +86,32 @@ public class AttemptDao {
     }
 
     public ExamAttempt create(Long userId, Long examId) throws SQLException {
-        String sql = "INSERT INTO exam_attempts (user_id, exam_id, started_at, status) VALUES (?, ?, ?, 'IN_PROGRESS')";
+        return create(userId, examId, AttemptKind.PRACTICE, null, null);
+    }
+
+    public ExamAttempt create(Long userId, Long examId, AttemptKind kind, Long regimenId,
+                              Integer durationOverrideMinutes) throws SQLException {
+        String sql = """
+                INSERT INTO exam_attempts (user_id, exam_id, started_at, status, attempt_kind, regimen_id,
+                                           duration_minutes_override)
+                VALUES (?, ?, ?, 'IN_PROGRESS', ?, ?, ?)
+                """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, userId);
             ps.setLong(2, examId);
             ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setString(4, kind != null ? kind.name() : AttemptKind.PRACTICE.name());
+            if (regimenId != null) {
+                ps.setLong(5, regimenId);
+            } else {
+                ps.setNull(5, Types.BIGINT);
+            }
+            if (durationOverrideMinutes != null) {
+                ps.setInt(6, durationOverrideMinutes);
+            } else {
+                ps.setNull(6, Types.INTEGER);
+            }
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -96,6 +120,26 @@ public class AttemptDao {
             }
         }
         throw new SQLException("Failed to create attempt");
+    }
+
+    public Optional<ExamAttempt> findInProgressByRegimen(Long userId, Long regimenId, AttemptKind kind)
+            throws SQLException {
+        String sql = ATTEMPT_SELECT + """
+                WHERE a.user_id = ? AND a.regimen_id = ? AND a.attempt_kind = ? AND a.status = 'IN_PROGRESS'
+                ORDER BY a.started_at DESC
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setLong(2, regimenId);
+            ps.setString(3, kind.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapAttempt(rs));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public void saveAnswer(Long attemptId, Long questionId, String selectedOption, boolean isCorrect) throws SQLException {
@@ -251,6 +295,12 @@ public class AttemptDao {
         attempt.setSubjectName(rs.getString("subject_name"));
         attempt.setDurationMinutes(rs.getInt("duration_minutes"));
         attempt.setDiagnostic(rs.getBoolean("is_diagnostic"));
+        attempt.setWeekly(rs.getBoolean("is_weekly"));
+        attempt.setAttemptKind(AttemptKind.fromString(rs.getString("attempt_kind")));
+        long regimenId = rs.getLong("regimen_id");
+        if (!rs.wasNull()) {
+            attempt.setRegimenId(regimenId);
+        }
         attempt.setLeaveCount(rs.getInt("leave_count"));
         attempt.setSuspectLeaveCount(rs.getInt("suspect_leave_count"));
         attempt.setIntegrityTracking(rs.getBoolean("integrity_tracking"));

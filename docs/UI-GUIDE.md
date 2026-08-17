@@ -106,7 +106,9 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 ### Badges
 
 `.badge-success`, `.badge-muted`, `.badge-admin`, `.badge-user`,  
-`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`
+`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`,  
+`.badge-WEAK` / `.badge-DEVELOPING` / `.badge-STRONG`,  
+`.badge-WEEKLY` / `.badge-CHECKPOINT` / `.badge-OPEN` / `.badge-MISSED`
 
 ---
 
@@ -129,6 +131,10 @@ Use existing pages as the visual reference before inventing new layouts.
 |--------|-------|----------|
 | Dashboard | `/user/dashboard` | [dashboard](pages/user/dashboard.md) |
 | Take exam | `/user/exam` | [take-exam](pages/user/take-exam.md) |
+| Weekly exam | `/user/weekly` | [take-exam](pages/user/take-exam.md) |
+| Checkpoint | `/user/checkpoint` | [take-exam](pages/user/take-exam.md) |
+| Study plan | `/user/study-plan` | [study-plan](pages/user/study-plan.md) |
+| Review | `/user/review` | [review](pages/user/review.md) |
 | Result | `/user/result` | [result](pages/user/result.md) |
 | History | `/user/history` | [history](pages/user/history.md) |
 | Subscription expired | `/user/subscription-expired` | [subscription-expired](pages/user/subscription-expired.md) |

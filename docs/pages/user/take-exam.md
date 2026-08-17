@@ -1,8 +1,8 @@
 # Take exam page
 
 **Path:** `WEB-INF/jsp/user/take-exam.jsp`  
-**Route:** `/user/exam`  
-**Feature:** [take-exam flow](../../features/take-exam/flow.md)
+**Route:** `/user/exam` (also `/user/weekly` and `/user/checkpoint` with `examPostPath`)  
+**Feature:** [take-exam flow](../../features/take-exam/flow.md) · [weekly regimen](../../features/weekly-regimen/overview.md)
 
 
 Exam header, countdown `.timer-bar`, question cards with radio options, submit action.

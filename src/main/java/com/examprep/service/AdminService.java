@@ -95,7 +95,7 @@ public class AdminService {
     }
 
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
@@ -107,6 +107,12 @@ public class AdminService {
             }
             return examDao.findById(created.getId()).orElse(created);
         }
+        if (exam.isWeekly()) {
+            if (exam.isActive()) {
+                examDao.deactivateOtherWeeklies(created.getId());
+            }
+            return examDao.findById(created.getId()).orElse(created);
+        }
         if (questionIds != null && !questionIds.isEmpty()) {
             examDao.setExamQuestions(created.getId(), questionIds);
         }
@@ -114,13 +120,16 @@ public class AdminService {
     }
 
     public void updateExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
             examDao.update(exam);
-            if (exam.isActive()) {
+            if (exam.isActive() && exam.isDiagnostic()) {
                 examDao.deactivateOtherDiagnostics(exam.getId());
+            }
+            if (exam.isActive() && exam.isWeekly()) {
+                examDao.deactivateOtherWeeklies(exam.getId());
             }
             examDao.setExamQuestions(exam.getId(), List.of());
             return;

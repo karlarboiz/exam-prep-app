@@ -215,10 +215,20 @@ public class UserDao {
     }
 
     public void markDiagnosticCompleted(Long userId) throws SQLException {
-        String sql = "UPDATE users SET diagnostic_completed_at = ? WHERE id = ? AND diagnostic_completed_at IS NULL";
+        setDiagnosticCompletedAt(userId, LocalDateTime.now(), true);
+    }
+
+    public void setDiagnosticCompletedAt(Long userId, LocalDateTime at) throws SQLException {
+        setDiagnosticCompletedAt(userId, at, false);
+    }
+
+    private void setDiagnosticCompletedAt(Long userId, LocalDateTime at, boolean onlyIfNull) throws SQLException {
+        String sql = onlyIfNull
+                ? "UPDATE users SET diagnostic_completed_at = ? WHERE id = ? AND diagnostic_completed_at IS NULL"
+                : "UPDATE users SET diagnostic_completed_at = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(1, Timestamp.valueOf(at));
             ps.setLong(2, userId);
             ps.executeUpdate();
         }

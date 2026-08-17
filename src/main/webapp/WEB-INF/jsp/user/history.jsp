@@ -32,14 +32,7 @@
                     <tr>
                         <td>${h.examTitle}</td>
                         <td>
-                            <c:choose>
-                                <c:when test="${h.diagnostic}">
-                                    <span class="badge badge-diagnostic">Diagnostic</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="badge badge-practice">Practice</span>
-                                </c:otherwise>
-                            </c:choose>
+                            <span class="badge badge-${h.attemptKind}">${h.attemptKind.displayName()}</span>
                         </td>
                         <td>${h.subjectName}</td>
                         <td>${ep:fmt(h.startedAt)}</td>
@@ -49,7 +42,10 @@
                         <td>
                             <c:if test="${h.status != 'IN_PROGRESS'}">
                                 <c:choose>
-                                    <c:when test="${h.diagnostic}">
+                                    <c:when test="${h.attemptKind == 'WEEKLY' && h.regimenId != null}">
+                                        <a href="${ctx}/user/study-plan?regimenId=${ep:enc(h.regimenId)}" class="btn btn-sm">View Result</a>
+                                    </c:when>
+                                    <c:when test="${h.diagnostic || h.attemptKind == 'DIAGNOSTIC'}">
                                         <a href="${ctx}/user/diagnostic/result?attemptId=${ep:enc(h.id)}" class="btn btn-sm">View Result</a>
                                     </c:when>
                                     <c:otherwise>
@@ -59,7 +55,13 @@
                             </c:if>
                             <c:if test="${h.status == 'IN_PROGRESS'}">
                                 <c:choose>
-                                    <c:when test="${h.diagnostic}">
+                                    <c:when test="${h.attemptKind == 'WEEKLY'}">
+                                        <a href="${ctx}/user/weekly?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
+                                    </c:when>
+                                    <c:when test="${h.attemptKind == 'CHECKPOINT'}">
+                                        <a href="${ctx}/user/checkpoint?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
+                                    </c:when>
+                                    <c:when test="${h.diagnostic || h.attemptKind == 'DIAGNOSTIC'}">
                                         <a href="${ctx}/user/diagnostic?attemptId=${ep:enc(h.id)}" class="btn btn-sm btn-primary">Continue</a>
                                     </c:when>
                                     <c:otherwise>

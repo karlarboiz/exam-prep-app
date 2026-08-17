@@ -69,6 +69,41 @@ public class QuestionDao {
         return questions;
     }
 
+    public List<Question> findByIds(List<Long> questionIds) throws SQLException {
+        if (questionIds == null || questionIds.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = questionIds.stream().map(id -> "?").collect(java.util.stream.Collectors.joining(","));
+        String sql = SELECT_COLUMNS
+                + " FROM questions q JOIN subjects s ON s.id = q.subject_id WHERE q.id IN ("
+                + placeholders + ")";
+        List<Question> found = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int i = 1;
+            for (Long id : questionIds) {
+                ps.setLong(i++, id);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    found.add(mapRow(rs));
+                }
+            }
+        }
+        java.util.Map<Long, Question> byId = new java.util.HashMap<>();
+        for (Question q : found) {
+            byId.put(q.getId(), q);
+        }
+        List<Question> ordered = new ArrayList<>();
+        for (Long id : questionIds) {
+            Question q = byId.get(id);
+            if (q != null) {
+                ordered.add(q);
+            }
+        }
+        return ordered;
+    }
+
     public List<Question> findByAttemptId(Long attemptId) throws SQLException {
         String sql = SELECT_COLUMNS + """
                 FROM attempt_questions aq
