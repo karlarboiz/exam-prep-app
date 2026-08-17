@@ -150,6 +150,16 @@ public class AccessGrantDao {
      * Marks a grant REVOKED. Unused tokens can no longer be redeemed; redeemed grants
      * immediately lose active access even if {@code expires_at} is still in the future.
      */
+    public void updateExpiresAt(Long grantId, LocalDateTime expiresAt) throws SQLException {
+        String sql = "UPDATE access_grants SET expires_at = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(expiresAt));
+            ps.setLong(2, grantId);
+            ps.executeUpdate();
+        }
+    }
+
     public boolean revoke(Long grantId) throws SQLException {
         String sql = """
                 UPDATE access_grants

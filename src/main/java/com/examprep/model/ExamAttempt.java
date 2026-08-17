@@ -16,6 +16,9 @@ public class ExamAttempt {
     private String subjectName;
     private int durationMinutes;
     private boolean diagnostic;
+    private boolean weekly;
+    private AttemptKind attemptKind = AttemptKind.PRACTICE;
+    private Long regimenId;
     private int leaveCount;
     private int suspectLeaveCount;
     private boolean integrityTracking;
@@ -110,6 +113,30 @@ public class ExamAttempt {
 
     public void setDiagnostic(boolean diagnostic) {
         this.diagnostic = diagnostic;
+    }
+
+    public boolean isWeekly() {
+        return weekly;
+    }
+
+    public void setWeekly(boolean weekly) {
+        this.weekly = weekly;
+    }
+
+    public AttemptKind getAttemptKind() {
+        return attemptKind;
+    }
+
+    public void setAttemptKind(AttemptKind attemptKind) {
+        this.attemptKind = attemptKind != null ? attemptKind : AttemptKind.PRACTICE;
+    }
+
+    public Long getRegimenId() {
+        return regimenId;
+    }
+
+    public void setRegimenId(Long regimenId) {
+        this.regimenId = regimenId;
     }
 
     public int getLeaveCount() {

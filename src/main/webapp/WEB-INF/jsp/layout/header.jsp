@@ -40,6 +40,7 @@
                     </c:when>
                     <c:otherwise>
                         <a href="${ctx}/user/dashboard">Dashboard</a>
+                        <a href="${ctx}/user/study-plan">Study plan</a>
                         <a href="${ctx}/user/history">History</a>
                     </c:otherwise>
                 </c:choose>

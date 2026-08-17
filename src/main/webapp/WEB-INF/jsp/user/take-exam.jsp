@@ -23,7 +23,8 @@
     </div>
 </div>
 
-<form id="examForm" method="post" action="${ctx}/user/exam" class="exam-form">
+<c:set var="examPostPath" value="${empty examPostPath ? '/user/exam' : examPostPath}"/>
+<form id="examForm" method="post" action="${ctx}${examPostPath}" class="exam-form">
     <ep:csrf/>
     <input type="hidden" name="attemptId" value="${attempt.id}">
     <input type="hidden" name="action" value="submit">
@@ -223,7 +224,7 @@
         if (csrfToken()) {
             body.set('_csrf', csrfToken());
         }
-        fetch(ctx + '/user/exam', {
+        fetch(ctx + '${examPostPath}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -253,7 +254,7 @@
         ExamTracking.init({
             ctx: ctx,
             attemptId: attemptId,
-            endpoint: '/user/exam',
+            endpoint: '${examPostPath}',
             csrfToken: csrfToken(),
             leaveCount: ${attempt.leaveCount},
             getQuestionId: currentQuestionId,

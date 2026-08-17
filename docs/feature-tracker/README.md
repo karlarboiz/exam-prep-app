@@ -20,6 +20,7 @@ How a capability works (implementation docs): [features/](../features/)
 | Examinee tracking (integrity) | [examinee-tracking.md](examinee-tracking.md) |
 | Security & production hygiene | [security.md](security.md) |
 | Diagnostic (placement) | [diagnostic.md](diagnostic.md) |
+| Weekly regimen (study cycle) | [weekly-regimen.md](weekly-regimen.md) |
 
 ## Status values
 

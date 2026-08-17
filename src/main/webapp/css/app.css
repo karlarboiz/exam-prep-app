@@ -539,7 +539,17 @@ input[type="file"] {
 .badge-COMPLETED { background: #dcfce7; color: var(--color-success); }
 .badge-EXPIRED { background: #fee2e2; color: var(--color-danger); }
 .badge-diagnostic { background: #e0e7ff; color: #4338ca; }
+.badge-DIAGNOSTIC { background: #e0e7ff; color: #4338ca; }
 .badge-practice { background: #f1f5f9; color: var(--color-muted); }
+.badge-PRACTICE { background: #f1f5f9; color: var(--color-muted); }
+.badge-WEEKLY { background: #dbeafe; color: var(--color-primary); }
+.badge-CHECKPOINT { background: #fef3c7; color: var(--color-warning); }
+.badge-REVIEW { background: #f1f5f9; color: var(--color-muted); }
+.badge-OPEN { background: #dbeafe; color: var(--color-primary); }
+.badge-MISSED { background: #fee2e2; color: var(--color-danger); }
+.badge-WEAK { background: #fee2e2; color: var(--color-danger); }
+.badge-DEVELOPING { background: #fef3c7; color: var(--color-warning); }
+.badge-STRONG { background: #dcfce7; color: var(--color-success); }
 .badge-UNUSED { background: #fef3c7; color: var(--color-warning); }
 .badge-REDEEMED { background: #dcfce7; color: var(--color-success); }
 .badge-REVOKED { background: #fee2e2; color: var(--color-danger); }
