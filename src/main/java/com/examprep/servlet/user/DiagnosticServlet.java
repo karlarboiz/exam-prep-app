@@ -7,6 +7,7 @@ import com.examprep.model.User;
 import com.examprep.service.BehaviorTrackingService;
 import com.examprep.service.DiagnosticService;
 import com.examprep.util.IdCipher;
+import com.examprep.util.OptionShuffle;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -144,6 +145,7 @@ public class DiagnosticServlet extends HttpServlet {
 
         Map<Long, String> answers = diagnosticService.getAnswerMap(attemptId);
         List<Question> questions = diagnosticService.getAttemptQuestions(attemptId);
+        OptionShuffle.applyForAttempt(questions, attemptId);
         int secondsPerQuestion = questions.isEmpty()
                 ? 1
                 : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());

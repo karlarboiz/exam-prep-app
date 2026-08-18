@@ -40,36 +40,7 @@
             <c:set var="imageAlt" value="Diagram for question ${status.index + 1}"/>
             <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>
             <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
-            <div class="options">
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="A"
-                        ${answers[q.id] == 'A' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'A')">
-                    <span class="option-letter">A.</span>
-                    <span class="option-text">${q.optionA}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="B"
-                        ${answers[q.id] == 'B' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'B')">
-                    <span class="option-letter">B.</span>
-                    <span class="option-text">${q.optionB}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="C"
-                        ${answers[q.id] == 'C' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'C')">
-                    <span class="option-letter">C.</span>
-                    <span class="option-text">${q.optionC}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="D"
-                        ${answers[q.id] == 'D' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'D')">
-                    <span class="option-letter">D.</span>
-                    <span class="option-text">${q.optionD}</span>
-                </label>
-            </div>
+            <%@ include file="/WEB-INF/jsp/partials/question-options.jsp" %>
         </div>
     </c:forEach>
 
