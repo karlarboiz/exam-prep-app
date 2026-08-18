@@ -7,6 +7,7 @@ import com.examprep.model.Question;
 import com.examprep.model.User;
 import com.examprep.service.ExamService;
 import com.examprep.util.IdCipher;
+import com.examprep.util.OptionShuffle;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -118,6 +119,7 @@ public class TakeExamServlet extends HttpServlet {
         }
 
         List<Question> questions = examService.getExamQuestions(attempt.getExamId());
+        OptionShuffle.applyForAttempt(questions, attemptId);
         Map<Long, String> answers = examService.getAnswerMap(attemptId);
         int secondsPerQuestion = questions.isEmpty()
                 ? 1
