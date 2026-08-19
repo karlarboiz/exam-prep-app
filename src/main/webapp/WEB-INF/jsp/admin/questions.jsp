@@ -64,20 +64,19 @@
     </form>
 </div>
 
-<div class="grid-2">
+<%-- Add Question (create) is hidden; form is shown only when editing an existing question. --%>
+<c:if test="${not empty editQuestion}">
     <div class="card">
-        <h2><c:choose><c:when test="${not empty editQuestion}">Edit Question</c:when><c:otherwise>Add Question</c:otherwise></c:choose></h2>
+        <h2>Edit Question</h2>
         <form method="post" action="${ctx}/admin/questions" class="form">
             <ep:csrf/>
-            <input type="hidden" name="action" value="${not empty editQuestion ? 'update' : 'create'}">
-            <c:if test="${not empty editQuestion}">
-                <input type="hidden" name="id" value="${editQuestion.id}">
-            </c:if>
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="${editQuestion.id}">
             <div class="form-group">
                 <label for="subjectId">Subject</label>
                 <select id="subjectId" name="subjectId" required>
                     <c:forEach var="s" items="${subjects}">
-                        <option value="${s.id}" ${(not empty editQuestion && editQuestion.subjectId == s.id) ? 'selected' : ''}>${s.name}</option>
+                        <option value="${s.id}" ${editQuestion.subjectId == s.id ? 'selected' : ''}>${s.name}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -114,7 +113,7 @@
                 <label for="difficulty">Difficulty</label>
                 <select id="difficulty" name="difficulty">
                     <option value="EASY" ${editQuestion.difficulty == 'EASY' ? 'selected' : ''}>Easy</option>
-                    <option value="MEDIUM" ${empty editQuestion || editQuestion.difficulty == 'MEDIUM' ? 'selected' : ''}>Medium</option>
+                    <option value="MEDIUM" ${empty editQuestion.difficulty || editQuestion.difficulty == 'MEDIUM' ? 'selected' : ''}>Medium</option>
                     <option value="HARD" ${editQuestion.difficulty == 'HARD' ? 'selected' : ''}>Hard</option>
                 </select>
             </div>
@@ -140,46 +139,42 @@
                     <p class="question-image-fallback" hidden>Diagram could not be loaded. Check the URL.</p>
                 </figure>
             </div>
-            <button type="submit" class="btn btn-primary">
-                <c:choose><c:when test="${not empty editQuestion}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>
-            </button>
-            <c:if test="${not empty editQuestion}">
-                <a href="${ctx}/admin/questions" class="btn btn-outline">Cancel</a>
-            </c:if>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a href="${ctx}/admin/questions" class="btn btn-outline">Cancel</a>
         </form>
     </div>
+</c:if>
 
-    <div class="card">
-        <h2>Question Bank</h2>
-        <table class="data-table">
-            <thead>
-            <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-            <c:forEach var="q" items="${questions}">
-                <tr>
-                    <td>${q.subjectName}</td>
-                    <td>
-                        ${q.prompt}
-                        <c:if test="${not empty q.imageUrl}">
-                            <span class="badge badge-muted">Image</span>
-                        </c:if>
-                    </td>
-                    <td>${q.correctOption}</td>
-                    <td class="actions">
-                        <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
-                        <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
-                            <ep:csrf/>
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="${q.id}">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            </c:forEach>
-            </tbody>
-        </table>
-    </div>
+<div class="card">
+    <h2>Question Bank</h2>
+    <table class="data-table">
+        <thead>
+        <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <c:forEach var="q" items="${questions}">
+            <tr>
+                <td>${q.subjectName}</td>
+                <td>
+                    ${q.prompt}
+                    <c:if test="${not empty q.imageUrl}">
+                        <span class="badge badge-muted">Image</span>
+                    </c:if>
+                </td>
+                <td>${q.correctOption}</td>
+                <td class="actions">
+                    <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
+                    <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
+                        <ep:csrf/>
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="${q.id}">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </c:forEach>
+        </tbody>
+    </table>
 </div>
 
 <script src="${ctx}/js/question-image.js"></script>
