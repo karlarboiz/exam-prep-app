@@ -15,6 +15,7 @@ Then drill into the folders below as needed.
 | [models/](models/) | Domain objects and enums |
 | [pages/](pages/) | JSP screens and their routes |
 | [ui-rules/](ui-rules/) | Split styling notes (also summarized in UI guide) |
+| [content/](content/cse-question-blueprint.md) | Original CSE-PPT question writing spec |
 
 ## Features
 
