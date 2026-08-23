@@ -1,6 +1,7 @@
 package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
+import com.examprep.model.AppLocale;
 import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class UserDao {
 
     private static final String SELECT_COLUMNS =
-            "SELECT id, username, email, password_hash, role, exam_level, created_at, diagnostic_completed_at FROM users";
+            "SELECT id, username, email, password_hash, role, exam_level, created_at, diagnostic_completed_at, locale FROM users";
 
     public Optional<User> findById(Long id) throws SQLException {
         String sql = SELECT_COLUMNS + " WHERE id = ?";
@@ -178,6 +179,19 @@ public class UserDao {
         }
     }
 
+    public void updateLocale(Long id, AppLocale locale) throws SQLException {
+        String sql = "UPDATE users SET locale = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, locale != null ? locale.getCode() : AppLocale.DEFAULT.getCode());
+            ps.setLong(2, id);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("User not found");
+            }
+        }
+    }
+
     public void updatePasswordHash(Long id, String passwordHash) throws SQLException {
         String sql = "UPDATE users SET password_hash = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
@@ -250,6 +264,7 @@ public class UserDao {
         if (diagnosticCompletedAt != null) {
             user.setDiagnosticCompletedAt(diagnosticCompletedAt.toLocalDateTime());
         }
+        user.setLocale(AppLocale.fromCode(rs.getString("locale")));
         return user;
     }
 }

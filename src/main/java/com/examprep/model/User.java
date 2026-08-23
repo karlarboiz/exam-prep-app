@@ -12,6 +12,7 @@ public class User {
     private ExamLevel examLevel;
     private LocalDateTime createdAt;
     private LocalDateTime diagnosticCompletedAt;
+    private AppLocale locale = AppLocale.DEFAULT;
 
     public User() {
     }
@@ -87,6 +88,14 @@ public class User {
 
     public void setDiagnosticCompletedAt(LocalDateTime diagnosticCompletedAt) {
         this.diagnosticCompletedAt = diagnosticCompletedAt;
+    }
+
+    public AppLocale getLocale() {
+        return locale != null ? locale : AppLocale.DEFAULT;
+    }
+
+    public void setLocale(AppLocale locale) {
+        this.locale = locale != null ? locale : AppLocale.DEFAULT;
     }
 
     public boolean isDiagnosticCompleted() {

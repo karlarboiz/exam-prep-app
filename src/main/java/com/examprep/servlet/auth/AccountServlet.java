@@ -1,5 +1,6 @@
 package com.examprep.servlet.auth;
 
+import com.examprep.i18n.Messages;
 import com.examprep.model.User;
 import com.examprep.service.AuthService;
 import com.examprep.util.WebUtil;
@@ -23,7 +24,7 @@ public class AccountServlet extends HttpServlet {
             return;
         }
         if ("1".equals(req.getParameter("changed"))) {
-            req.setAttribute("success", "Password updated.");
+            req.setAttribute("success", Messages.get(req, "error.account.updated"));
         }
         req.getRequestDispatcher("/WEB-INF/jsp/auth/account.jsp").forward(req, resp);
     }
@@ -44,10 +45,10 @@ public class AccountServlet extends HttpServlet {
             authService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
             resp.sendRedirect(req.getContextPath() + "/account?changed=1");
         } catch (IllegalArgumentException e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/account.jsp").forward(req, resp);
         } catch (Exception e) {
-            req.setAttribute("error", "Could not update password. Please try again.");
+            req.setAttribute("error", Messages.get(req, "error.account.failed"));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/account.jsp").forward(req, resp);
         }
     }

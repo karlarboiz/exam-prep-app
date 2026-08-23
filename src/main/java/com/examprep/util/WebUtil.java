@@ -37,7 +37,7 @@ public final class WebUtil {
         response.addCookie(cookie);
     }
 
-    static boolean isHttps(HttpServletRequest request) {
+    public static boolean isHttps(HttpServletRequest request) {
         if (request.isSecure()) {
             return true;
         }

@@ -1,5 +1,6 @@
 package com.examprep.servlet.admin;
 
+import com.examprep.i18n.Messages;
 import com.examprep.importing.QuestionImportResult;
 import com.examprep.model.Question;
 import com.examprep.service.AdminService;
@@ -101,7 +102,7 @@ public class QuestionServlet extends HttpServlet {
                 default -> throw new IllegalArgumentException("Unknown action");
             }
         } catch (Exception e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             doGet(req, resp);
         }
     }
@@ -109,11 +110,11 @@ public class QuestionServlet extends HttpServlet {
     private void handleImport(HttpServletRequest req) throws Exception {
         Part filePart = req.getPart("file");
         if (filePart == null || filePart.getSize() == 0) {
-            throw new IllegalArgumentException("Please choose an .xlsx file to import");
+            throw new IllegalArgumentException(Messages.get(req, "error.import.chooseFile"));
         }
         String fileName = filePart.getSubmittedFileName();
         if (fileName == null || !fileName.toLowerCase().endsWith(".xlsx")) {
-            throw new IllegalArgumentException("Only .xlsx files are supported");
+            throw new IllegalArgumentException(Messages.get(req, "error.import.xlsxOnly"));
         }
 
         String normalizedLabel = QuestionImportService.normalizeBatchLabel(req.getParameter("batchLabel"));
@@ -135,7 +136,7 @@ public class QuestionServlet extends HttpServlet {
             }
             boolean wroteRows = result.getImportedCount() > 0 || result.getUpdatedCount() > 0;
             if (!wroteRows && result.hasErrors()) {
-                req.setAttribute("error", "Import completed with no rows inserted or updated. See errors below.");
+                req.setAttribute("error", Messages.get(req, "error.import.none"));
             } else if (wroteRows) {
                 req.setAttribute("importSuccess", importSuccessMessage(result, normalizedLabel));
             }

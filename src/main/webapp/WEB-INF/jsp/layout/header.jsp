@@ -7,11 +7,11 @@
     <c:set var="navPath" value="${pageContext.request.servletPath}"/>
 </c:if>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${appLocale.htmlLang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title><c:if test="${not empty pageTitle}">${pageTitle} - </c:if>Exam Prep App</title>
+    <title><c:if test="${not empty pageTitleKey}"><fmt:message key="${pageTitleKey}"/> - </c:if><fmt:message key="app.name"/></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">

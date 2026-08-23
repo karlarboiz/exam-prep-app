@@ -1,5 +1,7 @@
 package com.examprep.service;
 
+import com.examprep.i18n.LocaleSupport;
+import com.examprep.i18n.Messages;
 import com.examprep.config.AppConfig;
 import com.examprep.dao.AccessGrantDao;
 import com.examprep.dao.AttemptDao;
@@ -115,7 +117,7 @@ public class WeeklyRegimenService {
                 && countFreshWeakItems(user, current) >= checkpointMinFresh();
         dashboard.setCheckpointAvailable(checkpointOk);
         if (locked && !checkpointOk && checkpointInProgress.isEmpty() && !now().isAfter(current.getWeekEnd())) {
-            dashboard.setBankWarning("Checkpoint skipped — not enough unused items in weak subjects.");
+            dashboard.setBankWarning(Messages.get(LocaleSupport.current(), "dashboard.bankWarning"));
         }
         return dashboard;
     }
@@ -499,12 +501,14 @@ public class WeeklyRegimenService {
                 break;
             }
             long missesForSubject = missCount.getOrDefault(score.getSubjectId(), 0L);
+            String bandLabel = Messages.get(LocaleSupport.current(), "band." + score.getBand().name());
             if (missesForSubject > 0) {
-                targets.add("Review " + score.getSubjectName() + " — " + missesForSubject + " missed item"
-                        + (missesForSubject == 1 ? "" : "s") + " (" + score.getBand() + ")");
+                String key = missesForSubject == 1 ? "dashboard.target.review" : "dashboard.target.reviewPlural";
+                targets.add(Messages.format(LocaleSupport.current(), key,
+                        score.getSubjectName(), missesForSubject, bandLabel));
             } else {
-                targets.add("Keep working " + score.getSubjectName() + " (" + score.getBand() + ", "
-                        + score.getScorePercent() + "%)");
+                targets.add(Messages.format(LocaleSupport.current(), "dashboard.target.keep",
+                        score.getSubjectName(), bandLabel, score.getScorePercent()));
             }
         }
         if (targets.size() < 3 && misses != null) {
@@ -519,7 +523,7 @@ public class WeeklyRegimenService {
                 if (prompt != null && prompt.length() > 80) {
                     prompt = prompt.substring(0, 77) + "...";
                 }
-                String target = "Re-read: " + prompt;
+                String target = Messages.format(LocaleSupport.current(), "dashboard.target.reread", prompt);
                 if (!targets.contains(target)) {
                     targets.add(target);
                 }

@@ -1,11 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Account" scope="request"/>
+<c:set var="pageTitleKey" value="page.account.title" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
 
-<h1>Account</h1>
-<p class="subtitle">View your profile and change your password.</p>
+<h1><fmt:message key="account.heading"/></h1>
+<p class="subtitle"><fmt:message key="account.subtitle"/></p>
 
 <c:if test="${not empty error}">
     <div class="alert alert-error">${error}</div>
@@ -15,46 +16,47 @@
 </c:if>
 
 <div class="card">
-    <h2>Profile</h2>
+    <h2><fmt:message key="account.profile"/></h2>
     <div class="grid-2">
         <div class="form-group">
-            <label for="username">Username</label>
+            <label for="username"><fmt:message key="account.username"/></label>
             <input type="text" id="username" value="${currentUser.username}" readonly class="token-readonly">
         </div>
         <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email"><fmt:message key="account.email"/></label>
             <input type="text" id="email" value="${currentUser.email}" readonly class="token-readonly">
         </div>
         <div class="form-group">
-            <label for="role">Role</label>
-            <input type="text" id="role" value="${currentUser.role}" readonly class="token-readonly">
+            <label for="role"><fmt:message key="account.role"/></label>
+            <input type="text" id="role" readonly class="token-readonly"
+                   value="<fmt:message key="role.${currentUser.role}"/>">
         </div>
         <div class="form-group">
-            <label for="examLevel">Exam level</label>
+            <label for="examLevel"><fmt:message key="account.examLevel"/></label>
             <input type="text" id="examLevel" readonly class="token-readonly"
-                   value="${not empty currentUser.examLevel ? currentUser.examLevel.displayName : '—'}">
+                   value="<c:choose><c:when test="${not empty currentUser.examLevel}"><fmt:message key="examLevel.${currentUser.examLevel}"/></c:when><c:otherwise><fmt:message key="examLevel.none"/></c:otherwise></c:choose>">
         </div>
     </div>
 </div>
 
 <div class="card">
-    <h2>Change password</h2>
+    <h2><fmt:message key="account.changePassword"/></h2>
     <form method="post" action="${ctx}/account" class="form">
         <div class="form-group">
-            <label for="currentPassword">Current password</label>
+            <label for="currentPassword"><fmt:message key="account.currentPassword"/></label>
             <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
         </div>
         <div class="form-group">
-            <label for="newPassword">New password</label>
+            <label for="newPassword"><fmt:message key="account.newPassword"/></label>
             <input type="password" id="newPassword" name="newPassword" required minlength="6" autocomplete="new-password">
         </div>
         <div class="form-group">
-            <label for="confirmPassword">Confirm new password</label>
+            <label for="confirmPassword"><fmt:message key="account.confirmPassword"/></label>
             <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password">
         </div>
-        <button type="submit" class="btn btn-primary">Update password</button>
+        <button type="submit" class="btn btn-primary"><fmt:message key="account.updatePassword"/></button>
     </form>
-    <p class="hint">Must be at least 6 characters and different from your current password.</p>
+    <p class="hint"><fmt:message key="account.passwordHint"/></p>
 </div>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

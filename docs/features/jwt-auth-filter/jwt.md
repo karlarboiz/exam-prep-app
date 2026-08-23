@@ -6,7 +6,7 @@
 
 ## Public paths
 
-- `/login`, `/register`
+- `/login`, `/register`, `/locale`
 - `/`, `/index.jsp`
 - `/css/**`, `/js/**`, `/error/**`
 - `/api/access-tokens` (create; authenticated via `X-Api-Key`, not user JWT)
