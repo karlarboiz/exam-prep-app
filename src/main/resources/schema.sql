@@ -44,12 +44,15 @@ CREATE TABLE IF NOT EXISTS questions (
     difficulty VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
     explanation VARCHAR(2000),
     image_url VARCHAR(500),
+    batch_label VARCHAR(100),
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
--- Existing H2 file DBs created before explanation / image_url existed
+-- Existing H2 file DBs created before explanation / image_url / batch_label existed
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS explanation VARCHAR(2000);
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS image_url VARCHAR(500);
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS batch_label VARCHAR(100);
+CREATE INDEX IF NOT EXISTS idx_questions_batch_label ON questions(batch_label);
 
 -- Exams
 CREATE TABLE IF NOT EXISTS exams (

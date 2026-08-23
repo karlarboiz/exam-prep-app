@@ -16,7 +16,8 @@ public class QuestionDao {
 
     private static final String SELECT_COLUMNS = """
             SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                   q.correct_option, q.difficulty, q.explanation, q.image_url, s.name AS subject_name
+                   q.correct_option, q.difficulty, q.explanation, q.image_url, q.batch_label,
+                   s.name AS subject_name
             """;
 
     public List<Question> findAll() throws SQLException {
@@ -29,16 +30,40 @@ public class QuestionDao {
     }
 
     public List<Question> findBySubjectId(Long subjectId) throws SQLException {
-        String sql = SELECT_COLUMNS + """
+        return findFiltered(subjectId, null, false);
+    }
+
+    /**
+     * Filter the bank by optional subject and batch label.
+     * {@code unlabeledOnly} selects rows with a null or blank batch label.
+     */
+    public List<Question> findFiltered(Long subjectId, String batchLabel, boolean unlabeledOnly) throws SQLException {
+        StringBuilder sql = new StringBuilder(SELECT_COLUMNS);
+        sql.append("""
                 FROM questions q
                 JOIN subjects s ON s.id = q.subject_id
-                WHERE q.subject_id = ?
-                ORDER BY q.id
-                """;
+                WHERE 1=1
+                """);
+        if (subjectId != null) {
+            sql.append(" AND q.subject_id = ?");
+        }
+        if (unlabeledOnly) {
+            sql.append(" AND (q.batch_label IS NULL OR TRIM(q.batch_label) = '')");
+        } else if (batchLabel != null && !batchLabel.isBlank()) {
+            sql.append(" AND LOWER(TRIM(q.batch_label)) = LOWER(TRIM(?))");
+        }
+        sql.append(" ORDER BY q.id");
+
         List<Question> questions = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, subjectId);
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int i = 1;
+            if (subjectId != null) {
+                ps.setLong(i++, subjectId);
+            }
+            if (!unlabeledOnly && batchLabel != null && !batchLabel.isBlank()) {
+                ps.setString(i, batchLabel);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     questions.add(mapRow(rs));
@@ -46,6 +71,24 @@ public class QuestionDao {
             }
         }
         return questions;
+    }
+
+    public List<String> listBatchLabels() throws SQLException {
+        String sql = """
+                SELECT DISTINCT batch_label
+                FROM questions
+                WHERE batch_label IS NOT NULL AND TRIM(batch_label) <> ''
+                ORDER BY LOWER(batch_label)
+                """;
+        List<String> labels = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                labels.add(rs.getString("batch_label"));
+            }
+        }
+        return labels;
     }
 
     public List<Question> findByExamId(Long examId) throws SQLException {
@@ -185,17 +228,29 @@ public class QuestionDao {
     }
 
     public Optional<Question> findBySubjectIdAndPromptIgnoreCase(Long subjectId, String prompt) throws SQLException {
+        return findBySubjectIdPromptAndBatchIgnoreCase(subjectId, prompt, null);
+    }
+
+    public Optional<Question> findBySubjectIdPromptAndBatchIgnoreCase(Long subjectId, String prompt, String batchLabel)
+            throws SQLException {
         String sql = SELECT_COLUMNS + """
                 FROM questions q
                 JOIN subjects s ON s.id = q.subject_id
                 WHERE q.subject_id = ? AND LOWER(TRIM(q.prompt)) = LOWER(TRIM(?))
-                ORDER BY q.id
-                LIMIT 1
                 """;
+        if (batchLabel == null || batchLabel.isBlank()) {
+            sql += " AND (q.batch_label IS NULL OR TRIM(q.batch_label) = '')";
+        } else {
+            sql += " AND LOWER(TRIM(q.batch_label)) = LOWER(TRIM(?))";
+        }
+        sql += " ORDER BY q.id LIMIT 1";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, subjectId);
             ps.setString(2, prompt);
+            if (batchLabel != null && !batchLabel.isBlank()) {
+                ps.setString(3, batchLabel);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
@@ -208,8 +263,8 @@ public class QuestionDao {
     public Question create(Question question) throws SQLException {
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation, image_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url, batch_label)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -230,8 +285,8 @@ public class QuestionDao {
         }
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation, image_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url, batch_label)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -253,13 +308,14 @@ public class QuestionDao {
     public void update(Question question) throws SQLException {
         String sql = """
                 UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
-                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?, image_url = ?
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?, image_url = ?,
+                       batch_label = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindQuestion(ps, question);
-            ps.setLong(11, question.getId());
+            ps.setLong(12, question.getId());
             ps.executeUpdate();
         }
     }
@@ -270,14 +326,15 @@ public class QuestionDao {
         }
         String sql = """
                 UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
-                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?, batch_label = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             for (Question question : questions) {
-                bindQuestion(ps, question);
-                ps.setLong(10, question.getId());
+                bindQuestionCore(ps, question);
+                ps.setString(10, question.getBatchLabel());
+                ps.setLong(11, question.getId());
                 ps.addBatch();
             }
             int[] results = ps.executeBatch();
@@ -301,6 +358,12 @@ public class QuestionDao {
     }
 
     private void bindQuestion(PreparedStatement ps, Question question) throws SQLException {
+        bindQuestionCore(ps, question);
+        ps.setString(10, question.getImageUrl());
+        ps.setString(11, question.getBatchLabel());
+    }
+
+    private void bindQuestionCore(PreparedStatement ps, Question question) throws SQLException {
         ps.setLong(1, question.getSubjectId());
         ps.setString(2, question.getPrompt());
         ps.setString(3, question.getOptionA());
@@ -310,7 +373,6 @@ public class QuestionDao {
         ps.setString(7, question.getCorrectOption());
         ps.setString(8, question.getDifficulty());
         ps.setString(9, question.getExplanation());
-        ps.setString(10, question.getImageUrl());
     }
 
     private List<Question> queryList(String sql) throws SQLException {
@@ -338,6 +400,7 @@ public class QuestionDao {
         question.setDifficulty(rs.getString("difficulty"));
         question.setExplanation(rs.getString("explanation"));
         question.setImageUrl(rs.getString("image_url"));
+        question.setBatchLabel(rs.getString("batch_label"));
         question.setSubjectName(rs.getString("subject_name"));
         return question;
     }

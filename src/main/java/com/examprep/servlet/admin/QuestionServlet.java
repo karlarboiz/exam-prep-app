@@ -38,12 +38,14 @@ public class QuestionServlet extends HttpServlet {
                 return;
             }
             if ("export".equals(downloadAction)) {
-                List<Question> questions = loadFilteredQuestions(req.getParameter("subjectId"));
+                List<Question> questions = loadFilteredQuestions(
+                        req.getParameter("subjectId"), req.getParameter("batchLabel"));
                 writeExcel(resp, "questions.xlsx", out -> importService.exportQuestions(questions, out));
                 return;
             }
 
             String subjectId = req.getParameter("subjectId");
+            String batchLabel = req.getParameter("batchLabel");
             String editId = req.getParameter("edit");
 
             if (editId != null) {
@@ -55,12 +57,14 @@ public class QuestionServlet extends HttpServlet {
                 }
             }
 
-            if (subjectId != null && !subjectId.isBlank()) {
-                req.setAttribute("questions", adminService.getQuestionsBySubject(Long.parseLong(subjectId)));
-                req.setAttribute("filterSubjectId", Long.parseLong(subjectId));
-            } else {
-                req.setAttribute("questions", adminService.getAllQuestions());
-            }
+            Long parsedSubjectId = (subjectId != null && !subjectId.isBlank())
+                    ? Long.parseLong(subjectId)
+                    : null;
+            req.setAttribute("questions", adminService.getQuestions(parsedSubjectId, batchLabel));
+            req.setAttribute("filterSubjectId", parsedSubjectId);
+            req.setAttribute("filterBatchLabel", batchLabel);
+            req.setAttribute("batchLabels", adminService.getBatchLabels());
+            req.setAttribute("suggestedBatchLabel", QuestionImportService.suggestedBatchLabel());
 
             req.setAttribute("subjects", adminService.getAllSubjects());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/questions.jsp").forward(req, resp);
@@ -80,6 +84,8 @@ public class QuestionServlet extends HttpServlet {
                         adminService.createQuestion(question);
                     } else {
                         question.setId(IdCipher.dec(req.getParameter("id")));
+                        adminService.getQuestion(question.getId())
+                                .ifPresent(existing -> question.setBatchLabel(existing.getBatchLabel()));
                         adminService.updateQuestion(question);
                     }
                     resp.sendRedirect(req.getContextPath() + "/admin/questions");
@@ -110,8 +116,18 @@ public class QuestionServlet extends HttpServlet {
             throw new IllegalArgumentException("Only .xlsx files are supported");
         }
 
+        String normalizedLabel = QuestionImportService.normalizeBatchLabel(req.getParameter("batchLabel"));
+        if (normalizedLabel == null) {
+            normalizedLabel = QuestionImportService.suggestedBatchLabel();
+        }
+        if (!QuestionImportService.isValidBatchLabel(normalizedLabel)) {
+            throw new IllegalArgumentException(
+                    "Batch label must be at most " + QuestionImportService.BATCH_LABEL_MAX_LENGTH
+                            + " characters and cannot be the reserved unlabeled filter");
+        }
+
         try (InputStream in = filePart.getInputStream()) {
-            QuestionImportResult result = importService.importFromExcel(in);
+            QuestionImportResult result = importService.importFromExcel(in, normalizedLabel);
             req.setAttribute("importCount", result.getImportedCount());
             req.setAttribute("updateCount", result.getUpdatedCount());
             if (result.hasErrors()) {
@@ -121,30 +137,33 @@ public class QuestionServlet extends HttpServlet {
             if (!wroteRows && result.hasErrors()) {
                 req.setAttribute("error", "Import completed with no rows inserted or updated. See errors below.");
             } else if (wroteRows) {
-                req.setAttribute("importSuccess", importSuccessMessage(result));
+                req.setAttribute("importSuccess", importSuccessMessage(result, normalizedLabel));
             }
         }
     }
 
-    private static String importSuccessMessage(QuestionImportResult result) {
+    private static String importSuccessMessage(QuestionImportResult result, String batchLabel) {
         StringBuilder message = new StringBuilder();
         if (result.getImportedCount() > 0) {
-            message.append("Imported ").append(result.getImportedCount()).append(" question(s).");
+            message.append("Imported ").append(result.getImportedCount()).append(" question(s)");
         }
         if (result.getUpdatedCount() > 0) {
             if (!message.isEmpty()) {
-                message.append(' ');
+                message.append(". ");
             }
-            message.append("Updated ").append(result.getUpdatedCount()).append(" existing question(s).");
+            message.append("Updated ").append(result.getUpdatedCount()).append(" existing question(s)");
+        }
+        if (!message.isEmpty()) {
+            message.append(" in batch \"").append(batchLabel).append("\".");
         }
         return message.toString();
     }
 
-    private List<Question> loadFilteredQuestions(String subjectId) throws Exception {
-        if (subjectId != null && !subjectId.isBlank()) {
-            return adminService.getQuestionsBySubject(Long.parseLong(subjectId));
-        }
-        return adminService.getAllQuestions();
+    private List<Question> loadFilteredQuestions(String subjectId, String batchLabel) throws Exception {
+        Long parsedSubjectId = (subjectId != null && !subjectId.isBlank())
+                ? Long.parseLong(subjectId)
+                : null;
+        return adminService.getQuestions(parsedSubjectId, batchLabel);
     }
 
     private void writeExcel(HttpServletResponse resp, String filename, ExcelBody writer) throws Exception {

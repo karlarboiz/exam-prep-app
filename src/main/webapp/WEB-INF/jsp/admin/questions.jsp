@@ -33,6 +33,14 @@
                 <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}>${s.name}</option>
             </c:forEach>
         </select>
+        <label>Filter by batch:</label>
+        <select name="batchLabel" onchange="this.form.submit()">
+            <option value="">All batches</option>
+            <option value="__unlabeled__" ${filterBatchLabel == '__unlabeled__' ? 'selected' : ''}>Unlabeled</option>
+            <c:forEach var="label" items="${batchLabels}">
+                <option value="${label}" ${filterBatchLabel == label ? 'selected' : ''}>${label}</option>
+            </c:forEach>
+        </select>
     </form>
 </div>
 
@@ -40,9 +48,12 @@
     <h2>Import from Excel</h2>
     <p>Upload an <code>.xlsx</code> file with columns:
         subject, prompt, option_a–d, correct_option, difficulty (optional), explanation,
-        and optional <code>is_professional</code> / <code>is_sub_professional</code>
-        (used only when the subject is created; omit both to enable both exam tracks).
-        Matching subject + prompt updates the existing question instead of inserting a duplicate.</p>
+        optional <code>is_professional</code> / <code>is_sub_professional</code>
+        (used only when the subject is created; omit both to enable both exam tracks),
+        and optional <code>batch_label</code>.
+        New imports default to <code>${suggestedBatchLabel}</code> (<code>cse-import-</code> plus
+        today's date). Re-import updates only items that already have this same label and
+        matching subject + prompt — other batches are left alone.</p>
     <div class="actions import-actions">
         <a href="${ctx}/admin/questions?action=template" class="btn btn-outline">Download template</a>
         <c:url var="exportUrl" value="/admin/questions">
@@ -50,12 +61,31 @@
             <c:if test="${not empty filterSubjectId}">
                 <c:param name="subjectId" value="${filterSubjectId}"/>
             </c:if>
+            <c:if test="${not empty filterBatchLabel}">
+                <c:param name="batchLabel" value="${filterBatchLabel}"/>
+            </c:if>
         </c:url>
         <a href="${exportUrl}" class="btn btn-outline">Export questions</a>
     </div>
     <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
         <ep:csrf/>
         <input type="hidden" name="action" value="import">
+        <div class="form-group">
+            <label for="batchLabel">Batch label</label>
+            <c:set var="importBatchLabel"
+                   value="${not empty param.batchLabel && filterBatchLabel != '__unlabeled__' ? param.batchLabel : suggestedBatchLabel}"/>
+            <input type="text" id="batchLabel" name="batchLabel" required maxlength="100"
+                   list="existingBatchLabels" autocomplete="off"
+                   placeholder="${suggestedBatchLabel}"
+                   value="${importBatchLabel}">
+            <datalist id="existingBatchLabels">
+                <c:forEach var="label" items="${batchLabels}">
+                    <option value="${label}"></option>
+                </c:forEach>
+            </datalist>
+            <p class="field-hint">Today's batch is <code>${suggestedBatchLabel}</code>.
+                Reuse an existing label to update that batch. A different label inserts a separate set.</p>
+        </div>
         <div class="form-group">
             <label for="file">Excel file</label>
             <input type="file" id="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
@@ -79,6 +109,14 @@
                         <option value="${s.id}" ${editQuestion.subjectId == s.id ? 'selected' : ''}>${s.name}</option>
                     </c:forEach>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Batch</label>
+                <p><c:choose>
+                    <c:when test="${not empty editQuestion.batchLabel}"><span class="badge badge-admin">${editQuestion.batchLabel}</span></c:when>
+                    <c:otherwise><span class="badge badge-muted">Unlabeled</span></c:otherwise>
+                </c:choose></p>
+                <p class="field-hint">Set by Excel import. Re-import the same batch to update this item.</p>
             </div>
             <div class="form-group">
                 <label for="prompt">Question</label>
@@ -149,12 +187,18 @@
     <h2>Question Bank</h2>
     <table class="data-table">
         <thead>
-        <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+        <tr><th>Subject</th><th>Batch</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
         </thead>
         <tbody>
         <c:forEach var="q" items="${questions}">
             <tr>
                 <td>${q.subjectName}</td>
+                <td>
+                    <c:choose>
+                        <c:when test="${not empty q.batchLabel}"><span class="badge badge-admin">${q.batchLabel}</span></c:when>
+                        <c:otherwise><span class="badge badge-muted">Unlabeled</span></c:otherwise>
+                    </c:choose>
+                </td>
                 <td>
                     ${q.prompt}
                     <c:if test="${not empty q.imageUrl}">
