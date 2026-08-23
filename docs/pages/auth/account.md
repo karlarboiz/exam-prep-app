@@ -4,7 +4,7 @@
 **Route:** `/account`  
 **Feature:** [change password](../../features/auth/change-password.md)
 
-Available to any authenticated role from the header **Account** link.
+Available to any authenticated role from the header account chip (avatar + username).
 
 ## Profile
 
