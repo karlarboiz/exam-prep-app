@@ -150,7 +150,7 @@ Run these after any auth, grant, or exam change.
 
 ### Account
 
-1. Login as admin or student → header **Account** → `/account`
+1. Login as admin or student → header account chip → `/account`
 2. Profile shows username / email (read-only)
 3. Wrong current password → error, old password still works
 4. Valid change → success banner; login with the new password works

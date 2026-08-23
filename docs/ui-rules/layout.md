@@ -34,8 +34,6 @@ Grid and flex children use `min-width: 0` so wide tables, tokens, and question t
 | Max width | Behavior |
 |-----------|----------|
 | **900px** | Header switches to hamburger + collapsible `.header-nav` (`flex: 0 0 100%` so the panel wraps under the logo) |
-| **768px** | `.grid-2` stacks to one column |
-| **900px** | Header switches to hamburger + collapsible `.main-nav` |
 | **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; tables scroll inside cards |
 | **480px** | Compact stat values and full-width large buttons |
 

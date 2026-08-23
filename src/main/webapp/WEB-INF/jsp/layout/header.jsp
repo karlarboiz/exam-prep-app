@@ -52,6 +52,7 @@
                             <a href="${ctx}/admin/exams" class="${navPath == '/admin/exams' ? 'is-active' : ''}">Exams</a>
                             <a href="${ctx}/admin/users" class="${navPath == '/admin/users' ? 'is-active' : ''}">Users</a>
                             <a href="${ctx}/admin/access-grants" class="${navPath == '/admin/access-grants' ? 'is-active' : ''}" title="Access grants">Access</a>
+                            <a href="${ctx}/admin/integrity" class="${navPath == '/admin/integrity' ? 'is-active' : ''}">Integrity</a>
                         </c:when>
                         <c:otherwise>
                             <a href="${ctx}/user/dashboard" class="${navPath == '/user/dashboard' ? 'is-active' : ''}">
@@ -62,6 +63,13 @@
                                     <rect x="14" y="14" width="7" height="7" rx="1"/>
                                 </svg>
                                 Dashboard
+                            </a>
+                            <a href="${ctx}/user/study-plan" class="${navPath == '/user/study-plan' ? 'is-active' : ''}">
+                                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                    <path d="M16 2v4M8 2v4M3 10h18"/>
+                                </svg>
+                                Study plan
                             </a>
                             <a href="${ctx}/user/history" class="${navPath == '/user/history' ? 'is-active' : ''}">
                                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -74,7 +82,7 @@
                     </c:choose>
                 </nav>
                 <div class="account-menu">
-                    <div class="account-chip${currentUser.role == 'ADMIN' ? ' is-admin' : ''}">
+                    <a href="${ctx}/account" class="account-chip${currentUser.role == 'ADMIN' ? ' is-admin' : ''}${navPath == '/account' ? ' is-active' : ''}">
                         <span class="account-avatar" aria-hidden="true">
                             <c:choose>
                                 <c:when test="${not empty currentUser.username}">
@@ -92,7 +100,7 @@
                             <span class="account-name">${currentUser.username}</span>
                             <span class="account-role">${currentUser.role == 'ADMIN' ? 'Admin' : 'User'}</span>
                         </span>
-                    </div>
+                    </a>
                     <a href="${ctx}/logout" class="account-logout" aria-label="Log out">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -103,27 +111,6 @@
                     </a>
                 </div>
             </div>
-            <nav class="main-nav" id="main-nav">
-                <c:choose>
-                    <c:when test="${currentUser.role == 'ADMIN'}">
-                        <a href="${ctx}/admin/dashboard">Dashboard</a>
-                        <a href="${ctx}/admin/subjects">Subjects</a>
-                        <a href="${ctx}/admin/questions">Questions</a>
-                        <a href="${ctx}/admin/exams">Exams</a>
-                        <a href="${ctx}/admin/users">Users</a>
-                        <a href="${ctx}/admin/access-grants">Access grants</a>
-                        <a href="${ctx}/admin/integrity">Integrity</a>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="${ctx}/user/dashboard">Dashboard</a>
-                        <a href="${ctx}/user/study-plan">Study plan</a>
-                        <a href="${ctx}/user/history">History</a>
-                    </c:otherwise>
-                </c:choose>
-                <a href="${ctx}/account">Account</a>
-                <span class="user-badge">${currentUser.username} (${currentUser.role})</span>
-                <a href="${ctx}/logout" class="btn btn-outline">Logout</a>
-            </nav>
         </c:if>
     </div>
 </header>
