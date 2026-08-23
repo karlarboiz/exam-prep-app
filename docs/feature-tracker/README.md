@@ -21,6 +21,7 @@ How a capability works (implementation docs): [features/](../features/)
 | Security & production hygiene | [security.md](security.md) |
 | Diagnostic (placement) | [diagnostic.md](diagnostic.md) |
 | Weekly regimen (study cycle) | [weekly-regimen.md](weekly-regimen.md) |
+| I18n (Tagalog / English UI) | [i18n.md](i18n.md) |
 
 ## Status values
 

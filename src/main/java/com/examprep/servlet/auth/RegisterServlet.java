@@ -1,5 +1,7 @@
 package com.examprep.servlet.auth;
 
+import com.examprep.i18n.LocaleSupport;
+import com.examprep.i18n.Messages;
 import com.examprep.model.AccessGrant;
 import com.examprep.model.ExamLevel;
 import com.examprep.model.User;
@@ -34,7 +36,7 @@ public class RegisterServlet extends HttpServlet {
 
         String token = req.getParameter("token");
         if (token == null || token.isBlank()) {
-            req.setAttribute("error", "An access token is required to register. Purchase a subscription to receive one.");
+            req.setAttribute("error", Messages.get(req, "error.register.tokenRequired"));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/register.jsp").forward(req, resp);
             return;
         }
@@ -45,7 +47,7 @@ public class RegisterServlet extends HttpServlet {
             req.setAttribute("examLevel", grant.getExamLevel());
             req.getRequestDispatcher("/WEB-INF/jsp/auth/register.jsp").forward(req, resp);
         } catch (IllegalArgumentException e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/register.jsp").forward(req, resp);
         } catch (Exception e) {
             throw new ServletException(e);
@@ -61,7 +63,7 @@ public class RegisterServlet extends HttpServlet {
         String confirmPassword = req.getParameter("confirmPassword");
 
         if (token == null || token.isBlank()) {
-            req.setAttribute("error", "An access token is required to register");
+            req.setAttribute("error", Messages.get(req, "error.register.tokenRequiredShort"));
             forwardWithForm(req, resp, token, username, email, null);
             return;
         }
@@ -70,7 +72,7 @@ public class RegisterServlet extends HttpServlet {
         try {
             examLevelFromGrant = accessGrantService.requireUnusedToken(token.trim()).getExamLevel();
         } catch (IllegalArgumentException e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             forwardWithForm(req, resp, token, username, email, null);
             return;
         } catch (Exception e) {
@@ -79,19 +81,19 @@ public class RegisterServlet extends HttpServlet {
 
         if (username == null || username.isBlank() || email == null || email.isBlank()
                 || password == null || password.isBlank()) {
-            req.setAttribute("error", "All fields are required");
+            req.setAttribute("error", Messages.get(req, "error.register.fields"));
             forwardWithForm(req, resp, token, username, email, examLevelFromGrant);
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            req.setAttribute("error", "Passwords do not match");
+            req.setAttribute("error", Messages.get(req, "error.register.mismatch"));
             forwardWithForm(req, resp, token, username, email, examLevelFromGrant);
             return;
         }
 
         if (password.length() < 6) {
-            req.setAttribute("error", "Password must be at least 6 characters");
+            req.setAttribute("error", Messages.get(req, "error.password.tooShort"));
             forwardWithForm(req, resp, token, username, email, examLevelFromGrant);
             return;
         }
@@ -99,14 +101,15 @@ public class RegisterServlet extends HttpServlet {
         try {
             User user = accessGrantService.registerWithToken(
                     token.trim(), username.trim(), email.trim(), password);
+            authService.updateLocale(user.getId(), LocaleSupport.current(req));
             String sessionToken = authService.issueToken(user);
             WebUtil.setAuthCookie(req, resp, sessionToken);
             resp.sendRedirect(req.getContextPath() + "/user/diagnostic");
         } catch (IllegalArgumentException e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             forwardWithForm(req, resp, token, username, email, examLevelFromGrant);
         } catch (Exception e) {
-            req.setAttribute("error", "Registration failed. Please try again.");
+            req.setAttribute("error", Messages.get(req, "error.register.failed"));
             forwardWithForm(req, resp, token, username, email, examLevelFromGrant);
         }
     }

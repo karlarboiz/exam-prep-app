@@ -1,30 +1,34 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Take Exam" scope="request"/>
+<c:set var="pageTitleKey" value="page.takeExam.title" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
+<fmt:message key="exam.questionOf" var="questionOfPattern"/>
+<fmt:message key="exam.confirmSubmit" var="confirmSubmit"/>
 
 <div class="exam-header">
     <h1>${attempt.examTitle}</h1>
-    <p class="exam-meta">${attempt.subjectName} &middot; ${questions.size()} questions</p>
-    <p class="hint exam-integrity-note">Leaving this page (changing tabs or using the menu) is recorded for exam integrity.</p>
-    <p class="exam-progress" id="exam-progress">Question 1 of ${questions.size()}</p>
+    <p class="exam-meta">${attempt.subjectName} &middot; <fmt:message key="exam.questions"><fmt:param value="${questions.size()}"/></fmt:message></p>
+    <p class="hint exam-integrity-note"><fmt:message key="exam.integrityNote"/></p>
+    <p class="exam-progress" id="exam-progress"><fmt:message key="exam.questionOf"><fmt:param value="1"/><fmt:param value="${questions.size()}"/></fmt:message></p>
     <div class="timer-bar">
         <div class="timer-slot">
-            <span class="timer-label">Question time:</span>
+            <span class="timer-label"><fmt:message key="exam.questionTime"/></span>
             <span id="question-timer" class="timer-value">--:--</span>
         </div>
         <div class="timer-slot">
-            <span class="timer-label">Exam time:</span>
+            <span class="timer-label"><fmt:message key="exam.examTime"/></span>
             <span id="timer" class="timer-value">--:--</span>
         </div>
     </div>
 </div>
 
 <c:set var="examPostPath" value="${empty examPostPath ? '/user/exam' : examPostPath}"/>
-<form id="examForm" method="post" action="${ctx}${examPostPath}" class="exam-form">
+<form id="examForm" method="post" action="${ctx}${examPostPath}" class="exam-form"
+      data-question-of="${questionOfPattern}" data-confirm-submit="${confirmSubmit}">
     <ep:csrf/>
     <input type="hidden" name="attemptId" value="${attempt.id}">
     <input type="hidden" name="action" value="submit">
@@ -34,10 +38,10 @@
              data-index="${status.index}"
              data-question-id="${q.id}"
              data-has-image="${not empty q.imageUrl}">
-            <h3>Question ${status.index + 1}</h3>
+            <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message></h3>
             <p class="question-prompt">${q.prompt}</p>
             <c:set var="imageUrl" value="${q.imageUrl}"/>
-            <c:set var="imageAlt" value="Diagram for question ${status.index + 1}"/>
+            <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
             <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>
             <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
             <%@ include file="/WEB-INF/jsp/partials/question-options.jsp" %>
@@ -45,11 +49,11 @@
     </c:forEach>
 
     <div class="exam-nav">
-        <button type="button" id="prevBtn" class="btn btn-outline" disabled>Previous</button>
-        <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+        <button type="button" id="prevBtn" class="btn btn-outline" disabled><fmt:message key="exam.previous"/></button>
+        <button type="button" id="nextBtn" class="btn btn-primary"><fmt:message key="exam.next"/></button>
         <button type="submit" id="submitBtn" class="btn btn-primary btn-lg is-hidden"
-                onclick="return confirm('Submit exam? You cannot change answers after submitting.');">
-            Submit Exam
+                onclick="return confirm(document.getElementById('examForm').dataset.confirmSubmit);">
+            <fmt:message key="exam.submit"/>
         </button>
     </div>
 </form>
@@ -98,7 +102,9 @@
         cards.forEach(function (card, i) {
             card.classList.toggle('is-hidden', i !== currentIndex);
         });
-        progressEl.textContent = 'Question ' + (currentIndex + 1) + ' of ' + questionCount;
+        progressEl.textContent = (examForm.dataset.questionOf || 'Question {0} of {1}')
+            .replace('{0}', String(currentIndex + 1))
+            .replace('{1}', String(questionCount));
         prevBtn.disabled = currentIndex === 0;
         const isLast = currentIndex === questionCount - 1;
         nextBtn.classList.toggle('is-hidden', isLast);

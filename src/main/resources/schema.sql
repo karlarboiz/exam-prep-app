@@ -7,11 +7,14 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(10) NOT NULL CHECK (role IN ('ADMIN', 'USER')),
     exam_level VARCHAR(20) CHECK (exam_level IS NULL OR exam_level IN ('PROFESSIONAL', 'SUB_PROFESSIONAL')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    diagnostic_completed_at TIMESTAMP
+    diagnostic_completed_at TIMESTAMP,
+    locale VARCHAR(10) NOT NULL DEFAULT 'tl' CHECK (locale IN ('tl', 'en'))
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS diagnostic_completed_at TIMESTAMP;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_level VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locale VARCHAR(10);
+UPDATE users SET locale = 'tl' WHERE locale IS NULL;
 
 
 -- Subjects

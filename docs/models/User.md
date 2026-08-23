@@ -12,6 +12,7 @@
 | examLevel | ExamLevel | PROFESSIONAL or SUB_PROFESSIONAL for learners; null for admin. Admin users page can change this; changing a student's level clears diagnostic completion. |
 | createdAt | LocalDateTime | Registration time |
 | diagnosticCompletedAt | LocalDateTime | Set only when placement diagnostic status is `COMPLETED`; null until then (expired/abandoned do not set it) |
+| locale | AppLocale | UI language (`tl` or `en`). Default Tagalog. Synced from the language switcher when the user is signed in. |
 
 ## Helpers
 

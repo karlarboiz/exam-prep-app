@@ -8,7 +8,7 @@ Available to any authenticated role from the header **Account** link.
 
 ## Profile
 
-Read-only `.card` with `.grid-2` fields (username, email, role, exam level). Exam level shows `—` for admins. Fields use `.token-readonly`. Username and email are not editable.
+Read-only `.card` with `.grid-2` fields (username, email, role, exam level). Exam level shows `—` for admins. Fields use `.token-readonly`. Username and email are not editable. Labels follow the header language switcher.
 
 ## Change password
 

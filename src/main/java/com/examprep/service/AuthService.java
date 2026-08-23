@@ -1,6 +1,7 @@
 package com.examprep.service;
 
 import com.examprep.dao.UserDao;
+import com.examprep.model.AppLocale;
 import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
@@ -66,6 +67,13 @@ public class AuthService {
         boolean examLevelChanged = !Objects.equals(target.getExamLevel(), examLevel);
         boolean resetDiagnostic = role == Role.USER && examLevelChanged;
         userDao.updateRoleAndExamLevel(targetId, role, examLevel, resetDiagnostic);
+    }
+
+    public void updateLocale(Long userId, AppLocale locale) throws SQLException {
+        if (locale == null) {
+            locale = AppLocale.DEFAULT;
+        }
+        userDao.updateLocale(userId, locale);
     }
 
     public void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword)

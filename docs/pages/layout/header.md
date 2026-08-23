@@ -2,7 +2,9 @@
 
 **Path:** `WEB-INF/jsp/layout/header.jsp`
 
-Site header: logo, main nav, optional user badge. Included by content JSPs. Styles: `.site-header`, `.logo`, `.main-nav`, `.nav-toggle`.
+Site header: logo, **Tagalog / English** switcher (always visible), main nav, optional user badge. Included by content JSPs. Styles: `.site-header`, `.logo`, `.header-end`, `.lang-switch`, `.main-nav`, `.nav-toggle`.
+
+The switcher posts to `/locale` with CSRF and a same-page `returnTo`. Default language is Tagalog; see [i18n](../../features/i18n/overview.md). Page titles come from `pageTitleKey` + `fmt:message`.
 
 Admin nav includes Dashboard, Subjects, Questions, Exams, Users, **Access grants**, and **Integrity**.
 User nav includes Dashboard, **Study plan**, and History.

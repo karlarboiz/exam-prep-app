@@ -28,3 +28,4 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Import rejects both-false level flags | `QuestionImportServiceTest` |
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
 | Week clock / quotas / official lock / missed week | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |
+| Tagalog / English message bundles | `MessagesTest`, `LocaleSupportTest` |
