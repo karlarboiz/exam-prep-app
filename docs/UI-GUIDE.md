@@ -45,7 +45,7 @@ Typography today: system UI stack on `body`. Keep sizes consistent with existing
 
 ```
 body (column flex, min-height 100vh)
-├── .site-header > .container > .header-inner  (logo + .main-nav)
+├── .site-header > .container > .header-inner  (logo + .header-nav)
 ├── .main-content > .container                 (page body, flex: 1)
 └── .site-footer > .container                  (muted centered)
 ```
