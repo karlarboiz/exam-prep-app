@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Register" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -17,6 +18,7 @@
         </c:when>
         <c:otherwise>
             <form method="post" action="${ctx}/register" class="form">
+                <ep:csrf/>
                 <input type="hidden" name="token" value="${accessToken}">
                 <div class="form-group">
                     <label for="tokenDisplay">Access token</label>

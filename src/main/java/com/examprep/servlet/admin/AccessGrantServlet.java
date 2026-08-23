@@ -1,5 +1,6 @@
 package com.examprep.servlet.admin;
 
+import com.examprep.model.ExamLevel;
 import com.examprep.service.AccessGrantService;
 import com.examprep.util.IdCipher;
 import jakarta.servlet.ServletException;
@@ -29,17 +30,77 @@ public class AccessGrantServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
         try {
-            if ("revoke".equals(action)) {
-                Long id = IdCipher.dec(req.getParameter("id"));
-                accessGrantService.revoke(id);
-                resp.sendRedirect(req.getContextPath() + "/admin/access-grants");
-                return;
+            if (action == null) {
+                throw new IllegalArgumentException("Unknown action");
             }
-            req.setAttribute("error", "Unknown action");
-            doGet(req, resp);
+            switch (action) {
+                case "create" -> {
+                    rememberForm(req);
+                    ExamLevel examLevel = parseExamLevel(req.getParameter("examLevel"));
+                    Integer durationDays = parseDurationDays(req.getParameter("durationDays"));
+                    String planCode = blankToNull(req.getParameter("planCode"));
+                    String sourceRef = blankToNull(req.getParameter("sourceRef"));
+                    AccessGrantService.CreatedAccessToken created =
+                            accessGrantService.createToken(null, durationDays, planCode, sourceRef, examLevel);
+                    req.setAttribute("createdRawToken", created.rawToken());
+                    req.setAttribute("createdGrant", created.grant());
+                    req.setAttribute("registerPath", "/register?token=" + created.rawToken());
+                    doGet(req, resp);
+                }
+                case "revoke" -> {
+                    Long id = IdCipher.dec(req.getParameter("id"));
+                    accessGrantService.revoke(id);
+                    resp.sendRedirect(req.getContextPath() + "/admin/access-grants");
+                }
+                default -> throw new IllegalArgumentException("Unknown action");
+            }
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());
             doGet(req, resp);
         }
+    }
+
+    private static void rememberForm(HttpServletRequest req) {
+        req.setAttribute("formExamLevel", req.getParameter("examLevel"));
+        req.setAttribute("formDurationDays", req.getParameter("durationDays"));
+        req.setAttribute("formPlanCode", req.getParameter("planCode"));
+        req.setAttribute("formSourceRef", req.getParameter("sourceRef"));
+    }
+
+    private static ExamLevel parseExamLevel(String value) {
+        try {
+            ExamLevel examLevel = ExamLevel.fromString(value);
+            if (examLevel == null) {
+                throw new IllegalArgumentException("Exam level is required");
+            }
+            return examLevel;
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().contains("required")) {
+                throw e;
+            }
+            throw new IllegalArgumentException("Exam level must be Professional or Sub-Professional");
+        }
+    }
+
+    private static Integer parseDurationDays(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Duration days is required");
+        }
+        try {
+            int days = Integer.parseInt(value.trim());
+            if (days <= 0) {
+                throw new IllegalArgumentException("Duration days must be a positive whole number");
+            }
+            return days;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Duration days must be a positive whole number");
+        }
+    }
+
+    private static String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

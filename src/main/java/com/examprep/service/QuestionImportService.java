@@ -3,6 +3,7 @@ package com.examprep.service;
 import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.importing.ExcelQuestionParser;
+import com.examprep.importing.ExcelQuestionWriter;
 import com.examprep.importing.QuestionImportResult;
 import com.examprep.importing.QuestionImportRow;
 import com.examprep.model.Question;
@@ -10,6 +11,7 @@ import com.examprep.model.Subject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +39,10 @@ public class QuestionImportService {
         }
 
         Map<String, Long> subjectCache = new HashMap<>();
+        Map<Long, Map<String, Question>> promptIndexBySubject = new HashMap<>();
         List<Question> toInsert = new ArrayList<>();
+        List<Question> toUpdate = new ArrayList<>();
+        Map<String, Integer> pendingInsertIndex = new HashMap<>();
 
         for (QuestionImportRow row : rows) {
             Optional<String> validationError = validate(row);
@@ -68,13 +73,58 @@ public class QuestionImportService {
             question.setCorrectOption(row.getCorrectOption().trim().toUpperCase(Locale.ROOT));
             question.setDifficulty(normalizeDifficulty(row.getDifficulty()));
             question.setExplanation(row.getExplanation().trim());
-            toInsert.add(question);
+
+            String promptKey = question.getPrompt().toLowerCase(Locale.ROOT);
+            String pendingKey = subjectId + "\0" + promptKey;
+            Map<String, Question> existingByPrompt = promptIndexFor(subjectId, promptIndexBySubject);
+            Question existing = existingByPrompt.get(promptKey);
+            if (existing != null && existing.getId() != null) {
+                question.setId(existing.getId());
+                toUpdate.removeIf(q -> q.getId().equals(existing.getId()));
+                toUpdate.add(question);
+                existingByPrompt.put(promptKey, question);
+            } else if (pendingInsertIndex.containsKey(pendingKey)) {
+                toInsert.set(pendingInsertIndex.get(pendingKey), question);
+            } else {
+                pendingInsertIndex.put(pendingKey, toInsert.size());
+                toInsert.add(question);
+            }
         }
 
         if (!toInsert.isEmpty()) {
             result.setImportedCount(questionDao.createBatch(toInsert));
         }
+        if (!toUpdate.isEmpty()) {
+            result.setUpdatedCount(questionDao.updateBatch(toUpdate));
+        }
         return result;
+    }
+
+    private Map<String, Question> promptIndexFor(Long subjectId, Map<Long, Map<String, Question>> cache)
+            throws SQLException {
+        Map<String, Question> index = cache.get(subjectId);
+        if (index == null) {
+            index = new HashMap<>();
+            for (Question question : questionDao.findBySubjectId(subjectId)) {
+                if (question.getPrompt() != null) {
+                    index.putIfAbsent(question.getPrompt().trim().toLowerCase(Locale.ROOT), question);
+                }
+            }
+            cache.put(subjectId, index);
+        }
+        return index;
+    }
+
+    public void writeTemplate(OutputStream out) throws IOException {
+        ExcelQuestionWriter.writeTemplate(out);
+    }
+
+    public void exportQuestions(List<Question> questions, OutputStream out) throws IOException, SQLException {
+        Map<Long, Subject> subjectsById = new HashMap<>();
+        for (Subject subject : subjectDao.findAll()) {
+            subjectsById.put(subject.getId(), subject);
+        }
+        ExcelQuestionWriter.writeQuestions(questions, subjectsById, out);
     }
 
     private Long resolveOrCreateSubject(QuestionImportRow row) throws SQLException {

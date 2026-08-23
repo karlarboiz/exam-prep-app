@@ -8,7 +8,7 @@
 
 - `/login`, `/register`
 - `/`, `/index.jsp`
-- `/css/**`, `/error/**`
+- `/css/**`, `/js/**`, `/error/**`
 - `/api/access-tokens` (create; authenticated via `X-Api-Key`, not user JWT)
 - `/api/access-tokens/revoke` (revoke; same API key)
 
@@ -19,6 +19,7 @@
 3. Unauthenticated + non-public → redirect `/login`.
 4. Path starts with `/admin` and role ≠ `ADMIN` → HTTP 403.
 5. Set request attribute `CURRENT_USER` for JSPs/servlets.
+6. `/account` is JWT-required for any authenticated role (not public; not under `/user/**`).
 
 ## Access-period check (separate filter)
 

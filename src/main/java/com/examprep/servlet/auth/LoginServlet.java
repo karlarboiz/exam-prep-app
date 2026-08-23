@@ -47,7 +47,7 @@ public class LoginServlet extends HttpServlet {
             }
             User user = userOpt.get();
             String token = authService.issueToken(user);
-            WebUtil.setAuthCookie(resp, token);
+            WebUtil.setAuthCookie(req, resp, token);
             redirectToDashboard(user, req, resp);
         } catch (Exception e) {
             req.setAttribute("error", "Login failed. Please try again.");

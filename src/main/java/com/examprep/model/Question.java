@@ -1,5 +1,7 @@
 package com.examprep.model;
 
+import java.util.List;
+
 public class Question {
 
     private Long id;
@@ -12,7 +14,9 @@ public class Question {
     private String correctOption;
     private String difficulty;
     private String explanation;
+    private String imageUrl;
     private String subjectName;
+    private List<QuestionOption> displayOptions;
 
     public Question() {
     }
@@ -97,6 +101,14 @@ public class Question {
         this.explanation = explanation;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public String getSubjectName() {
         return subjectName;
     }
@@ -106,6 +118,9 @@ public class Question {
     }
 
     public String getOptionText(String option) {
+        if (option == null) {
+            return "";
+        }
         return switch (option) {
             case "A" -> optionA;
             case "B" -> optionB;
@@ -113,5 +128,22 @@ public class Question {
             case "D" -> optionD;
             default -> "";
         };
+    }
+
+    public List<QuestionOption> getOptions() {
+        return List.of(
+                new QuestionOption("A", optionA),
+                new QuestionOption("B", optionB),
+                new QuestionOption("C", optionC),
+                new QuestionOption("D", optionD)
+        );
+    }
+
+    public List<QuestionOption> getDisplayOptions() {
+        return displayOptions != null ? displayOptions : getOptions();
+    }
+
+    public void setDisplayOptions(List<QuestionOption> displayOptions) {
+        this.displayOptions = displayOptions;
     }
 }

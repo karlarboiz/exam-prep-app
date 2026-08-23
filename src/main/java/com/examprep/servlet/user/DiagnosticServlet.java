@@ -4,8 +4,10 @@ import com.examprep.model.AttemptStatus;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.Question;
 import com.examprep.model.User;
+import com.examprep.service.BehaviorTrackingService;
 import com.examprep.service.DiagnosticService;
 import com.examprep.util.IdCipher;
+import com.examprep.util.OptionShuffle;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,6 +26,7 @@ import java.util.Map;
 public class DiagnosticServlet extends HttpServlet {
 
     private final DiagnosticService diagnosticService = new DiagnosticService();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -65,6 +68,11 @@ public class DiagnosticServlet extends HttpServlet {
             ExamAttempt attempt = diagnosticService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId())) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            if ("behavior".equals(action)) {
+                BehaviorIngest.handle(req, resp, user.getId(), attemptId);
                 return;
             }
 
@@ -137,17 +145,27 @@ public class DiagnosticServlet extends HttpServlet {
 
         Map<Long, String> answers = diagnosticService.getAnswerMap(attemptId);
         List<Question> questions = diagnosticService.getAttemptQuestions(attemptId);
+        OptionShuffle.applyForAttempt(questions, attemptId);
         int secondsPerQuestion = questions.isEmpty()
                 ? 1
                 : Math.max(1, (attempt.getDurationMinutes() * 60) / questions.size());
 
         boolean showIntro = answers.isEmpty();
+        boolean returnedFromLeave = false;
+        if (!showIntro) {
+            if (!attempt.isIntegrityTracking()) {
+                behaviorTrackingService.enableTracking(attemptId);
+            }
+            returnedFromLeave = behaviorTrackingService.acknowledgeReturnIfAway(user.getId(), attemptId);
+            attempt = diagnosticService.getAttempt(attemptId);
+        }
 
         req.setAttribute("attempt", attempt);
         req.setAttribute("questions", questions);
         req.setAttribute("answers", answers);
         req.setAttribute("secondsPerQuestion", secondsPerQuestion);
         req.setAttribute("showIntro", showIntro);
+        req.setAttribute("showReturnWarning", returnedFromLeave);
         req.setAttribute("retake", "1".equals(req.getParameter("retake")));
         req.setAttribute("deadline", diagnosticService.getDeadline(attempt)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));

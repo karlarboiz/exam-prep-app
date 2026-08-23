@@ -18,6 +18,13 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Area | Test class |
 |------|------------|
 | Access grant create / redeem / revoke / active access | `AccessGrantServiceTest` |
+| Admin user role / exam level / delete guards | `AuthServiceTest` |
+| Logged-in password change | `AuthServiceTest` |
 | Seed subject visible on both exam levels | `SubjectDaoTest` |
 | Attempt `isDiagnostic` joined from exam | `AttemptDaoTest` |
+| Suspect leave flag rules | `BehaviorIntegrityTest` |
+| Leave ingest, intro ignore, summary | `BehaviorTrackingServiceTest` |
 | Import creates leveled subjects | `QuestionImportServiceTest` |
+| Import rejects both-false level flags | `QuestionImportServiceTest` |
+| Import upsert / template / export round-trip | `QuestionImportServiceTest` |
+| Week clock / quotas / official lock / missed week | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |

@@ -7,6 +7,7 @@ import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AttemptAnswer;
+import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.DiagnosticResult;
 import com.examprep.model.DiagnosticSubjectScore;
@@ -42,6 +43,7 @@ public class DiagnosticService {
     private final SubjectDao subjectDao = new SubjectDao();
     private final UserDao userDao = new UserDao();
     private final DiagnosticSubjectScoreDao subjectScoreDao = new DiagnosticSubjectScoreDao();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     public boolean isDiagnosticCompleted(Long userId) throws SQLException {
         return userDao.isDiagnosticCompleted(userId);
@@ -66,7 +68,8 @@ public class DiagnosticService {
                 .map(User::getExamLevel)
                 .orElse(null);
 
-        ExamAttempt attempt = attemptDao.create(userId, exam.getId());
+        ExamAttempt attempt = attemptDao.create(userId, exam.getId(), AttemptKind.DIAGNOSTIC, null, null);
+        behaviorTrackingService.disableTracking(attempt.getId());
         List<Long> sampledIds = sampleQuestionIds(exam, examLevel);
         if (sampledIds.isEmpty()) {
             throw new IllegalStateException("No questions available to build a diagnostic");
@@ -91,6 +94,7 @@ public class DiagnosticService {
         if (attemptDao.findAnswersByAttemptId(attemptId).isEmpty()) {
             attemptDao.updateStartedAt(attemptId, LocalDateTime.now());
         }
+        behaviorTrackingService.enableTracking(attemptId);
         return getDeadline(getAttempt(attemptId));
     }
 
@@ -144,6 +148,7 @@ public class DiagnosticService {
 
         BigDecimal overallScore = calculateOverallScore(attemptId, questions.size());
         attemptDao.completeAttempt(attemptId, overallScore, finalStatus);
+        behaviorTrackingService.refreshSummary(attemptId);
 
         List<DiagnosticSubjectScore> subjectScores = buildSubjectScores(attemptId, questions);
         subjectScoreDao.replaceForAttempt(attemptId, subjectScores);

@@ -33,7 +33,7 @@ Reusable patterns from `app.css`:
 
 - `.badge-success`, `.badge-muted`
 - `.badge-admin`, `.badge-user`
-- `.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`
+- `.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`
 
 ## Tables
 

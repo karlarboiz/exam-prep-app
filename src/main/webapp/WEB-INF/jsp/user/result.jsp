@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Exam Result" scope="request"/>
@@ -31,8 +32,18 @@
         <div class="review-card ${a.correct ? 'correct' : 'incorrect'}">
             <h3>Question ${status.index + 1}</h3>
             <p>${a.question.prompt}</p>
-            <p><strong>Your answer:</strong> ${a.selectedOption != null ? a.selectedOption : 'Not answered'}
-                — ${a.question.getOptionText(a.selectedOption)}</p>
+            <c:set var="imageUrl" value="${a.question.imageUrl}"/>
+            <c:set var="imageAlt" value="Diagram for question ${status.index + 1}"/>
+            <c:set var="imageLoading" value="lazy"/>
+            <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
+            <p><strong>Your answer:</strong>
+                <c:choose>
+                    <c:when test="${a.selectedOption != null}">
+                        ${a.selectedOption} — ${a.question.getOptionText(a.selectedOption)}
+                    </c:when>
+                    <c:otherwise>Not answered</c:otherwise>
+                </c:choose>
+            </p>
             <c:if test="${!a.correct}">
                 <p><strong>Correct answer:</strong> ${a.question.correctOption}
                     — ${a.question.getOptionText(a.question.correctOption)}</p>
@@ -48,5 +59,7 @@
     <a href="${ctx}/user/dashboard" class="btn btn-primary">Back to Dashboard</a>
     <a href="${ctx}/user/history" class="btn btn-outline">View History</a>
 </div>
+
+<script src="${ctx}/js/question-image.js"></script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

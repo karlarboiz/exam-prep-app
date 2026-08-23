@@ -16,7 +16,7 @@ public class QuestionDao {
 
     private static final String SELECT_COLUMNS = """
             SELECT q.id, q.subject_id, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d,
-                   q.correct_option, q.difficulty, q.explanation, s.name AS subject_name
+                   q.correct_option, q.difficulty, q.explanation, q.image_url, s.name AS subject_name
             """;
 
     public List<Question> findAll() throws SQLException {
@@ -67,6 +67,41 @@ public class QuestionDao {
             }
         }
         return questions;
+    }
+
+    public List<Question> findByIds(List<Long> questionIds) throws SQLException {
+        if (questionIds == null || questionIds.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = questionIds.stream().map(id -> "?").collect(java.util.stream.Collectors.joining(","));
+        String sql = SELECT_COLUMNS
+                + " FROM questions q JOIN subjects s ON s.id = q.subject_id WHERE q.id IN ("
+                + placeholders + ")";
+        List<Question> found = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int i = 1;
+            for (Long id : questionIds) {
+                ps.setLong(i++, id);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    found.add(mapRow(rs));
+                }
+            }
+        }
+        java.util.Map<Long, Question> byId = new java.util.HashMap<>();
+        for (Question q : found) {
+            byId.put(q.getId(), q);
+        }
+        List<Question> ordered = new ArrayList<>();
+        for (Long id : questionIds) {
+            Question q = byId.get(id);
+            if (q != null) {
+                ordered.add(q);
+            }
+        }
+        return ordered;
     }
 
     public List<Question> findByAttemptId(Long attemptId) throws SQLException {
@@ -149,11 +184,32 @@ public class QuestionDao {
         return Optional.empty();
     }
 
+    public Optional<Question> findBySubjectIdAndPromptIgnoreCase(Long subjectId, String prompt) throws SQLException {
+        String sql = SELECT_COLUMNS + """
+                FROM questions q
+                JOIN subjects s ON s.id = q.subject_id
+                WHERE q.subject_id = ? AND LOWER(TRIM(q.prompt)) = LOWER(TRIM(?))
+                ORDER BY q.id
+                LIMIT 1
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, subjectId);
+            ps.setString(2, prompt);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public Question create(Question question) throws SQLException {
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -174,8 +230,8 @@ public class QuestionDao {
         }
         String sql = """
                 INSERT INTO questions (subject_id, prompt, option_a, option_b, option_c, option_d,
-                                       correct_option, difficulty, explanation)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                       correct_option, difficulty, explanation, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -197,14 +253,41 @@ public class QuestionDao {
     public void update(Question question) throws SQLException {
         String sql = """
                 UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
-                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?, image_url = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindQuestion(ps, question);
-            ps.setLong(10, question.getId());
+            ps.setLong(11, question.getId());
             ps.executeUpdate();
+        }
+    }
+
+    public int updateBatch(List<Question> questions) throws SQLException {
+        if (questions == null || questions.isEmpty()) {
+            return 0;
+        }
+        String sql = """
+                UPDATE questions SET subject_id = ?, prompt = ?, option_a = ?, option_b = ?, option_c = ?,
+                       option_d = ?, correct_option = ?, difficulty = ?, explanation = ?
+                WHERE id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Question question : questions) {
+                bindQuestion(ps, question);
+                ps.setLong(10, question.getId());
+                ps.addBatch();
+            }
+            int[] results = ps.executeBatch();
+            int count = 0;
+            for (int result : results) {
+                if (result >= 0 || result == Statement.SUCCESS_NO_INFO) {
+                    count++;
+                }
+            }
+            return count;
         }
     }
 
@@ -227,6 +310,7 @@ public class QuestionDao {
         ps.setString(7, question.getCorrectOption());
         ps.setString(8, question.getDifficulty());
         ps.setString(9, question.getExplanation());
+        ps.setString(10, question.getImageUrl());
     }
 
     private List<Question> queryList(String sql) throws SQLException {
@@ -253,6 +337,7 @@ public class QuestionDao {
         question.setCorrectOption(rs.getString("correct_option"));
         question.setDifficulty(rs.getString("difficulty"));
         question.setExplanation(rs.getString("explanation"));
+        question.setImageUrl(rs.getString("image_url"));
         question.setSubjectName(rs.getString("subject_name"));
         return question;
     }

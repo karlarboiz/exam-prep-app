@@ -84,6 +84,8 @@ public final class DatabaseManager {
                 syncIdentity(stmt, "users");
                 syncIdentity(stmt, "exam_attempts");
                 syncIdentity(stmt, "access_grants");
+                syncIdentity(stmt, "weekly_regimens");
+                syncIdentity(stmt, "email_outbox");
             }
         } catch (IOException | SQLException e) {
             throw new RuntimeException("Failed to initialize database schema", e);

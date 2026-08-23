@@ -10,7 +10,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><c:if test="${not empty pageTitle}">${pageTitle} - </c:if>Exam Prep App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,6 +103,27 @@
                     </a>
                 </div>
             </div>
+            <nav class="main-nav" id="main-nav">
+                <c:choose>
+                    <c:when test="${currentUser.role == 'ADMIN'}">
+                        <a href="${ctx}/admin/dashboard">Dashboard</a>
+                        <a href="${ctx}/admin/subjects">Subjects</a>
+                        <a href="${ctx}/admin/questions">Questions</a>
+                        <a href="${ctx}/admin/exams">Exams</a>
+                        <a href="${ctx}/admin/users">Users</a>
+                        <a href="${ctx}/admin/access-grants">Access grants</a>
+                        <a href="${ctx}/admin/integrity">Integrity</a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${ctx}/user/dashboard">Dashboard</a>
+                        <a href="${ctx}/user/study-plan">Study plan</a>
+                        <a href="${ctx}/user/history">History</a>
+                    </c:otherwise>
+                </c:choose>
+                <a href="${ctx}/account">Account</a>
+                <span class="user-badge">${currentUser.username} (${currentUser.role})</span>
+                <a href="${ctx}/logout" class="btn btn-outline">Logout</a>
+            </nav>
         </c:if>
     </div>
 </header>

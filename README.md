@@ -22,14 +22,23 @@ App: http://localhost:8080
 
 ## Documentation
 
-Full project docs live under [`docs/`](docs/README.md):
+Full project docs live under [`docs/`](docs/README.md).
+
+Start with:
+
+- [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md) — start-task guide (build order, checklist, smoke paths)
+- [docs/feature-tracker/](docs/feature-tracker/README.md) — Done / Pending status by category
+- [docs/UI-GUIDE.md](docs/UI-GUIDE.md) — UI tokens, layout, components, screen map
+
+Then:
 
 - **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter, testing
 - **models/** — domain objects (including AccessGrant)
 - **pages/** — JSP screen notes
-- **ui-rules/** — colors, layout, forms, components
+- **ui-rules/** — split styling notes (summarized in the UI guide)
 
 ## Funnel API (brief)
 
 - `POST /api/access-tokens` — create token (`X-Api-Key`). See [create-token-api](docs/features/access-grants/create-token-api.md).
 - `POST /api/access-tokens/revoke` — revoke by id. See [revoke-token-api](docs/features/access-grants/revoke-token-api.md).
+- Admin mint / list / revoke: `/admin/access-grants`. See [admin-access-grants](docs/features/access-grants/admin-access-grants.md).

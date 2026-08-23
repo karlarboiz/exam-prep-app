@@ -2,11 +2,14 @@ package com.examprep.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public final class AppConfig {
 
     private static final Properties PROPS = new Properties();
+    private static final List<String> INSECURE_PATTERNS = List.of("change-me", "default", "example", "test");
 
     static {
         try (InputStream in = AppConfig.class.getClassLoader().getResourceAsStream("app.properties")) {
@@ -16,12 +19,17 @@ public final class AppConfig {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load app.properties", e);
         }
+        overrideFromEnv("ENVIRONMENT", "app.environment");
         overrideFromEnv("DB_URL", "db.url");
         overrideFromEnv("DB_USERNAME", "db.username");
         overrideFromEnv("DB_PASSWORD", "db.password");
         overrideFromEnv("JWT_SECRET", "jwt.secret");
         overrideFromEnv("ID_CIPHER_SECRET", "id.cipher.secret");
         overrideFromEnv("FUNNEL_API_KEY", "funnel.api.key");
+        overrideFromEnv("ADMIN_USERNAME", "admin.username");
+        overrideFromEnv("ADMIN_PASSWORD", "admin.password");
+        
+        validateSecurityConfig();
     }
 
     private AppConfig() {
@@ -32,6 +40,48 @@ public final class AppConfig {
         if (value != null && !value.isBlank()) {
             PROPS.setProperty(propKey, value);
         }
+    }
+
+    private static void validateSecurityConfig() {
+        if (!isProduction()) {
+            return;
+        }
+
+        List<String> errors = new ArrayList<>();
+        
+        validateSecret("jwt.secret", "JWT_SECRET", errors);
+        validateSecret("id.cipher.secret", "ID_CIPHER_SECRET", errors);
+        validateSecret("funnel.api.key", "FUNNEL_API_KEY", errors);
+
+        if (!errors.isEmpty()) {
+            String message = "Production security validation failed:\n" + String.join("\n", errors);
+            throw new IllegalStateException(message);
+        }
+    }
+
+    private static void validateSecret(String key, String envName, List<String> errors) {
+        String value = PROPS.getProperty(key);
+        if (value == null || value.isBlank()) {
+            errors.add("  - " + key + " is not set. Set environment variable " + envName);
+            return;
+        }
+
+        String lowerValue = value.toLowerCase();
+        for (String pattern : INSECURE_PATTERNS) {
+            if (lowerValue.contains(pattern)) {
+                errors.add("  - " + key + " contains insecure pattern '" + pattern + "'. Set environment variable " + envName);
+                return;
+            }
+        }
+
+        if (value.length() < 32) {
+            errors.add("  - " + key + " must be at least 32 characters long. Set environment variable " + envName);
+        }
+    }
+
+    public static boolean isProduction() {
+        String env = get("app.environment", "development");
+        return "production".equalsIgnoreCase(env) || "prod".equalsIgnoreCase(env);
     }
 
     public static String get(String key) {

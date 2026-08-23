@@ -8,7 +8,10 @@ import com.examprep.model.Question;
 import com.examprep.model.Subject;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class AdminService {
@@ -71,8 +74,28 @@ public class AdminService {
         return examDao.findById(id);
     }
 
+    public List<Question> getQuestionsForExamForm(List<Long> selectedIds) throws SQLException {
+        List<Question> bank = getAllQuestions();
+        if (selectedIds == null || selectedIds.isEmpty()) {
+            return bank;
+        }
+        Map<Long, Question> remaining = new LinkedHashMap<>();
+        for (Question question : bank) {
+            remaining.put(question.getId(), question);
+        }
+        List<Question> ordered = new ArrayList<>();
+        for (Long id : selectedIds) {
+            Question question = remaining.remove(id);
+            if (question != null) {
+                ordered.add(question);
+            }
+        }
+        ordered.addAll(remaining.values());
+        return ordered;
+    }
+
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
@@ -84,6 +107,12 @@ public class AdminService {
             }
             return examDao.findById(created.getId()).orElse(created);
         }
+        if (exam.isWeekly()) {
+            if (exam.isActive()) {
+                examDao.deactivateOtherWeeklies(created.getId());
+            }
+            return examDao.findById(created.getId()).orElse(created);
+        }
         if (questionIds != null && !questionIds.isEmpty()) {
             examDao.setExamQuestions(created.getId(), questionIds);
         }
@@ -91,13 +120,16 @@ public class AdminService {
     }
 
     public void updateExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
             examDao.update(exam);
-            if (exam.isActive()) {
+            if (exam.isActive() && exam.isDiagnostic()) {
                 examDao.deactivateOtherDiagnostics(exam.getId());
+            }
+            if (exam.isActive() && exam.isWeekly()) {
+                examDao.deactivateOtherWeeklies(exam.getId());
             }
             examDao.setExamQuestions(exam.getId(), List.of());
             return;

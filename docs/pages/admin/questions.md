@@ -6,4 +6,10 @@
 
 Question bank management: prompt, A–D options, correct answer, difficulty, optional explanation, subject filter.
 
-Also supports Excel (`.xlsx`) upload via `action=import` (multipart). See [question-import](../../features/question-import/overview.md).
+Excel:
+
+- Upload via `POST` `action=import` (multipart). Matching subject + prompt **updates** the existing row.
+- `GET ?action=template` downloads a sample `.xlsx`.
+- `GET ?action=export` downloads the current bank (honors the subject filter).
+
+See [question-import](../../features/question-import/overview.md).

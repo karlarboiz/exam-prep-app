@@ -42,6 +42,7 @@ public final class QuestionImportJob {
             }
 
             System.out.println("Imported: " + result.getImportedCount());
+            System.out.println("Updated: " + result.getUpdatedCount());
             if (result.hasErrors()) {
                 System.out.println("Errors:");
                 for (String error : result.getErrors()) {
@@ -49,7 +50,7 @@ public final class QuestionImportJob {
                 }
             }
 
-            if (result.getImportedCount() == 0) {
+            if (result.getImportedCount() + result.getUpdatedCount() == 0) {
                 System.exit(1);
             }
             System.exit(0);

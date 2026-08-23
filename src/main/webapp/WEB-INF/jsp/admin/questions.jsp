@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Questions" scope="request"/>
@@ -35,11 +36,25 @@
     </form>
 </div>
 
-<div class="card" style="margin-bottom: 1.5rem;">
+<div class="card">
     <h2>Import from Excel</h2>
     <p>Upload an <code>.xlsx</code> file with columns:
-        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation.</p>
+        subject, prompt, option_a–d, correct_option, difficulty (optional), explanation,
+        and optional <code>is_professional</code> / <code>is_sub_professional</code>
+        (used only when the subject is created; omit both to enable both exam tracks).
+        Matching subject + prompt updates the existing question instead of inserting a duplicate.</p>
+    <div class="actions import-actions">
+        <a href="${ctx}/admin/questions?action=template" class="btn btn-outline">Download template</a>
+        <c:url var="exportUrl" value="/admin/questions">
+            <c:param name="action" value="export"/>
+            <c:if test="${not empty filterSubjectId}">
+                <c:param name="subjectId" value="${filterSubjectId}"/>
+            </c:if>
+        </c:url>
+        <a href="${exportUrl}" class="btn btn-outline">Export questions</a>
+    </div>
     <form method="post" action="${ctx}/admin/questions" enctype="multipart/form-data" class="form">
+        <ep:csrf/>
         <input type="hidden" name="action" value="import">
         <div class="form-group">
             <label for="file">Excel file</label>
@@ -49,19 +64,19 @@
     </form>
 </div>
 
-<div class="grid-2">
+<%-- Add Question (create) is hidden; form is shown only when editing an existing question. --%>
+<c:if test="${not empty editQuestion}">
     <div class="card">
-        <h2><c:choose><c:when test="${not empty editQuestion}">Edit Question</c:when><c:otherwise>Add Question</c:otherwise></c:choose></h2>
+        <h2>Edit Question</h2>
         <form method="post" action="${ctx}/admin/questions" class="form">
-            <input type="hidden" name="action" value="${not empty editQuestion ? 'update' : 'create'}">
-            <c:if test="${not empty editQuestion}">
-                <input type="hidden" name="id" value="${editQuestion.id}">
-            </c:if>
+            <ep:csrf/>
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="${editQuestion.id}">
             <div class="form-group">
                 <label for="subjectId">Subject</label>
                 <select id="subjectId" name="subjectId" required>
                     <c:forEach var="s" items="${subjects}">
-                        <option value="${s.id}" ${(not empty editQuestion && editQuestion.subjectId == s.id) ? 'selected' : ''}>${s.name}</option>
+                        <option value="${s.id}" ${editQuestion.subjectId == s.id ? 'selected' : ''}>${s.name}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -98,7 +113,7 @@
                 <label for="difficulty">Difficulty</label>
                 <select id="difficulty" name="difficulty">
                     <option value="EASY" ${editQuestion.difficulty == 'EASY' ? 'selected' : ''}>Easy</option>
-                    <option value="MEDIUM" ${empty editQuestion || editQuestion.difficulty == 'MEDIUM' ? 'selected' : ''}>Medium</option>
+                    <option value="MEDIUM" ${empty editQuestion.difficulty || editQuestion.difficulty == 'MEDIUM' ? 'selected' : ''}>Medium</option>
                     <option value="HARD" ${editQuestion.difficulty == 'HARD' ? 'selected' : ''}>Hard</option>
                 </select>
             </div>
@@ -106,40 +121,95 @@
                 <label for="explanation">Explanation</label>
                 <textarea id="explanation" name="explanation" rows="3">${editQuestion.explanation}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">
-                <c:choose><c:when test="${not empty editQuestion}">Update</c:when><c:otherwise>Create</c:otherwise></c:choose>
-            </button>
-            <c:if test="${not empty editQuestion}">
-                <a href="${ctx}/admin/questions" class="btn btn-outline">Cancel</a>
-            </c:if>
+            <div class="form-group">
+                <label for="imageUrl">Diagram image URL</label>
+                <input type="text" id="imageUrl" name="imageUrl" value="${editQuestion.imageUrl}"
+                       maxlength="500" placeholder="https://… or /media/diagram.png" autocomplete="off">
+                <p class="field-hint">Optional. Shown with the question stem for word problems. Leave blank for text-only items.</p>
+                <figure id="imagePreview" class="question-figure admin-image-preview${empty editQuestion.imageUrl ? ' is-hidden' : ''}" data-question-image>
+                    <button type="button" class="question-image-trigger" aria-label="Enlarge diagram preview">
+                        <img class="question-image" id="imagePreviewImg"
+                             <c:if test="${not empty editQuestion.imageUrl}">
+                             src="${fn:startsWith(editQuestion.imageUrl, '/') ? ctx.concat(editQuestion.imageUrl) : editQuestion.imageUrl}"
+                             </c:if>
+                             alt="Question diagram preview"
+                             loading="lazy">
+                    </button>
+                    <figcaption class="question-image-hint">Preview — tap to enlarge</figcaption>
+                    <p class="question-image-fallback" hidden>Diagram could not be loaded. Check the URL.</p>
+                </figure>
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a href="${ctx}/admin/questions" class="btn btn-outline">Cancel</a>
         </form>
     </div>
+</c:if>
 
-    <div class="card">
-        <h2>Question Bank</h2>
-        <table class="data-table">
-            <thead>
-            <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-            <c:forEach var="q" items="${questions}">
-                <tr>
-                    <td>${q.subjectName}</td>
-                    <td>${q.prompt}</td>
-                    <td>${q.correctOption}</td>
-                    <td class="actions">
-                        <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
-                        <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="${q.id}">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            </c:forEach>
-            </tbody>
-        </table>
-    </div>
+<div class="card">
+    <h2>Question Bank</h2>
+    <table class="data-table">
+        <thead>
+        <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <c:forEach var="q" items="${questions}">
+            <tr>
+                <td>${q.subjectName}</td>
+                <td>
+                    ${q.prompt}
+                    <c:if test="${not empty q.imageUrl}">
+                        <span class="badge badge-muted">Image</span>
+                    </c:if>
+                </td>
+                <td>${q.correctOption}</td>
+                <td class="actions">
+                    <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm">Edit</a>
+                    <form method="post" action="${ctx}/admin/questions" class="inline-form" onsubmit="return confirm('Delete this question?');">
+                        <ep:csrf/>
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="${q.id}">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </c:forEach>
+        </tbody>
+    </table>
 </div>
 
+<script src="${ctx}/js/question-image.js"></script>
+<script>
+(function () {
+    var input = document.getElementById('imageUrl');
+    var preview = document.getElementById('imagePreview');
+    var img = document.getElementById('imagePreviewImg');
+    if (!input || !preview || !img) return;
+
+    function resolveSrc(value) {
+        var url = (value || '').trim();
+        if (!url) return '';
+        if (url.charAt(0) === '/') return '${ctx}' + url;
+        return url;
+    }
+
+    function refreshPreview() {
+        var src = resolveSrc(input.value);
+        preview.classList.remove('is-broken', 'is-loaded');
+        if (!src) {
+            preview.classList.add('is-hidden');
+            img.removeAttribute('src');
+            return;
+        }
+        preview.classList.remove('is-hidden');
+        img.src = src;
+        if (window.ExamQuestionImages) {
+            delete preview.dataset.imageBound;
+            ExamQuestionImages.init(preview.parentNode);
+        }
+    }
+
+    input.addEventListener('input', refreshPreview);
+    refreshPreview();
+})();
+</script>
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

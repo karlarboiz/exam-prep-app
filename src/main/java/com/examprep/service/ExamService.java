@@ -27,6 +27,7 @@ public class ExamService {
     private final ExamDao examDao = new ExamDao();
     private final QuestionDao questionDao = new QuestionDao();
     private final AttemptDao attemptDao = new AttemptDao();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     public List<Subject> getSubjects() throws SQLException {
         return subjectDao.findAll();
@@ -49,7 +50,7 @@ public class ExamService {
     }
 
     public boolean isExamAvailableForLevel(Exam exam, ExamLevel examLevel) throws SQLException {
-        if (exam == null || exam.isDiagnostic() || !exam.isActive()) {
+        if (exam == null || exam.isDiagnostic() || exam.isWeekly() || !exam.isActive()) {
             return false;
         }
         if (examLevel == null) {
@@ -121,11 +122,15 @@ public class ExamService {
             if (selected != null && !selected.isBlank()) {
                 boolean correct = question.getCorrectOption().equalsIgnoreCase(selected);
                 attemptDao.saveAnswer(attemptId, question.getId(), selected.toUpperCase(), correct);
+            } else {
+                // Persist unanswered so answer review matches the score denominator
+                attemptDao.saveAnswer(attemptId, question.getId(), null, false);
             }
         }
 
         BigDecimal score = calculateScore(attemptId, questions.size());
         attemptDao.completeAttempt(attemptId, score, finalStatus);
+        behaviorTrackingService.refreshSummary(attemptId);
         return attemptDao.findById(attemptId).orElseThrow();
     }
 

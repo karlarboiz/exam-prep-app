@@ -33,6 +33,7 @@
         <a href="${ctx}/admin/questions" class="btn btn-primary">Manage Questions</a>
         <a href="${ctx}/admin/exams" class="btn btn-primary">Manage Exams</a>
         <a href="${ctx}/admin/users" class="btn btn-outline">View Users</a>
+        <a href="${ctx}/admin/integrity" class="btn btn-outline">Integrity</a>
     </div>
 </div>
 

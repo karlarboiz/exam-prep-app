@@ -23,25 +23,23 @@ public class ExamServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            List<Long> selectedQuestionIds = List.of();
             String editId = req.getParameter("edit");
             if (editId != null) {
                 try {
                     Long examId = IdCipher.dec(editId);
                     adminService.getExam(examId).ifPresent(exam -> {
                         req.setAttribute("editExam", exam);
-                        try {
-                            req.setAttribute("selectedQuestionIds", adminService.getExamQuestionIds(examId));
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
                     });
+                    selectedQuestionIds = adminService.getExamQuestionIds(examId);
+                    req.setAttribute("selectedQuestionIds", selectedQuestionIds);
                 } catch (IllegalArgumentException ignored) {
                     // Bad/garbage token — show create form instead of 500
                 }
             }
             req.setAttribute("exams", adminService.getAllExams());
             req.setAttribute("subjects", adminService.getAllSubjects());
-            req.setAttribute("questions", adminService.getAllQuestions());
+            req.setAttribute("questions", adminService.getQuestionsForExamForm(selectedQuestionIds));
             req.getRequestDispatcher("/WEB-INF/jsp/admin/exams.jsp").forward(req, resp);
         } catch (Exception e) {
             throw new ServletException(e);
@@ -57,6 +55,13 @@ public class ExamServlet extends HttpServlet {
                     Exam exam = new Exam();
                     if ("update".equals(action)) {
                         exam.setId(IdCipher.dec(req.getParameter("id")));
+                        adminService.getExam(exam.getId()).ifPresent(existing -> {
+                            exam.setWeekly(existing.isWeekly());
+                            if (existing.isWeekly()) {
+                                exam.setDiagnostic(false);
+                                exam.setQuestionsPerSubject(existing.getQuestionsPerSubject());
+                            }
+                        });
                     }
                     exam.setSubjectId(Long.parseLong(req.getParameter("subjectId")));
                     exam.setTitle(req.getParameter("title").trim());

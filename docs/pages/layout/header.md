@@ -8,6 +8,9 @@ The header splits chrome: destination links sit after the logo; the right side i
 
 Admin nav includes Dashboard, Subjects, Questions, Exams, Users, and **Access** (access grants).
 User nav includes Dashboard and History, each with a small inline icon. The current route uses `.is-active`.
+Admin nav includes Dashboard, Subjects, Questions, Exams, Users, **Access grants**, and **Integrity**.
+User nav includes Dashboard, **Study plan**, and History.
+Both roles include **Account** (`/account`) before the user badge.
 
 ## Mobile navigation
 

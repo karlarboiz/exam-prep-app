@@ -4,6 +4,7 @@ import com.examprep.config.AppConfig;
 import com.examprep.model.AccessGrant;
 import com.examprep.model.ExamLevel;
 import com.examprep.service.AccessGrantService;
+import com.examprep.util.SecurityUtil;
 import com.examprep.util.SimpleJson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -84,7 +85,7 @@ public class CreateAccessTokenServlet extends HttpServlet {
             return false;
         }
         String provided = req.getHeader("X-Api-Key");
-        return configured.equals(provided);
+        return SecurityUtil.constantTimeEquals(configured, provided);
     }
 
     private void writeJson(HttpServletResponse resp, int status, String json) throws IOException {

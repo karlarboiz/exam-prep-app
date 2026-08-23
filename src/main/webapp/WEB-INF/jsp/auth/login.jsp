@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Login" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -10,6 +11,7 @@
         <div class="alert alert-error">${error}</div>
     </c:if>
     <form method="post" action="${ctx}/login" class="form">
+        <ep:csrf/>
         <div class="form-group">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required autofocus>
