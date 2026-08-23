@@ -137,7 +137,7 @@ Run these after any auth, grant, or exam change.
 ### Funnel → student
 
 1. `POST /api/access-tokens` with `X-Api-Key` → raw token once
-2. Open `/register?token=…` → create user
+2. Open `/register`, paste the token (or a one-time `?token=` that is stripped into the session) → create user
 3. Login as that user → `/user/diagnostic` → complete → `/user/dashboard` shows this week’s regimen
 4. Start this week’s exam → submit → study plan + email outbox row; review misses (no new official score)
 5. History shows attempt; reopen result review (including unanswered)
@@ -154,6 +154,7 @@ Run these after any auth, grant, or exam change.
 2. Profile shows username / email (read-only)
 3. Wrong current password → error, old password still works
 4. Valid change → success banner; login with the new password works
+5. `/forgot-password` with a real email → outbox row; `/reset-password?token=` strips into session → new password works
 
 ### Negative
 

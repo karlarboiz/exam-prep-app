@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitleKey" value="page.studyPlan.title" scope="request"/>
@@ -19,7 +20,7 @@
 </c:if>
 
 <c:if test="${studyPlan.emailSent}">
-    <p class="hint"><fmt:message key="studyPlan.digestSent"><fmt:param value="${studyPlan.emailTo}"/></fmt:message></p>
+    <p class="hint"><fmt:message key="studyPlan.digestSent"><fmt:param value="${fn:escapeXml(studyPlan.emailTo)}"/></fmt:message></p>
 </c:if>
 
 <div class="card">
@@ -40,7 +41,7 @@
                 <tbody>
                 <c:forEach var="s" items="${studyPlan.subjectScores}">
                     <tr>
-                        <td>${s.subjectName}</td>
+                        <td><c:out value="${s.subjectName}"/></td>
                         <td>${s.scorePercent}%</td>
                         <td><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
                     </tr>
@@ -60,7 +61,7 @@
         <c:otherwise>
             <ul class="subject-list">
                 <c:forEach var="t" items="${studyPlan.targets}">
-                    <li>${t}</li>
+                    <li><c:out value="${t}"/></li>
                 </c:forEach>
             </ul>
         </c:otherwise>

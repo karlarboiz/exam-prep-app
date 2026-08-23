@@ -20,6 +20,15 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>SecurityHeadersFilter</filter-name>
+        <filter-class>com.examprep.filter.SecurityHeadersFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SecurityHeadersFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>ApiRateLimitFilter</filter-name>
         <filter-class>com.examprep.filter.ApiRateLimitFilter</filter-class>
     </filter>
@@ -52,6 +61,15 @@
     </filter>
     <filter-mapping>
         <filter-name>CsrfFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AuthRateLimitFilter</filter-name>
+        <filter-class>com.examprep.filter.AuthRateLimitFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthRateLimitFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

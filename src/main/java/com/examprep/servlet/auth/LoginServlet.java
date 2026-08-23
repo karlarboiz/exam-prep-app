@@ -1,5 +1,6 @@
 package com.examprep.servlet.auth;
 
+import com.examprep.config.AppConfig;
 import com.examprep.i18n.LocaleSupport;
 import com.examprep.i18n.Messages;
 import com.examprep.model.AppLocale;
@@ -27,6 +28,10 @@ public class LoginServlet extends HttpServlet {
             redirectToDashboard(currentUser, req, resp);
             return;
         }
+        if ("1".equals(req.getParameter("reset"))) {
+            req.setAttribute("success", Messages.get(req, "login.resetSuccess"));
+        }
+        req.setAttribute("showAdminHint", !AppConfig.isProduction());
         req.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(req, resp);
     }
 
@@ -35,6 +40,7 @@ public class LoginServlet extends HttpServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
+        req.setAttribute("showAdminHint", !AppConfig.isProduction());
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
             req.setAttribute("error", Messages.get(req, "error.login.required"));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(req, resp);
@@ -60,6 +66,9 @@ public class LoginServlet extends HttpServlet {
                 // Session cookie is already set; locale stays on this browser.
             }
             redirectToDashboard(user, req, resp);
+        } catch (IllegalArgumentException e) {
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
+            req.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(req, resp);
         } catch (Exception e) {
             req.setAttribute("error", Messages.get(req, "error.login.failed"));
             req.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(req, resp);

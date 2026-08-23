@@ -12,4 +12,4 @@ Read-only `.card` with `.grid-2` fields (username, email, role, exam level). Exa
 
 ## Change password
 
-Second `.card` with current / new / confirm fields and a `.btn-primary` **Update password**. Errors use `.alert-error`; success after redirect uses `.alert-success`.
+Second `.card` with current / new / confirm fields, `<ep:csrf/>`, and a `.btn-primary` **Update password**. Errors use `.alert-error`; success after redirect uses `.alert-success`.

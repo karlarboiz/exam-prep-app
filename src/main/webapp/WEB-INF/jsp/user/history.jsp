@@ -31,11 +31,11 @@
                 <tbody>
                 <c:forEach var="h" items="${history}">
                     <tr>
-                        <td>${h.examTitle}</td>
+                        <td><c:out value="${h.examTitle}"/></td>
                         <td>
                             <span class="badge badge-${h.attemptKind}"><fmt:message key="attemptKind.${h.attemptKind}"/></span>
                         </td>
-                        <td>${h.subjectName}</td>
+                        <td><c:out value="${h.subjectName}"/></td>
                         <td>${ep:fmt(h.startedAt)}</td>
                         <td>${h.completedAt != null ? ep:fmt(h.completedAt) : '-'}</td>
                         <td>${h.scorePercent != null ? h.scorePercent : '-'}%</td>

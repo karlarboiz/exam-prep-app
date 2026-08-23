@@ -8,7 +8,7 @@
 
 <p><a href="${ctx}/admin/integrity">&larr; <fmt:message key="integrityDetail.back"/></a></p>
 <h1><fmt:message key="integrityDetail.heading"/></h1>
-<p class="subtitle">${attempt.username} &middot; ${attempt.examTitle}</p>
+<p class="subtitle"><c:out value="${attempt.username}"/> &middot; <c:out value="${attempt.examTitle}"/></p>
 
 <div class="stats-grid">
     <div class="stat-card">

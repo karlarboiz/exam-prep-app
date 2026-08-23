@@ -10,4 +10,7 @@ FROM tomcat:10.1-jdk17-temurin
 RUN rm -rf /usr/local/tomcat/webapps/*
 COPY --from=build /app/target/exam-prep-app.war /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8080
+# Do not bake ENVIRONMENT=production here — local `docker run` still uses
+# development defaults. Production hosts must pass JWT_SECRET, ID_CIPHER_SECRET,
+# FUNNEL_API_KEY, ADMIN_PASSWORD, and ENVIRONMENT=production.
 CMD ["catalina.sh", "run"]

@@ -9,7 +9,7 @@
 <h1><fmt:message key="users.heading"/></h1>
 <p class="subtitle"><fmt:message key="users.subtitle"/></p>
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 <fmt:message key="confirm.deleteUser" var="confirmDeleteUser"/>
 
@@ -27,8 +27,8 @@
         <tbody>
         <c:forEach var="u" items="${users}">
             <tr>
-                <td>${u.username}</td>
-                <td>${u.email}</td>
+                <td><c:out value="${u.username}"/></td>
+                <td><c:out value="${u.email}"/></td>
                 <td>${ep:fmt(u.createdAt)}</td>
                 <td>
                     <form method="post" action="${ctx}/admin/users" class="table-inline-form">

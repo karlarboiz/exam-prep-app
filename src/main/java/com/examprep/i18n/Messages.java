@@ -22,6 +22,8 @@ public final class Messages {
             Map.entry("Password must be at least 6 characters", "error.password.tooShort"),
             Map.entry("New password must be different from the current password", "error.password.sameAsCurrent"),
             Map.entry("Current password is incorrect", "error.password.currentWrong"),
+            Map.entry("Too many failed login attempts. Try again later.", "error.login.locked"),
+            Map.entry("This reset link is invalid or expired", "error.reset.invalid"),
             Map.entry("You cannot delete your own account", "error.user.deleteSelf"),
             Map.entry("Cannot remove the last admin", "error.user.lastAdmin"),
             Map.entry("You cannot remove your own admin access", "error.user.removeOwnAdmin"),

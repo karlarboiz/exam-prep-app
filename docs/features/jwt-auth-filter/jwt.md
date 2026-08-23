@@ -6,7 +6,7 @@
 
 ## Public paths
 
-- `/login`, `/register`, `/locale`
+- `/login`, `/register`, `/forgot-password`, `/reset-password`, `/locale`
 - `/`, `/index.jsp`
 - `/css/**`, `/js/**`, `/error/**`
 - `/api/access-tokens` (create; authenticated via `X-Api-Key`, not user JWT)
@@ -15,7 +15,7 @@
 ## Protected behavior
 
 1. Read JWT from auth cookie.
-2. Parse claims → load `User` by id; on failure treat as anonymous.
+2. Parse claims → load `User` by id; reject if JWT `tv` does not match `users.token_version`.
 3. Unauthenticated + non-public → redirect `/login`.
 4. Path starts with `/admin` and role ≠ `ADMIN` → HTTP 403.
 5. Set request attribute `CURRENT_USER` for JSPs/servlets.

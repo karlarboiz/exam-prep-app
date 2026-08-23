@@ -81,6 +81,50 @@ class AuthServiceTest extends DatabaseTestSupport {
     }
 
     @Test
+    void changePasswordBumpsTokenVersion() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        int version = userDao.findById(student.getId()).orElseThrow().getTokenVersion();
+
+        authService.changePassword(student.getId(), "password123", "newpass1", "newpass1");
+
+        assertEquals(version + 1, userDao.findById(student.getId()).orElseThrow().getTokenVersion());
+    }
+
+    @Test
+    void lockoutAfterRepeatedFailures() throws Exception {
+        createStudent("lockedout", ExamLevel.PROFESSIONAL);
+        for (int i = 0; i < 5; i++) {
+            assertTrue(authService.authenticate("lockedout", "wrong").isEmpty());
+        }
+        IllegalArgumentException locked = assertThrows(IllegalArgumentException.class, () ->
+                authService.authenticate("lockedout", "wrong"));
+        assertTrue(locked.getMessage().toLowerCase().contains("too many"));
+    }
+
+    @Test
+    void passwordResetWorksAndUnknownEmailIsSilent() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        authService.requestPasswordReset("nobody@example.com", "http://localhost");
+        assertTrue(new com.examprep.dao.EmailOutboxDao().findByUserId(student.getId()).isEmpty());
+
+        authService.requestPasswordReset("pat@example.com", "http://localhost");
+        var rows = new com.examprep.dao.EmailOutboxDao().findByUserId(student.getId());
+        assertEquals(1, rows.size());
+        String body = rows.get(0).getBody();
+        int idx = body.indexOf("token=");
+        assertTrue(idx >= 0);
+        String raw = body.substring(idx + 6).split("\\s")[0];
+
+        authService.resetPassword(raw, "resetpass1", "resetpass1");
+        assertTrue(authService.authenticate("pat", "resetpass1").isPresent());
+        assertTrue(authService.authenticate("pat", "password123").isEmpty());
+
+        IllegalArgumentException reused = assertThrows(IllegalArgumentException.class, () ->
+                authService.resetPassword(raw, "another1", "another1"));
+        assertTrue(reused.getMessage().toLowerCase().contains("invalid"));
+    }
+
+    @Test
     void changePasswordRejectsMismatchAndReuse() throws Exception {
         User student = createStudent("pat", ExamLevel.PROFESSIONAL);
 

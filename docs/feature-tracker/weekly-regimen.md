@@ -17,7 +17,7 @@ Depends on diagnostic bands (`diagnostic_subject_scores`) and existing practice 
 | Weekly exam assignment (new form) | Done | Sampled into `weekly_form_questions` / `attempt_questions`. Template exam `is_weekly` |
 | One official scored attempt per weekly form | Done | `official_attempt_id` set once; start after lock throws; submit does not overwrite |
 | In-app study plan from misses | Done | `/user/study-plan` — bands, 3–5 targets, misses |
-| Email digest of study plan | Done | `MailService` → `email_outbox` + log; skipped after grant expiry/revoke |
+| Email digest of study plan | Done | `MailService` → `email_outbox`; SMTP when `mail.smtp.host` is set; skipped after grant expiry/revoke |
 | Unlimited untimed review of week’s misses | Done | `/user/review` — no attempt row, no official score write |
 | Optional mid-week checkpoint (fresh items) | Done | `/user/checkpoint`; skipped when bank &lt; `weekly.checkpoint.min.fresh` |
 | Next-week form over-samples weak subjects | Done | `QuestionSampler.quotas` WEAK &gt; DEVELOPING &gt; STRONG; even mix on final week |

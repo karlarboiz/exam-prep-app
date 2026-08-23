@@ -13,6 +13,7 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime diagnosticCompletedAt;
     private AppLocale locale = AppLocale.DEFAULT;
+    private int tokenVersion;
 
     public User() {
     }
@@ -100,6 +101,14 @@ public class User {
 
     public boolean isDiagnosticCompleted() {
         return diagnosticCompletedAt != null;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
     }
 
     public boolean isAdmin() {

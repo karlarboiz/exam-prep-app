@@ -13,6 +13,7 @@
 | createdAt | LocalDateTime | Registration time |
 | diagnosticCompletedAt | LocalDateTime | Set only when placement diagnostic status is `COMPLETED`; null until then (expired/abandoned do not set it) |
 | locale | AppLocale | UI language (`tl` or `en`). Default Tagalog. Synced from the language switcher when the user is signed in. |
+| tokenVersion | int | Incremented on password change or reset. JWT `tv` claim must match or the session is rejected. |
 
 ## Helpers
 

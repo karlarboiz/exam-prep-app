@@ -22,18 +22,22 @@ public final class WebUtil {
     }
 
     /**
-     * Ngrok and other HTTPS proxies terminate TLS before Tomcat, so {@code request.isSecure()}
-     * is often false. Honor {@code X-Forwarded-Proto} and mark the cookie Secure + SameSite=Lax
-     * so browsers keep the session on the public https:// host.
+     * Honor {@code cookie.secure} / {@code cookie.samesite}. Behind a TLS terminator,
+     * set {@code proxy.trust.forwarded=true} so {@code X-Forwarded-Proto} is trusted.
      */
     private static void addAuthCookie(HttpServletRequest request, HttpServletResponse response,
                                       String token, int maxAge) {
+        String sameSite = normalizeSameSite(AppConfig.get("cookie.samesite", "Lax"));
+        boolean secure = AppConfig.getBoolean("cookie.secure", false)
+                || isHttps(request)
+                || "None".equals(sameSite);
+
         Cookie cookie = new Cookie(JwtUtil.COOKIE_NAME, token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setSecure(isHttps(request));
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setSecure(secure);
+        cookie.setAttribute("SameSite", sameSite);
         response.addCookie(cookie);
     }
 
@@ -41,12 +45,40 @@ public final class WebUtil {
         if (request.isSecure()) {
             return true;
         }
+        if (!AppConfig.getBoolean("proxy.trust.forwarded", false)) {
+            return false;
+        }
         String forwarded = request.getHeader("X-Forwarded-Proto");
         if (forwarded == null || forwarded.isBlank()) {
             return false;
         }
         String first = forwarded.split(",")[0].trim();
         return "https".equalsIgnoreCase(first);
+    }
+
+    public static String getClientIp(HttpServletRequest request) {
+        if (AppConfig.getBoolean("proxy.trust.forwarded", false)) {
+            String ip = request.getHeader("X-Forwarded-For");
+            if (ip != null && !ip.isBlank()) {
+                int commaIndex = ip.indexOf(',');
+                return commaIndex > 0 ? ip.substring(0, commaIndex).trim() : ip.trim();
+            }
+        }
+        return request.getRemoteAddr();
+    }
+
+    private static String normalizeSameSite(String value) {
+        if (value == null || value.isBlank()) {
+            return "Lax";
+        }
+        String trimmed = value.trim();
+        if ("Strict".equalsIgnoreCase(trimmed)) {
+            return "Strict";
+        }
+        if ("None".equalsIgnoreCase(trimmed)) {
+            return "None";
+        }
+        return "Lax";
     }
 
     public static String getTokenFromCookie(HttpServletRequest request) {

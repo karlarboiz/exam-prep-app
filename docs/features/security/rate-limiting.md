@@ -29,7 +29,9 @@ Servlet filter that enforces rate limits on API endpoints.
 - `/api/access-tokens` (POST)
 - `/api/access-tokens/revoke` (POST)
 
-**Rate Limit Key:** Client IP address (supports `X-Forwarded-For` header)
+Login, register, and password-reset POSTs use a separate `AuthRateLimitFilter` (default 8 requests / 15 minutes).
+
+**Rate Limit Key:** Client IP address. `X-Forwarded-For` is used only when `proxy.trust.forwarded=true`.
 
 **Filter Order:** Applied early, after `CharacterEncodingFilter`, before `JwtAuthFilter`
 
@@ -61,6 +63,13 @@ rate.limit.api.window.minutes=1
 {
   "error": "Rate limit exceeded. Please try again later."
 }
+```
+
+Auth form limits (`app.properties`):
+
+```properties
+rate.limit.auth.max.requests=8
+rate.limit.auth.window.minutes=15
 ```
 
 ## Production Tuning

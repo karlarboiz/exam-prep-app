@@ -28,6 +28,13 @@ public final class AppConfig {
         overrideFromEnv("FUNNEL_API_KEY", "funnel.api.key");
         overrideFromEnv("ADMIN_USERNAME", "admin.username");
         overrideFromEnv("ADMIN_PASSWORD", "admin.password");
+        overrideFromEnv("SMTP_HOST", "mail.smtp.host");
+        overrideFromEnv("SMTP_PORT", "mail.smtp.port");
+        overrideFromEnv("SMTP_USERNAME", "mail.smtp.username");
+        overrideFromEnv("SMTP_PASSWORD", "mail.smtp.password");
+        overrideFromEnv("MAIL_FROM", "mail.from");
+        overrideFromEnv("APP_PUBLIC_URL", "app.public.url");
+        overrideFromEnv("PROXY_TRUST_FORWARDED", "proxy.trust.forwarded");
         
         validateSecurityConfig();
     }

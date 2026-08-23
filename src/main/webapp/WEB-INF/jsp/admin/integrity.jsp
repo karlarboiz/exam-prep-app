@@ -32,7 +32,7 @@
                 <tbody>
                 <c:forEach var="a" items="${flagged}">
                     <tr>
-                        <td>${a.username}</td>
+                        <td><c:out value="${a.username}"/></td>
                         <td>${a.examTitle}</td>
                         <td>
                             <c:choose>

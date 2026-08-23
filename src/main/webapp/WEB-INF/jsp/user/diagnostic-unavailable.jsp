@@ -8,7 +8,7 @@
 <div class="card">
     <h1><fmt:message key="diagnosticUnavailable.heading"/></h1>
     <c:if test="${not empty error}">
-        <div class="alert alert-error">${error}</div>
+        <div class="alert alert-error"><c:out value="${error}"/></div>
     </c:if>
     <p><fmt:message key="diagnosticUnavailable.body"/></p>
 </div>
