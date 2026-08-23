@@ -1,36 +1,55 @@
 package com.examprep.service;
 
+import com.examprep.config.AppConfig;
+import com.examprep.dao.PasswordResetTokenDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AppLocale;
 import com.examprep.model.ExamLevel;
+import com.examprep.model.PasswordResetToken;
 import com.examprep.model.Role;
 import com.examprep.model.User;
 import com.examprep.util.JwtUtil;
+import com.examprep.util.LoginLockout;
 import com.examprep.util.PasswordUtil;
+import com.examprep.util.TokenHashUtil;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class AuthService {
 
+    public static final String REGISTER_TOKEN_ATTR = "registerAccessToken";
+    public static final String RESET_TOKEN_ATTR = "passwordResetToken";
+
     private final UserDao userDao = new UserDao();
+    private final PasswordResetTokenDao resetTokenDao = new PasswordResetTokenDao();
+    private final MailService mailService = new MailService();
+    private final LoginLockout loginLockout = new LoginLockout();
 
     public Optional<User> authenticate(String username, String password) throws SQLException {
+        if (loginLockout.isLocked(username)) {
+            throw new IllegalArgumentException("Too many failed login attempts. Try again later.");
+        }
         Optional<User> userOpt = userDao.findByUsername(username);
         if (userOpt.isEmpty()) {
+            loginLockout.recordFailure(username);
             return Optional.empty();
         }
         User user = userOpt.get();
         if (!PasswordUtil.verify(password, user.getPasswordHash())) {
+            loginLockout.recordFailure(username);
             return Optional.empty();
         }
+        loginLockout.recordSuccess(username);
         return Optional.of(user);
     }
 
     public String issueToken(User user) {
-        return JwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
+        return JwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole(),
+                user.getTokenVersion());
     }
 
     public User register(String username, String email, String password, ExamLevel examLevel) throws SQLException {
@@ -95,6 +114,68 @@ public class AuthService {
             throw new IllegalArgumentException("Current password is incorrect");
         }
         userDao.updatePasswordHash(userId, PasswordUtil.hash(newPassword));
+    }
+
+    /**
+     * Always succeeds from the caller's view. Sends a reset mail only when the email exists.
+     */
+    public void requestPasswordReset(String email, String publicBaseUrl) throws SQLException {
+        if (isBlank(email)) {
+            return;
+        }
+        Optional<User> userOpt = userDao.findByEmail(email.trim());
+        if (userOpt.isEmpty()) {
+            return;
+        }
+        User user = userOpt.get();
+        resetTokenDao.invalidateUnusedForUser(user.getId());
+        String rawToken = TokenHashUtil.generateRawToken();
+        int ttlMinutes = AppConfig.getInt("password.reset.ttl.minutes", 60);
+        resetTokenDao.insert(user.getId(), TokenHashUtil.sha256(rawToken),
+                LocalDateTime.now().plusMinutes(ttlMinutes));
+
+        String base = publicBaseUrl == null ? "" : publicBaseUrl.replaceAll("/$", "");
+        String link = base + "/reset-password?token=" + rawToken;
+        String subject = "Reset your Exam Prep password";
+        String body = "Hi " + user.getUsername() + ",\n\n"
+                + "Use this link within " + ttlMinutes + " minutes to choose a new password:\n"
+                + link + "\n\n"
+                + "If you did not request this, you can ignore the email.\n";
+        mailService.send(user.getId(), null, user.getEmail(), subject, body);
+    }
+
+    public Optional<User> peekResetToken(String rawToken) throws SQLException {
+        if (isBlank(rawToken)) {
+            return Optional.empty();
+        }
+        Optional<PasswordResetToken> tokenOpt = resetTokenDao.findByHash(TokenHashUtil.sha256(rawToken.trim()));
+        if (tokenOpt.isEmpty() || !tokenOpt.get().isUsable(LocalDateTime.now())) {
+            return Optional.empty();
+        }
+        return userDao.findById(tokenOpt.get().getUserId());
+    }
+
+    public void resetPassword(String rawToken, String newPassword, String confirmPassword) throws SQLException {
+        if (isBlank(rawToken)) {
+            throw new IllegalArgumentException("This reset link is invalid or expired");
+        }
+        if (isBlank(newPassword) || isBlank(confirmPassword)) {
+            throw new IllegalArgumentException("All password fields are required");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("New passwords do not match");
+        }
+        if (newPassword.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+        Optional<PasswordResetToken> tokenOpt = resetTokenDao.findByHash(TokenHashUtil.sha256(rawToken.trim()));
+        if (tokenOpt.isEmpty() || !tokenOpt.get().isUsable(LocalDateTime.now())) {
+            throw new IllegalArgumentException("This reset link is invalid or expired");
+        }
+        PasswordResetToken token = tokenOpt.get();
+        userDao.updatePasswordHash(token.getUserId(), PasswordUtil.hash(newPassword));
+        resetTokenDao.markUsed(token.getId());
+        resetTokenDao.invalidateUnusedForUser(token.getUserId());
     }
 
     public void deleteUser(Long actorId, Long targetId) throws SQLException {

@@ -9,7 +9,10 @@
 <div class="auth-card">
     <h1><fmt:message key="login.heading"/></h1>
     <c:if test="${not empty error}">
-        <div class="alert alert-error">${error}</div>
+        <div class="alert alert-error"><c:out value="${error}"/></div>
+    </c:if>
+    <c:if test="${not empty success}">
+        <div class="alert alert-success"><c:out value="${success}"/></div>
     </c:if>
     <form method="post" action="${ctx}/login" class="form">
         <ep:csrf/>
@@ -23,8 +26,11 @@
         </div>
         <button type="submit" class="btn btn-primary"><fmt:message key="login.submit"/></button>
     </form>
+    <p class="auth-link"><a href="${ctx}/forgot-password"><fmt:message key="login.forgot"/></a></p>
     <p class="auth-link"><fmt:message key="login.registerHint"/></p>
-    <p class="hint"><fmt:message key="login.adminHint"><fmt:param value="admin"/><fmt:param value="admin123"/></fmt:message></p>
+    <c:if test="${showAdminHint}">
+        <p class="hint"><fmt:message key="login.adminHint"><fmt:param value="admin"/><fmt:param value="admin123"/></fmt:message></p>
+    </c:if>
 </div>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

@@ -43,6 +43,8 @@ public class AccountServlet extends HttpServlet {
 
         try {
             authService.changePassword(currentUser.getId(), currentPassword, newPassword, confirmPassword);
+            User refreshed = authService.findById(currentUser.getId()).orElse(currentUser);
+            WebUtil.setAuthCookie(req, resp, authService.issueToken(refreshed));
             resp.sendRedirect(req.getContextPath() + "/account?changed=1");
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", Messages.fromException(req, e.getMessage()));

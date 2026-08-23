@@ -10,7 +10,7 @@
 <p class="subtitle"><fmt:message key="grants.subtitle"/></p>
 
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 <c:if test="${not empty createdRawToken}">
     <div class="alert alert-success"><fmt:message key="grants.created"/></div>
@@ -18,12 +18,13 @@
         <h2><fmt:message key="grants.newToken"/></h2>
         <div class="form-group">
             <label for="createdToken"><fmt:message key="grants.rawToken"/></label>
-            <input type="text" id="createdToken" value="${createdRawToken}" readonly class="token-readonly">
+            <input type="text" id="createdToken" value="<c:out value='${createdRawToken}'/>" readonly class="token-readonly">
         </div>
         <div class="form-group">
             <label for="registerLink"><fmt:message key="grants.registerLink"/></label>
-            <input type="text" id="registerLink" value="${ctx}${registerPath}" readonly class="token-readonly">
+            <input type="text" id="registerLink" value="<c:out value='${ctx}${registerPath}'/>" readonly class="token-readonly">
         </div>
+        <p class="hint"><fmt:message key="grants.registerHint"/></p>
         <p class="exam-meta">
             <fmt:message key="grants.examLevelMeta">
                 <fmt:param><fmt:message key="examLevel.${createdGrant.examLevel}"/></fmt:param>
@@ -109,7 +110,7 @@
                         <td>${ep:fmt(g.expiresAt)}</td>
                         <td>
                             <c:choose>
-                                <c:when test="${not empty g.username}">${g.username}</c:when>
+                                <c:when test="${not empty g.username}"><c:out value="${g.username}"/></c:when>
                                 <c:otherwise><fmt:message key="common.dash"/></c:otherwise>
                             </c:choose>
                         </td>

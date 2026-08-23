@@ -1,12 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitleKey" value="page.dashboard.title" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
 
-<h1><fmt:message key="dashboard.welcome"><fmt:param value="${currentUser.username}"/></fmt:message></h1>
+<h1><fmt:message key="dashboard.welcome"><fmt:param value="${fn:escapeXml(currentUser.username)}"/></fmt:message></h1>
 <p class="subtitle">
     <fmt:message key="dashboard.subtitle"/>
     <c:if test="${not empty examLevel}">
@@ -117,7 +118,7 @@
         <h2><fmt:message key="dashboard.subjects"/></h2>
         <ul class="subject-list">
             <c:forEach var="subject" items="${subjects}">
-                <li><strong>${subject.name}</strong> — ${subject.description}</li>
+                <li><strong><c:out value="${subject.name}"/></strong> — <c:out value="${subject.description}"/></li>
             </c:forEach>
         </ul>
     </div>
@@ -132,8 +133,8 @@
                 <div class="exam-grid">
                     <c:forEach var="exam" items="${exams}">
                         <div class="exam-card">
-                            <h3>${exam.title}</h3>
-                            <p class="exam-meta">${exam.subjectName}</p>
+                            <h3><c:out value="${exam.title}"/></h3>
+                            <p class="exam-meta"><c:out value="${exam.subjectName}"/></p>
                             <p class="exam-meta"><fmt:message key="common.questions"><fmt:param value="${exam.questionCount}"/></fmt:message>
                                 &middot; <fmt:message key="common.minutes"><fmt:param value="${exam.durationMinutes}"/></fmt:message></p>
                             <a href="${ctx}/user/exam?examId=${ep:enc(exam.id)}" class="btn btn-outline"><fmt:message key="dashboard.startPractice"/></a>

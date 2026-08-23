@@ -9,7 +9,7 @@
 
 <div class="result-header">
     <h1><fmt:message key="diagnosticResult.heading"/></h1>
-    <h2>${attempt.examTitle}</h2>
+    <h2><c:out value="${attempt.examTitle}"/></h2>
     <p class="exam-meta"><fmt:message key="diagnosticResult.meta"/></p>
 </div>
 
@@ -47,7 +47,7 @@
                 <tbody>
                 <c:forEach var="s" items="${subjectScores}">
                     <tr>
-                        <td>${s.subjectName}</td>
+                        <td><c:out value="${s.subjectName}"/></td>
                         <td>${s.scorePercent}%</td>
                         <td><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
                     </tr>
@@ -64,10 +64,10 @@
         <div class="review-card ${a.correct ? 'correct' : 'incorrect'}">
             <h3><fmt:message key="result.question"><fmt:param value="${status.index + 1}"/></fmt:message>
                 <c:if test="${not empty a.question.subjectName}">
-                    <span class="exam-meta">(${a.question.subjectName})</span>
+                    <span class="exam-meta">(<c:out value="${a.question.subjectName}"/>)</span>
                 </c:if>
             </h3>
-            <p>${a.question.prompt}</p>
+            <p><c:out value="${a.question.prompt}"/></p>
             <c:set var="imageUrl" value="${a.question.imageUrl}"/>
             <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
             <c:set var="imageLoading" value="lazy"/>
@@ -77,13 +77,13 @@
                     <c:when test="${a.selectedOption != null}">${a.selectedOption}</c:when>
                     <c:otherwise><fmt:message key="result.notAnswered"/></c:otherwise>
                 </c:choose>
-                — ${a.question.getOptionText(a.selectedOption)}</p>
+                — <c:out value="${a.question.getOptionText(a.selectedOption)}"/></p>
             <c:if test="${!a.correct}">
                 <p><strong><fmt:message key="result.correctAnswer"/></strong> ${a.question.correctOption}
-                    — ${a.question.getOptionText(a.question.correctOption)}</p>
+                    — <c:out value="${a.question.getOptionText(a.question.correctOption)}"/></p>
             </c:if>
             <c:if test="${not empty a.question.explanation}">
-                <p><strong><fmt:message key="result.explanation"/></strong> ${a.question.explanation}</p>
+                <p><strong><fmt:message key="result.explanation"/></strong> <c:out value="${a.question.explanation}"/></p>
             </c:if>
         </div>
     </c:forEach>

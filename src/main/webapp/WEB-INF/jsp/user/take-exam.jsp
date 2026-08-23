@@ -10,8 +10,8 @@
 <fmt:message key="exam.confirmSubmit" var="confirmSubmit"/>
 
 <div class="exam-header">
-    <h1>${attempt.examTitle}</h1>
-    <p class="exam-meta">${attempt.subjectName} &middot; <fmt:message key="exam.questions"><fmt:param value="${questions.size()}"/></fmt:message></p>
+    <h1><c:out value="${attempt.examTitle}"/></h1>
+    <p class="exam-meta"><c:out value="${attempt.subjectName}"/> &middot; <fmt:message key="exam.questions"><fmt:param value="${questions.size()}"/></fmt:message></p>
     <p class="hint exam-integrity-note"><fmt:message key="exam.integrityNote"/></p>
     <p class="exam-progress" id="exam-progress"><fmt:message key="exam.questionOf"><fmt:param value="1"/><fmt:param value="${questions.size()}"/></fmt:message></p>
     <div class="timer-bar">
@@ -39,7 +39,7 @@
              data-question-id="${q.id}"
              data-has-image="${not empty q.imageUrl}">
             <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message></h3>
-            <p class="question-prompt">${q.prompt}</p>
+            <p class="question-prompt"><c:out value="${q.prompt}"/></p>
             <c:set var="imageUrl" value="${q.imageUrl}"/>
             <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
             <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>

@@ -97,7 +97,7 @@
                             </c:choose>
                         </span>
                         <span class="account-text">
-                            <span class="account-name">${currentUser.username}</span>
+                            <span class="account-name"><c:out value="${currentUser.username}"/></span>
                             <span class="account-role">${currentUser.role == 'ADMIN' ? 'Admin' : 'User'}</span>
                         </span>
                     </a>

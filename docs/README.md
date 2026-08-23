@@ -21,7 +21,7 @@ Then drill into the folders below as needed.
 
 - [access-grants/](features/access-grants/overview.md) — one-time purchase tokens, redeem, expiry gate, revoke
 - [i18n/](features/i18n/overview.md) — Tagalog (default) / English UI switcher
-- [auth/](features/auth/login.md) — login / register / logout / [change password](features/auth/change-password.md)
+- [auth/](features/auth/login.md) — login / register / logout / [change password](features/auth/change-password.md) / [forgot password](features/auth/forgot-password.md)
 - [jwt-auth-filter/](features/jwt-auth-filter/jwt.md) — session JWT + public paths
 - [diagnostic/](features/diagnostic/overview.md) — first-login placement diagnostic (hard gate + sampled)
 - Admin subjects / exams / questions / users / [access grants](features/access-grants/admin-access-grants.md)

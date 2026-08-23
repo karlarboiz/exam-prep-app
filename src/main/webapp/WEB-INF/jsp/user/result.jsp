@@ -9,8 +9,8 @@
 
 <div class="result-header">
     <h1><fmt:message key="result.heading"/></h1>
-    <h2>${attempt.examTitle}</h2>
-    <p class="exam-meta">${attempt.subjectName}</p>
+    <h2><c:out value="${attempt.examTitle}"/></h2>
+    <p class="exam-meta"><c:out value="${attempt.subjectName}"/></p>
 </div>
 
 <div class="result-summary card">
@@ -32,7 +32,7 @@
     <c:forEach var="a" items="${answers}" varStatus="status">
         <div class="review-card ${a.correct ? 'correct' : 'incorrect'}">
             <h3><fmt:message key="result.question"><fmt:param value="${status.index + 1}"/></fmt:message></h3>
-            <p>${a.question.prompt}</p>
+            <p><c:out value="${a.question.prompt}"/></p>
             <c:set var="imageUrl" value="${a.question.imageUrl}"/>
             <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
             <c:set var="imageLoading" value="lazy"/>
@@ -40,17 +40,17 @@
             <p><strong><fmt:message key="result.yourAnswer"/></strong>
                 <c:choose>
                     <c:when test="${a.selectedOption != null}">
-                        ${a.selectedOption} — ${a.question.getOptionText(a.selectedOption)}
+                        ${a.selectedOption} — <c:out value="${a.question.getOptionText(a.selectedOption)}"/>
                     </c:when>
                     <c:otherwise><fmt:message key="result.notAnswered"/></c:otherwise>
                 </c:choose>
             </p>
             <c:if test="${!a.correct}">
                 <p><strong><fmt:message key="result.correctAnswer"/></strong> ${a.question.correctOption}
-                    — ${a.question.getOptionText(a.question.correctOption)}</p>
+                    — <c:out value="${a.question.getOptionText(a.question.correctOption)}"/></p>
             </c:if>
             <c:if test="${not empty a.question.explanation}">
-                <p><strong><fmt:message key="result.explanation"/></strong> ${a.question.explanation}</p>
+                <p><strong><fmt:message key="result.explanation"/></strong> <c:out value="${a.question.explanation}"/></p>
             </c:if>
         </div>
     </c:forEach>

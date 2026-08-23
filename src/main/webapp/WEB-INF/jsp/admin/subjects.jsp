@@ -8,7 +8,7 @@
 
 <h1><fmt:message key="subjects.heading"/></h1>
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 
 <div class="grid-2">
@@ -22,11 +22,11 @@
             </c:if>
             <div class="form-group">
                 <label for="name"><fmt:message key="subjects.name"/></label>
-                <input type="text" id="name" name="name" value="${editSubject.name}" required>
+                <input type="text" id="name" name="name" value="<c:out value='${editSubject.name}'/>" required>
             </div>
             <div class="form-group">
                 <label for="description"><fmt:message key="subjects.description"/></label>
-                <textarea id="description" name="description" rows="3">${editSubject.description}</textarea>
+                <textarea id="description" name="description" rows="3"><c:out value="${editSubject.description}"/></textarea>
             </div>
             <div class="form-group checkbox-group">
                 <label>
@@ -66,7 +66,7 @@
             <tbody>
             <c:forEach var="subject" items="${subjects}">
                 <tr>
-                    <td>${subject.name}</td>
+                    <td><c:out value="${subject.name}"/></td>
                     <td>${subject.description}</td>
                     <td>
                         <c:choose>

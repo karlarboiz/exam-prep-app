@@ -8,7 +8,7 @@
 
 <h1><fmt:message key="exams.heading"/></h1>
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 
 <div class="grid-2">
@@ -24,13 +24,13 @@
                 <label for="subjectId"><fmt:message key="exams.subject"/> <span class="exam-meta"><fmt:message key="exams.subjectHint"/></span></label>
                 <select id="subjectId" name="subjectId" required>
                     <c:forEach var="s" items="${subjects}">
-                        <option value="${s.id}" ${(not empty editExam && editExam.subjectId == s.id) ? 'selected' : ''}>${s.name}</option>
+                        <option value="${s.id}" ${(not empty editExam && editExam.subjectId == s.id) ? 'selected' : ''}><c:out value="${s.name}"/></option>
                     </c:forEach>
                 </select>
             </div>
             <div class="form-group">
                 <label for="title"><fmt:message key="exams.titleLabel"/></label>
-                <input type="text" id="title" name="title" value="${editExam.title}" required>
+                <input type="text" id="title" name="title" value="<c:out value='${editExam.title}'/>" required>
             </div>
             <div class="form-group">
                 <label for="durationMinutes"><fmt:message key="exams.duration"/></label>
@@ -68,7 +68,7 @@
                                         <c:if test="${selId == q.id}">checked</c:if>
                                     </c:forEach>
                                     onchange="onExamQuestionCheck(this)">
-                                [${q.subjectName}] ${q.prompt}
+                                [<c:out value="${q.subjectName}"/>] <c:out value="${q.prompt}"/>
                             </label>
                             <div class="exam-q-order-actions">
                                 <button type="button" class="btn btn-sm btn-outline" onclick="moveExamQuestion(this, -1)"><fmt:message key="exams.up"/></button>
@@ -105,7 +105,7 @@
             <tbody>
             <c:forEach var="exam" items="${exams}">
                 <tr>
-                    <td>${exam.title}</td>
+                    <td><c:out value="${exam.title}"/></td>
                     <td>${exam.subjectName}</td>
                     <td>
                         <c:choose>

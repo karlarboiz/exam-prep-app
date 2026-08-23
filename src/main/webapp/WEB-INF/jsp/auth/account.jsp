@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitleKey" value="page.account.title" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
@@ -9,10 +10,10 @@
 <p class="subtitle"><fmt:message key="account.subtitle"/></p>
 
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 <c:if test="${not empty success}">
-    <div class="alert alert-success">${success}</div>
+    <div class="alert alert-success"><c:out value="${success}"/></div>
 </c:if>
 
 <div class="card">
@@ -20,11 +21,11 @@
     <div class="grid-2">
         <div class="form-group">
             <label for="username"><fmt:message key="account.username"/></label>
-            <input type="text" id="username" value="${currentUser.username}" readonly class="token-readonly">
+            <input type="text" id="username" value="<c:out value='${currentUser.username}'/>" readonly class="token-readonly">
         </div>
         <div class="form-group">
             <label for="email"><fmt:message key="account.email"/></label>
-            <input type="text" id="email" value="${currentUser.email}" readonly class="token-readonly">
+            <input type="text" id="email" value="<c:out value='${currentUser.email}'/>" readonly class="token-readonly">
         </div>
         <div class="form-group">
             <label for="role"><fmt:message key="account.role"/></label>
@@ -42,6 +43,7 @@
 <div class="card">
     <h2><fmt:message key="account.changePassword"/></h2>
     <form method="post" action="${ctx}/account" class="form">
+        <ep:csrf/>
         <div class="form-group">
             <label for="currentPassword"><fmt:message key="account.currentPassword"/></label>
             <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">

@@ -9,7 +9,7 @@
 
 <h1><fmt:message key="questions.heading"/></h1>
 <c:if test="${not empty error}">
-    <div class="alert alert-error">${error}</div>
+    <div class="alert alert-error"><c:out value="${error}"/></div>
 </c:if>
 <c:if test="${not empty importSuccess}">
     <div class="alert alert-success">${importSuccess}</div>
@@ -19,7 +19,7 @@
         <p><fmt:message key="questions.importErrors"/></p>
         <ul>
             <c:forEach var="err" items="${importErrors}">
-                <li>${err}</li>
+                <li><c:out value="${err}"/></li>
             </c:forEach>
         </ul>
     </div>
@@ -31,7 +31,7 @@
         <select name="subjectId" onchange="this.form.submit()">
             <option value=""><fmt:message key="questions.allSubjects"/></option>
             <c:forEach var="s" items="${subjects}">
-                <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}>${s.name}</option>
+                <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}><c:out value="${s.name}"/></option>
             </c:forEach>
         </select>
         <label><fmt:message key="questions.filterBatch"/></label>
@@ -99,7 +99,7 @@
                 <label for="subjectId"><fmt:message key="questions.subject"/></label>
                 <select id="subjectId" name="subjectId" required>
                     <c:forEach var="s" items="${subjects}">
-                        <option value="${s.id}" ${editQuestion.subjectId == s.id ? 'selected' : ''}>${s.name}</option>
+                        <option value="${s.id}" ${editQuestion.subjectId == s.id ? 'selected' : ''}><c:out value="${s.name}"/></option>
                     </c:forEach>
                 </select>
             </div>
@@ -113,23 +113,23 @@
             </div>
             <div class="form-group">
                 <label for="prompt"><fmt:message key="questions.prompt"/></label>
-                <textarea id="prompt" name="prompt" rows="3" required>${editQuestion.prompt}</textarea>
+                <textarea id="prompt" name="prompt" rows="3" required><c:out value="${editQuestion.prompt}"/></textarea>
             </div>
             <div class="form-group">
                 <label for="optionA"><fmt:message key="questions.optionA"/></label>
-                <input type="text" id="optionA" name="optionA" value="${editQuestion.optionA}" required>
+                <input type="text" id="optionA" name="optionA" value="<c:out value='${editQuestion.optionA}'/>" required>
             </div>
             <div class="form-group">
                 <label for="optionB"><fmt:message key="questions.optionB"/></label>
-                <input type="text" id="optionB" name="optionB" value="${editQuestion.optionB}" required>
+                <input type="text" id="optionB" name="optionB" value="<c:out value='${editQuestion.optionB}'/>" required>
             </div>
             <div class="form-group">
                 <label for="optionC"><fmt:message key="questions.optionC"/></label>
-                <input type="text" id="optionC" name="optionC" value="${editQuestion.optionC}" required>
+                <input type="text" id="optionC" name="optionC" value="<c:out value='${editQuestion.optionC}'/>" required>
             </div>
             <div class="form-group">
                 <label for="optionD"><fmt:message key="questions.optionD"/></label>
-                <input type="text" id="optionD" name="optionD" value="${editQuestion.optionD}" required>
+                <input type="text" id="optionD" name="optionD" value="<c:out value='${editQuestion.optionD}'/>" required>
             </div>
             <div class="form-group">
                 <label for="correctOption"><fmt:message key="questions.correct"/></label>
@@ -150,11 +150,11 @@
             </div>
             <div class="form-group">
                 <label for="explanation"><fmt:message key="questions.explanation"/></label>
-                <textarea id="explanation" name="explanation" rows="3">${editQuestion.explanation}</textarea>
+                <textarea id="explanation" name="explanation" rows="3"><c:out value="${editQuestion.explanation}"/></textarea>
             </div>
             <div class="form-group">
                 <label for="imageUrl"><fmt:message key="questions.imageUrl"/></label>
-                <input type="text" id="imageUrl" name="imageUrl" value="${editQuestion.imageUrl}"
+                <input type="text" id="imageUrl" name="imageUrl" value="<c:out value='${editQuestion.imageUrl}'/>"
                        maxlength="500" placeholder="https://… or /media/diagram.png" autocomplete="off">
                 <p class="field-hint"><fmt:message key="questions.imageHint"/></p>
                 <figure id="imagePreview" class="question-figure admin-image-preview${empty editQuestion.imageUrl ? ' is-hidden' : ''}" data-question-image>
@@ -192,7 +192,7 @@
         <tbody>
         <c:forEach var="q" items="${questions}">
             <tr>
-                <td>${q.subjectName}</td>
+                <td><c:out value="${q.subjectName}"/></td>
                 <td>
                     <c:choose>
                         <c:when test="${not empty q.batchLabel}"><span class="badge badge-admin">${q.batchLabel}</span></c:when>
@@ -200,7 +200,7 @@
                     </c:choose>
                 </td>
                 <td>
-                    ${q.prompt}
+                    <c:out value="${q.prompt}"/>
                     <c:if test="${not empty q.imageUrl}">
                         <span class="badge badge-muted"><fmt:message key="questions.imageBadge"/></span>
                     </c:if>

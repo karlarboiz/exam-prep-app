@@ -11,7 +11,7 @@
 
 <div id="examShell" class="exam-shell${showIntro ? ' is-intro-pending' : ''}">
     <div class="exam-header">
-        <h1>${attempt.examTitle}</h1>
+        <h1><c:out value="${attempt.examTitle}"/></h1>
         <p class="exam-meta"><fmt:message key="diagnostic.meta"><fmt:param value="${questions.size()}"/></fmt:message></p>
         <p class="hint exam-integrity-note"><fmt:message key="exam.integrityNote"/></p>
         <p class="exam-progress" id="exam-progress"><fmt:message key="exam.questionOf"><fmt:param value="1"/><fmt:param value="${questions.size()}"/></fmt:message></p>
@@ -38,8 +38,8 @@
                  data-index="${status.index}"
                  data-question-id="${q.id}"
                  data-has-image="${not empty q.imageUrl}">
-                <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message> <c:if test="${not empty q.subjectName}"><span class="exam-meta">(${q.subjectName})</span></c:if></h3>
-                <p class="question-prompt">${q.prompt}</p>
+                <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message> <c:if test="${not empty q.subjectName}"><span class="exam-meta">(<c:out value="${q.subjectName}"/>)</span></c:if></h3>
+                <p class="question-prompt"><c:out value="${q.prompt}"/></p>
                 <c:set var="imageUrl" value="${q.imageUrl}"/>
                 <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
                 <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>

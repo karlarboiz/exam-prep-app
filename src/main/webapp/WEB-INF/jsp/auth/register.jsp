@@ -10,28 +10,36 @@
     <h1><fmt:message key="register.heading"/></h1>
     <p class="subtitle"><fmt:message key="register.subtitle"/></p>
     <c:if test="${not empty error}">
-        <div class="alert alert-error">${error}</div>
+        <div class="alert alert-error"><c:out value="${error}"/></div>
     </c:if>
     <c:choose>
         <c:when test="${empty accessToken}">
-            <p class="empty-state"><fmt:message key="register.empty"/>
-                <a href="${ctx}/login"><fmt:message key="register.returnLogin"/></a></p>
+            <p class="hint"><fmt:message key="register.empty"/></p>
+            <form method="post" action="${ctx}/register" class="form">
+                <ep:csrf/>
+                <input type="hidden" name="action" value="claim">
+                <div class="form-group">
+                    <label for="token"><fmt:message key="register.token"/></label>
+                    <input type="text" id="token" name="token" required autofocus autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary"><fmt:message key="register.continue"/></button>
+            </form>
         </c:when>
         <c:otherwise>
             <form method="post" action="${ctx}/register" class="form">
                 <ep:csrf/>
-                <input type="hidden" name="token" value="${accessToken}">
+                <input type="hidden" name="token" value="<c:out value='${accessToken}'/>">
                 <div class="form-group">
                     <label for="tokenDisplay"><fmt:message key="register.token"/></label>
-                    <input type="text" id="tokenDisplay" value="${accessToken}" readonly class="token-readonly">
+                    <input type="text" id="tokenDisplay" value="<c:out value='${accessToken}'/>" readonly class="token-readonly">
                 </div>
                 <div class="form-group">
                     <label for="username"><fmt:message key="register.username"/></label>
-                    <input type="text" id="username" name="username" value="${username}" required autofocus>
+                    <input type="text" id="username" name="username" value="<c:out value='${username}'/>" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="email"><fmt:message key="register.email"/></label>
-                    <input type="email" id="email" name="email" value="${email}" required>
+                    <input type="email" id="email" name="email" value="<c:out value='${email}'/>" required>
                 </div>
                 <div class="form-group">
                     <label for="examLevelDisplay"><fmt:message key="register.examLevel"/></label>
