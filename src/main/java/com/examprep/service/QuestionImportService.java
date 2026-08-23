@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,10 @@ import java.util.Set;
 
 public class QuestionImportService {
 
+    public static final int BATCH_LABEL_MAX_LENGTH = 100;
+    public static final String UNLABELED_FILTER = "__unlabeled__";
+    public static final String BATCH_LABEL_PREFIX = "cse-import-";
+
     private static final Set<String> VALID_OPTIONS = Set.of("A", "B", "C", "D");
     private static final Set<String> VALID_DIFFICULTIES = Set.of("EASY", "MEDIUM", "HARD");
 
@@ -31,6 +37,18 @@ public class QuestionImportService {
     private final SubjectDao subjectDao = new SubjectDao();
 
     public QuestionImportResult importFromExcel(InputStream inputStream) throws IOException, SQLException {
+        return importFromExcel(inputStream, null);
+    }
+
+    public QuestionImportResult importFromExcel(InputStream inputStream, String defaultBatchLabel)
+            throws IOException, SQLException {
+        String normalizedDefault = normalizeBatchLabel(defaultBatchLabel);
+        if (normalizedDefault != null && !isValidBatchLabel(normalizedDefault)) {
+            QuestionImportResult invalid = new QuestionImportResult();
+            invalid.addError(batchLabelError(normalizedDefault));
+            return invalid;
+        }
+
         List<QuestionImportRow> rows = parser.parse(inputStream);
         QuestionImportResult result = new QuestionImportResult();
         if (rows.isEmpty()) {
@@ -39,7 +57,7 @@ public class QuestionImportService {
         }
 
         Map<String, Long> subjectCache = new HashMap<>();
-        Map<Long, Map<String, Question>> promptIndexBySubject = new HashMap<>();
+        Map<Long, Map<String, Question>> indexBySubject = new HashMap<>();
         List<Question> toInsert = new ArrayList<>();
         List<Question> toUpdate = new ArrayList<>();
         Map<String, Integer> pendingInsertIndex = new HashMap<>();
@@ -48,6 +66,14 @@ public class QuestionImportService {
             Optional<String> validationError = validate(row);
             if (validationError.isPresent()) {
                 result.addError("Row " + row.getExcelRowNumber() + ": " + validationError.get());
+                continue;
+            }
+
+            String batchLabel;
+            try {
+                batchLabel = resolveBatchLabel(row, normalizedDefault);
+            } catch (IllegalArgumentException e) {
+                result.addError("Row " + row.getExcelRowNumber() + ": " + e.getMessage());
                 continue;
             }
 
@@ -73,16 +99,17 @@ public class QuestionImportService {
             question.setCorrectOption(row.getCorrectOption().trim().toUpperCase(Locale.ROOT));
             question.setDifficulty(normalizeDifficulty(row.getDifficulty()));
             question.setExplanation(row.getExplanation().trim());
+            question.setBatchLabel(batchLabel);
 
-            String promptKey = question.getPrompt().toLowerCase(Locale.ROOT);
-            String pendingKey = subjectId + "\0" + promptKey;
-            Map<String, Question> existingByPrompt = promptIndexFor(subjectId, promptIndexBySubject);
-            Question existing = existingByPrompt.get(promptKey);
+            String matchKey = matchKey(batchLabel, question.getPrompt());
+            String pendingKey = subjectId + "\0" + matchKey;
+            Map<String, Question> existingByKey = indexFor(subjectId, indexBySubject);
+            Question existing = existingByKey.get(matchKey);
             if (existing != null && existing.getId() != null) {
                 question.setId(existing.getId());
                 toUpdate.removeIf(q -> q.getId().equals(existing.getId()));
                 toUpdate.add(question);
-                existingByPrompt.put(promptKey, question);
+                existingByKey.put(matchKey, question);
             } else if (pendingInsertIndex.containsKey(pendingKey)) {
                 toInsert.set(pendingInsertIndex.get(pendingKey), question);
             } else {
@@ -100,19 +127,80 @@ public class QuestionImportService {
         return result;
     }
 
-    private Map<String, Question> promptIndexFor(Long subjectId, Map<Long, Map<String, Question>> cache)
+    /**
+     * Form/CLI label is the source of truth for this upload. A non-blank Excel
+     * {@code batch_label} must match it (case-insensitive) so an exported file
+     * cannot update a different batch.
+     */
+    private String resolveBatchLabel(QuestionImportRow row, String defaultBatchLabel) {
+        String excelLabel = normalizeBatchLabel(row.getBatchLabel());
+        if (excelLabel != null && !isValidBatchLabel(excelLabel)) {
+            throw new IllegalArgumentException(batchLabelError(excelLabel));
+        }
+        if (defaultBatchLabel != null) {
+            if (excelLabel != null && !excelLabel.equalsIgnoreCase(defaultBatchLabel)) {
+                throw new IllegalArgumentException(
+                        "batch_label in file \"" + excelLabel
+                                + "\" does not match this import's batch \"" + defaultBatchLabel + "\"");
+            }
+            return defaultBatchLabel;
+        }
+        return excelLabel;
+    }
+
+    private Map<String, Question> indexFor(Long subjectId, Map<Long, Map<String, Question>> cache)
             throws SQLException {
         Map<String, Question> index = cache.get(subjectId);
         if (index == null) {
             index = new HashMap<>();
             for (Question question : questionDao.findBySubjectId(subjectId)) {
                 if (question.getPrompt() != null) {
-                    index.putIfAbsent(question.getPrompt().trim().toLowerCase(Locale.ROOT), question);
+                    index.putIfAbsent(matchKey(question.getBatchLabel(), question.getPrompt()), question);
                 }
             }
             cache.put(subjectId, index);
         }
         return index;
+    }
+
+    private static String matchKey(String batchLabel, String prompt) {
+        String batchKey = batchLabel == null || batchLabel.isBlank()
+                ? ""
+                : batchLabel.trim().toLowerCase(Locale.ROOT);
+        return batchKey + "\0" + prompt.trim().toLowerCase(Locale.ROOT);
+    }
+
+    public static String normalizeBatchLabel(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return raw.trim();
+    }
+
+    /**
+     * Daily import batch, e.g. {@code cse-import-2026-08-23}. Same-day re-imports
+     * reuse the label so updates stay inside that batch.
+     */
+    public static String suggestedBatchLabel() {
+        return suggestedBatchLabel(Clock.systemDefaultZone());
+    }
+
+    public static String suggestedBatchLabel(Clock clock) {
+        Clock resolved = clock != null ? clock : Clock.systemDefaultZone();
+        return BATCH_LABEL_PREFIX + LocalDate.now(resolved);
+    }
+
+    public static boolean isValidBatchLabel(String label) {
+        return label != null
+                && label.length() <= BATCH_LABEL_MAX_LENGTH
+                && !UNLABELED_FILTER.equalsIgnoreCase(label);
+    }
+
+    public static String batchLabelError(String label) {
+        if (UNLABELED_FILTER.equalsIgnoreCase(label)) {
+            return "batch label is reserved";
+        }
+        return "batch label must be at most " + BATCH_LABEL_MAX_LENGTH + " characters";
     }
 
     public void writeTemplate(OutputStream out) throws IOException {

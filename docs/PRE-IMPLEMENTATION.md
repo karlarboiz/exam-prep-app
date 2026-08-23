@@ -130,7 +130,7 @@ Run these after any auth, grant, or exam change.
 1. Login `admin` / seeded password → `/admin/dashboard`
 2. Create subject → question → exam (attach questions, set order, set active)
 3. Confirm user list loads; change a student's exam level or role
-4. `/admin/questions` → download template, import, export
+4. `/admin/questions` → download template, import (batch defaults to `cse-import-YYYY-MM-DD`), export
 4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
 5. `/admin/integrity` → flagged list loads (empty or with suspect leaves)
 

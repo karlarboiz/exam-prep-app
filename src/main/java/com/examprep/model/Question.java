@@ -15,6 +15,7 @@ public class Question {
     private String difficulty;
     private String explanation;
     private String imageUrl;
+    private String batchLabel;
     private String subjectName;
     private List<QuestionOption> displayOptions;
 
@@ -107,6 +108,14 @@ public class Question {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getBatchLabel() {
+        return batchLabel;
+    }
+
+    public void setBatchLabel(String batchLabel) {
+        this.batchLabel = batchLabel;
     }
 
     public String getSubjectName() {

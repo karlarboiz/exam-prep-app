@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestionDaoTest extends DatabaseTestSupport {
 
@@ -35,5 +36,26 @@ class QuestionDaoTest extends DatabaseTestSupport {
         created.setImageUrl(null);
         questionDao.update(created);
         assertNull(questionDao.findById(created.getId()).orElseThrow().getImageUrl());
+    }
+
+    @Test
+    void createPersistsBatchLabelAndFilterFindsIt() throws Exception {
+        Question question = new Question();
+        question.setSubjectId(1L);
+        question.setPrompt("Which import batch does this item belong to?");
+        question.setOptionA("A");
+        question.setOptionB("B");
+        question.setOptionC("C");
+        question.setOptionD("D");
+        question.setCorrectOption("A");
+        question.setDifficulty("EASY");
+        question.setExplanation("Batch label scopes updates.");
+        question.setBatchLabel("cse-2026-q1");
+
+        Question created = questionDao.create(question);
+        assertEquals("cse-2026-q1", created.getBatchLabel());
+        assertEquals(1, questionDao.findFiltered(1L, "cse-2026-q1", false).size());
+        assertEquals(0, questionDao.findFiltered(1L, "other-batch", false).size());
+        assertTrue(questionDao.listBatchLabels().contains("cse-2026-q1"));
     }
 }

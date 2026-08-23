@@ -50,6 +50,18 @@ public class AdminService {
         return questionDao.findBySubjectId(subjectId);
     }
 
+    public List<Question> getQuestions(Long subjectId, String batchFilter) throws SQLException {
+        if (QuestionImportService.UNLABELED_FILTER.equals(batchFilter)) {
+            return questionDao.findFiltered(subjectId, null, true);
+        }
+        String batchLabel = (batchFilter == null || batchFilter.isBlank()) ? null : batchFilter;
+        return questionDao.findFiltered(subjectId, batchLabel, false);
+    }
+
+    public List<String> getBatchLabels() throws SQLException {
+        return questionDao.listBatchLabels();
+    }
+
     public Optional<Question> getQuestion(Long id) throws SQLException {
         return questionDao.findById(id);
     }
