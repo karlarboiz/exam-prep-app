@@ -9,8 +9,8 @@ Logged-in `ADMIN` and `USER` can change their own password. The route is **not**
 
 ## Behavior
 
-1. **GET** — Requires a JWT session. Shows read-only profile fields and the change-password form. `?changed=1` after a successful POST shows `"Password updated."`
-2. **POST** — Validates current password, new password, and confirm; updates `users.password_hash` and increments `token_version` so other sessions die. Re-issues the current JWT cookie. Redirects to `GET /account?changed=1` (PRG). The form includes `<ep:csrf/>`.
+1. **GET** — Requires a JWT session. Shows the [profile](profile.md) form and the change-password form. `?changed=1` after a successful POST shows `"Password updated."`
+2. **POST `action=password`** — Validates current password, new password, and confirm; updates `users.password_hash` and increments `token_version` so other sessions die. Re-issues the current JWT cookie. Redirects to `GET /account?changed=1` (PRG). The form includes `<ep:csrf/>`.
 
 A user can only change **their own** password (`currentUser.id`). There is no admin-impersonation path.
 
@@ -29,5 +29,5 @@ Minimum length matches [register](register.md).
 ## Out of scope
 
 - Admin-initiated reset (users use [forgot-password](forgot-password.md))
-- Editing username or email
+- Editing username or email (see [profile](profile.md))
 - Forcing a password change on the seeded admin

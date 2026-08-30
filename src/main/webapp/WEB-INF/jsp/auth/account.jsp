@@ -18,32 +18,45 @@
 
 <div class="card">
     <h2><fmt:message key="account.profile"/></h2>
-    <div class="grid-2">
-        <div class="form-group">
-            <label for="username"><fmt:message key="account.username"/></label>
-            <input type="text" id="username" value="<c:out value='${currentUser.username}'/>" readonly class="token-readonly">
+    <form method="post" action="${ctx}/account" class="form">
+        <ep:csrf/>
+        <input type="hidden" name="action" value="profile">
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="username"><fmt:message key="account.username"/></label>
+                <input type="text" id="username" name="username" required maxlength="50" autocomplete="username"
+                       value="<c:out value='${profileUsername != null ? profileUsername : currentUser.username}'/>">
+            </div>
+            <div class="form-group">
+                <label for="email"><fmt:message key="account.email"/></label>
+                <input type="email" id="email" name="email" required maxlength="100" autocomplete="email"
+                       value="<c:out value='${profileEmail != null ? profileEmail : currentUser.email}'/>">
+            </div>
+            <div class="form-group">
+                <label for="role"><fmt:message key="account.role"/></label>
+                <input type="text" id="role" readonly class="token-readonly"
+                       value="<fmt:message key="role.${currentUser.role}"/>">
+            </div>
+            <div class="form-group">
+                <label for="examLevel"><fmt:message key="account.examLevel"/></label>
+                <input type="text" id="examLevel" readonly class="token-readonly"
+                       value="<c:choose><c:when test="${not empty currentUser.examLevel}"><fmt:message key="examLevel.${currentUser.examLevel}"/></c:when><c:otherwise><fmt:message key="examLevel.none"/></c:otherwise></c:choose>">
+            </div>
         </div>
         <div class="form-group">
-            <label for="email"><fmt:message key="account.email"/></label>
-            <input type="text" id="email" value="<c:out value='${currentUser.email}'/>" readonly class="token-readonly">
+            <label for="profileCurrentPassword"><fmt:message key="account.currentPassword"/></label>
+            <input type="password" id="profileCurrentPassword" name="currentPassword" required autocomplete="current-password">
         </div>
-        <div class="form-group">
-            <label for="role"><fmt:message key="account.role"/></label>
-            <input type="text" id="role" readonly class="token-readonly"
-                   value="<fmt:message key="role.${currentUser.role}"/>">
-        </div>
-        <div class="form-group">
-            <label for="examLevel"><fmt:message key="account.examLevel"/></label>
-            <input type="text" id="examLevel" readonly class="token-readonly"
-                   value="<c:choose><c:when test="${not empty currentUser.examLevel}"><fmt:message key="examLevel.${currentUser.examLevel}"/></c:when><c:otherwise><fmt:message key="examLevel.none"/></c:otherwise></c:choose>">
-        </div>
-    </div>
+        <button type="submit" class="btn btn-primary"><fmt:message key="account.updateProfile"/></button>
+    </form>
+    <p class="hint"><fmt:message key="account.profileHint"/></p>
 </div>
 
 <div class="card">
     <h2><fmt:message key="account.changePassword"/></h2>
     <form method="post" action="${ctx}/account" class="form">
         <ep:csrf/>
+        <input type="hidden" name="action" value="password">
         <div class="form-group">
             <label for="currentPassword"><fmt:message key="account.currentPassword"/></label>
             <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">

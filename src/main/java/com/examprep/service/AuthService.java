@@ -95,6 +95,43 @@ public class AuthService {
         userDao.updateLocale(userId, locale);
     }
 
+    public void updateProfile(Long userId, String username, String email, String currentPassword)
+            throws SQLException {
+        if (isBlank(currentPassword)) {
+            throw new IllegalArgumentException("Current password is required");
+        }
+        if (isBlank(username)) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (isBlank(email)) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        String trimmedUsername = username.trim();
+        String trimmedEmail = email.trim();
+        if (trimmedUsername.length() > 50) {
+            throw new IllegalArgumentException("Username is too long");
+        }
+        if (trimmedEmail.length() > 100) {
+            throw new IllegalArgumentException("Email is too long");
+        }
+        if (!isValidEmail(trimmedEmail)) {
+            throw new IllegalArgumentException("Email is invalid");
+        }
+        User user = requireUser(userId);
+        if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        Optional<User> usernameOwner = userDao.findByUsername(trimmedUsername);
+        if (usernameOwner.isPresent() && !usernameOwner.get().getId().equals(userId)) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        Optional<User> emailOwner = userDao.findByEmail(trimmedEmail);
+        if (emailOwner.isPresent() && !emailOwner.get().getId().equals(userId)) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+        userDao.updateUsernameAndEmail(userId, trimmedUsername, trimmedEmail);
+    }
+
     public void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword)
             throws SQLException {
         if (isBlank(currentPassword) || isBlank(newPassword) || isBlank(confirmPassword)) {
@@ -191,6 +228,11 @@ public class AuthService {
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private static boolean isValidEmail(String email) {
+        int at = email.indexOf('@');
+        return at > 0 && email.indexOf('.', at) > at + 1 && email.indexOf(' ') < 0;
     }
 
     private User requireUser(Long targetId) throws SQLException {

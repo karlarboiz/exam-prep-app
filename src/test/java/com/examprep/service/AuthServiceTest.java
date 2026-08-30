@@ -61,6 +61,56 @@ class AuthServiceTest extends DatabaseTestSupport {
     }
 
     @Test
+    void updateProfileChangesUsernameAndEmail() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        int version = userDao.findById(student.getId()).orElseThrow().getTokenVersion();
+
+        authService.updateProfile(student.getId(), "patricia", "patricia@example.com", "password123");
+
+        User updated = userDao.findById(student.getId()).orElseThrow();
+        assertEquals("patricia", updated.getUsername());
+        assertEquals("patricia@example.com", updated.getEmail());
+        assertEquals(version, updated.getTokenVersion());
+        assertTrue(authService.authenticate("patricia", "password123").isPresent());
+        assertTrue(authService.authenticate("pat", "password123").isEmpty());
+    }
+
+    @Test
+    void updateProfileRejectsTakenUsernameAndEmail() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        createStudent("other", ExamLevel.SUB_PROFESSIONAL);
+
+        IllegalArgumentException usernameTaken = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "other", "pat@example.com", "password123"));
+        assertTrue(usernameTaken.getMessage().toLowerCase().contains("username already"));
+
+        IllegalArgumentException emailTaken = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "other@example.com", "password123"));
+        assertTrue(emailTaken.getMessage().toLowerCase().contains("email already"));
+
+        User unchanged = userDao.findById(student.getId()).orElseThrow();
+        assertEquals("pat", unchanged.getUsername());
+        assertEquals("pat@example.com", unchanged.getEmail());
+    }
+
+    @Test
+    void updateProfileRejectsWrongPasswordAndInvalidEmail() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+
+        IllegalArgumentException wrong = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "patricia", "patricia@example.com", "wrong"));
+        assertTrue(wrong.getMessage().toLowerCase().contains("current password"));
+
+        IllegalArgumentException invalid = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "patricia", "not-an-email", "password123"));
+        assertTrue(invalid.getMessage().toLowerCase().contains("email is invalid"));
+
+        User unchanged = userDao.findById(student.getId()).orElseThrow();
+        assertEquals("pat", unchanged.getUsername());
+        assertEquals("pat@example.com", unchanged.getEmail());
+    }
+
+    @Test
     void changePasswordUpdatesHash() throws Exception {
         User student = createStudent("pat", ExamLevel.PROFESSIONAL);
 

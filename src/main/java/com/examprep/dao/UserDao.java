@@ -192,6 +192,20 @@ public class UserDao {
         }
     }
 
+    public void updateUsernameAndEmail(Long id, String username, String email) throws SQLException {
+        String sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, email);
+            ps.setLong(3, id);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("User not found");
+            }
+        }
+    }
+
     public void updatePasswordHash(Long id, String passwordHash) throws SQLException {
         String sql = "UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
