@@ -151,10 +151,12 @@ Run these after any auth, grant, or exam change.
 ### Account
 
 1. Login as admin or student → header account chip → `/account`
-2. Profile shows username / email (read-only)
-3. Wrong current password → error, old password still works
-4. Valid change → success banner; login with the new password works
-5. `/forgot-password` with a real email → outbox row; `/reset-password?token=` strips into session → new password works
+2. Profile shows username / email editable; role and exam level stay read-only
+3. Wrong current password on profile save → error, username/email unchanged
+4. Valid profile save → success banner; login with the new username works
+5. Wrong current password on password change → error, old password still works
+6. Valid password change → success banner; login with the new password works
+7. `/forgot-password` with a real email → outbox row; `/reset-password?token=` strips into session → new password works
 
 ### Negative
 

@@ -2,14 +2,14 @@
 
 **Path:** `WEB-INF/jsp/auth/account.jsp`  
 **Route:** `/account`  
-**Feature:** [change password](../../features/auth/change-password.md)
+**Features:** [profile](../../features/auth/profile.md), [change password](../../features/auth/change-password.md)
 
 Available to any authenticated role from the header account chip (avatar + username).
 
 ## Profile
 
-Read-only `.card` with `.grid-2` fields (username, email, role, exam level). Exam level shows `—` for admins. Fields use `.token-readonly`. Username and email are not editable. Labels follow the header language switcher.
+First `.card` is a form (`action=profile`) with `.grid-2` fields: editable username and email, read-only role and exam level (`.token-readonly`). Exam level shows `—` for admins. Current password confirms the save. `<ep:csrf/>` and a `.btn-primary` **Save profile**. Labels follow the header language switcher.
 
 ## Change password
 
-Second `.card` with current / new / confirm fields, `<ep:csrf/>`, and a `.btn-primary` **Update password**. Errors use `.alert-error`; success after redirect uses `.alert-success`.
+Second `.card` with `action=password`, current / new / confirm fields, `<ep:csrf/>`, and a `.btn-primary` **Update password**. Errors use `.alert-error`; success after redirect uses `.alert-success` (`?profile=1` or `?changed=1`).

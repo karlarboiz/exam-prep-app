@@ -31,6 +31,10 @@ class MessagesTest {
                 Messages.get(AppLocale.EN, "error.username.exists"));
         assertEquals("May ganitong username na",
                 Messages.get(AppLocale.TL, "error.username.exists"));
+        assertEquals("Profile updated.",
+                Messages.get(AppLocale.EN, "error.account.profileUpdated"));
+        assertEquals("Na-update na ang profile.",
+                Messages.get(AppLocale.TL, "error.account.profileUpdated"));
     }
 
     @Test
