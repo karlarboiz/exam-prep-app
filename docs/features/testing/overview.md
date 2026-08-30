@@ -18,7 +18,7 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Area | Test class |
 |------|------------|
 | Access grant create / redeem / revoke / active access | `AccessGrantServiceTest` |
-| Admin user role / exam level / delete guards | `AuthServiceTest` |
+| Auth login / register / JWT / admin user guards | `AuthServiceTest` |
 | Seed subject visible on both exam levels | `SubjectDaoTest` |
 | Attempt `isDiagnostic` joined from exam | `AttemptDaoTest` |
 | Import creates leveled subjects | `QuestionImportServiceTest` |
