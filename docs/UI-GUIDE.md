@@ -152,6 +152,7 @@ Use existing pages as the visual reference before inventing new layouts.
 | Users | `/admin/users` | [users](pages/admin/users.md) |
 | Access grants | `/admin/access-grants` | [access-grants](pages/admin/access-grants.md) |
 | Integrity | `/admin/integrity` | [integrity](pages/admin/integrity.md) |
+| n8n | `/admin/n8n` | [n8n](pages/admin/n8n.md) |
 
 ### Layout partials
 

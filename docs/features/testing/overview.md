@@ -30,3 +30,4 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
 | Week clock / quotas / official lock / missed week | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |
 | Tagalog / English message bundles | `MessagesTest`, `LocaleSupportTest` |
+| n8n question / analyze send + audit | `N8nServiceTest` |

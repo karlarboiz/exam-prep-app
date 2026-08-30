@@ -53,6 +53,7 @@
                             <a href="${ctx}/admin/users" class="${navPath == '/admin/users' ? 'is-active' : ''}">Users</a>
                             <a href="${ctx}/admin/access-grants" class="${navPath == '/admin/access-grants' ? 'is-active' : ''}" title="Access grants">Access</a>
                             <a href="${ctx}/admin/integrity" class="${navPath == '/admin/integrity' ? 'is-active' : ''}">Integrity</a>
+                            <a href="${ctx}/admin/n8n" class="${navPath == '/admin/n8n' ? 'is-active' : ''}">n8n</a>
                         </c:when>
                         <c:otherwise>
                             <a href="${ctx}/user/dashboard" class="${navPath == '/user/dashboard' ? 'is-active' : ''}">
