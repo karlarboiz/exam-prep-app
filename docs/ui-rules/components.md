@@ -22,11 +22,18 @@ Reusable patterns from `app.css`:
 - `.empty-state` — muted centered “no data”
 - `.expired-panel` — subscription-expired messaging inside `.auth-card`
 
+## Header chrome
+
+- `.nav-links a` — pill destination links; `.is-active` uses `--color-primary-soft`
+- `.account-menu` — pill cluster on the right (avatar, username, role, logout)
+- `.account-chip` — link to `/account`; avatar initial + username + role pill (`.is-admin` tints the avatar)
+- `.account-logout` — icon-only on desktop; icon + “Log out” on mobile
+
 ## Badges
 
 - `.badge-success`, `.badge-muted`
 - `.badge-admin`, `.badge-user`
-- `.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`
+- `.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`
 
 ## Tables
 

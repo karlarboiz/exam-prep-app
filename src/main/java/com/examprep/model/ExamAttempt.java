@@ -16,6 +16,13 @@ public class ExamAttempt {
     private String subjectName;
     private int durationMinutes;
     private boolean diagnostic;
+    private boolean weekly;
+    private AttemptKind attemptKind = AttemptKind.PRACTICE;
+    private Long regimenId;
+    private int leaveCount;
+    private int suspectLeaveCount;
+    private boolean integrityTracking;
+    private String username;
 
     public ExamAttempt() {
     }
@@ -106,5 +113,61 @@ public class ExamAttempt {
 
     public void setDiagnostic(boolean diagnostic) {
         this.diagnostic = diagnostic;
+    }
+
+    public boolean isWeekly() {
+        return weekly;
+    }
+
+    public void setWeekly(boolean weekly) {
+        this.weekly = weekly;
+    }
+
+    public AttemptKind getAttemptKind() {
+        return attemptKind;
+    }
+
+    public void setAttemptKind(AttemptKind attemptKind) {
+        this.attemptKind = attemptKind != null ? attemptKind : AttemptKind.PRACTICE;
+    }
+
+    public Long getRegimenId() {
+        return regimenId;
+    }
+
+    public void setRegimenId(Long regimenId) {
+        this.regimenId = regimenId;
+    }
+
+    public int getLeaveCount() {
+        return leaveCount;
+    }
+
+    public void setLeaveCount(int leaveCount) {
+        this.leaveCount = leaveCount;
+    }
+
+    public int getSuspectLeaveCount() {
+        return suspectLeaveCount;
+    }
+
+    public void setSuspectLeaveCount(int suspectLeaveCount) {
+        this.suspectLeaveCount = suspectLeaveCount;
+    }
+
+    public boolean isIntegrityTracking() {
+        return integrityTracking;
+    }
+
+    public void setIntegrityTracking(boolean integrityTracking) {
+        this.integrityTracking = integrityTracking;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

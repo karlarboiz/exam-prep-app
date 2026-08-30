@@ -50,6 +50,18 @@ public class AdminService {
         return questionDao.findBySubjectId(subjectId);
     }
 
+    public List<Question> getQuestions(Long subjectId, String batchFilter) throws SQLException {
+        if (QuestionImportService.UNLABELED_FILTER.equals(batchFilter)) {
+            return questionDao.findFiltered(subjectId, null, true);
+        }
+        String batchLabel = (batchFilter == null || batchFilter.isBlank()) ? null : batchFilter;
+        return questionDao.findFiltered(subjectId, batchLabel, false);
+    }
+
+    public List<String> getBatchLabels() throws SQLException {
+        return questionDao.listBatchLabels();
+    }
+
     public Optional<Question> getQuestion(Long id) throws SQLException {
         return questionDao.findById(id);
     }
@@ -95,7 +107,7 @@ public class AdminService {
     }
 
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
@@ -107,6 +119,12 @@ public class AdminService {
             }
             return examDao.findById(created.getId()).orElse(created);
         }
+        if (exam.isWeekly()) {
+            if (exam.isActive()) {
+                examDao.deactivateOtherWeeklies(created.getId());
+            }
+            return examDao.findById(created.getId()).orElse(created);
+        }
         if (questionIds != null && !questionIds.isEmpty()) {
             examDao.setExamQuestions(created.getId(), questionIds);
         }
@@ -114,13 +132,16 @@ public class AdminService {
     }
 
     public void updateExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
             examDao.update(exam);
-            if (exam.isActive()) {
+            if (exam.isActive() && exam.isDiagnostic()) {
                 examDao.deactivateOtherDiagnostics(exam.getId());
+            }
+            if (exam.isActive() && exam.isWeekly()) {
+                examDao.deactivateOtherWeeklies(exam.getId());
             }
             examDao.setExamQuestions(exam.getId(), List.of());
             return;

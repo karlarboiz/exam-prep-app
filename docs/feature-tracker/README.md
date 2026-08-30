@@ -17,8 +17,12 @@ How a capability works (implementation docs): [features/](../features/)
 | Access grants | [access-grants.md](access-grants.md) |
 | Admin content (subjects, questions, exams, import) | [admin-content.md](admin-content.md) |
 | Take exam & results | [exam-results.md](exam-results.md) |
+| Examinee tracking (integrity) | [examinee-tracking.md](examinee-tracking.md) |
 | Security & production hygiene | [security.md](security.md) |
 | Diagnostic (placement) | [diagnostic.md](diagnostic.md) |
+| Weekly regimen (study cycle) | [weekly-regimen.md](weekly-regimen.md) |
+| I18n (Tagalog / English UI) | [i18n.md](i18n.md) |
+| n8n connector (admin send-only) | [n8n.md](n8n.md) |
 
 ## Status values
 

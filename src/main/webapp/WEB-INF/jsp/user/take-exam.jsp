@@ -1,76 +1,67 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="ep" uri="http://examprep.com/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Take Exam" scope="request"/>
+<c:set var="pageTitleKey" value="page.takeExam.title" scope="request"/>
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
+<fmt:message key="exam.questionOf" var="questionOfPattern"/>
+<fmt:message key="exam.confirmSubmit" var="confirmSubmit"/>
 
 <div class="exam-header">
-    <h1>${attempt.examTitle}</h1>
-    <p class="exam-meta">${attempt.subjectName} &middot; ${questions.size()} questions</p>
-    <p class="exam-progress" id="exam-progress">Question 1 of ${questions.size()}</p>
+    <h1><c:out value="${attempt.examTitle}"/></h1>
+    <p class="exam-meta"><c:out value="${attempt.subjectName}"/> &middot; <fmt:message key="exam.questions"><fmt:param value="${questions.size()}"/></fmt:message></p>
+    <p class="hint exam-integrity-note"><fmt:message key="exam.integrityNote"/></p>
+    <p class="exam-progress" id="exam-progress"><fmt:message key="exam.questionOf"><fmt:param value="1"/><fmt:param value="${questions.size()}"/></fmt:message></p>
     <div class="timer-bar">
         <div class="timer-slot">
-            <span class="timer-label">Question time:</span>
+            <span class="timer-label"><fmt:message key="exam.questionTime"/></span>
             <span id="question-timer" class="timer-value">--:--</span>
         </div>
         <div class="timer-slot">
-            <span class="timer-label">Exam time:</span>
+            <span class="timer-label"><fmt:message key="exam.examTime"/></span>
             <span id="timer" class="timer-value">--:--</span>
         </div>
     </div>
 </div>
 
-<form id="examForm" method="post" action="${ctx}/user/exam" class="exam-form">
+<c:set var="examPostPath" value="${empty examPostPath ? '/user/exam' : examPostPath}"/>
+<form id="examForm" method="post" action="${ctx}${examPostPath}" class="exam-form"
+      data-question-of="${questionOfPattern}" data-confirm-submit="${confirmSubmit}">
+    <ep:csrf/>
     <input type="hidden" name="attemptId" value="${attempt.id}">
     <input type="hidden" name="action" value="submit">
 
     <c:forEach var="q" items="${questions}" varStatus="status">
-        <div class="question-card${status.index == 0 ? '' : ' is-hidden'}" data-index="${status.index}">
-            <h3>Question ${status.index + 1}</h3>
-            <p class="question-prompt">${q.prompt}</p>
-            <div class="options">
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="A"
-                        ${answers[q.id] == 'A' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'A')">
-                    <span class="option-letter">A.</span>
-                    <span class="option-text">${q.optionA}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="B"
-                        ${answers[q.id] == 'B' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'B')">
-                    <span class="option-letter">B.</span>
-                    <span class="option-text">${q.optionB}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="C"
-                        ${answers[q.id] == 'C' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'C')">
-                    <span class="option-letter">C.</span>
-                    <span class="option-text">${q.optionC}</span>
-                </label>
-                <label class="option-label">
-                    <input type="radio" name="answer_${q.id}" value="D"
-                        ${answers[q.id] == 'D' ? 'checked' : ''}
-                        onchange="saveAnswer(${q.id}, 'D')">
-                    <span class="option-letter">D.</span>
-                    <span class="option-text">${q.optionD}</span>
-                </label>
-            </div>
+        <div class="question-card${status.index == 0 ? '' : ' is-hidden'}${empty q.imageUrl ? '' : ' has-image'}"
+             data-index="${status.index}"
+             data-question-id="${q.id}"
+             data-has-image="${not empty q.imageUrl}">
+            <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message></h3>
+            <p class="question-prompt"><c:out value="${q.prompt}"/></p>
+            <c:set var="imageUrl" value="${q.imageUrl}"/>
+            <fmt:message key="exam.imageAlt" var="imageAlt"><fmt:param value="${status.index + 1}"/></fmt:message>
+            <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>
+            <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
+            <%@ include file="/WEB-INF/jsp/partials/question-options.jsp" %>
         </div>
     </c:forEach>
 
     <div class="exam-nav">
-        <button type="button" id="prevBtn" class="btn btn-outline" disabled>Previous</button>
-        <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+        <button type="button" id="prevBtn" class="btn btn-outline" disabled><fmt:message key="exam.previous"/></button>
+        <button type="button" id="nextBtn" class="btn btn-primary"><fmt:message key="exam.next"/></button>
         <button type="submit" id="submitBtn" class="btn btn-primary btn-lg is-hidden"
-                onclick="return confirm('Submit exam? You cannot change answers after submitting.');">
-            Submit Exam
+                onclick="return confirm(document.getElementById('examForm').dataset.confirmSubmit);">
+            <fmt:message key="exam.submit"/>
         </button>
     </div>
 </form>
 
+<%@ include file="/WEB-INF/jsp/user/integrity-warning.jsp" %>
+
+<script src="${ctx}/js/exam-tracking.js"></script>
+<script src="${ctx}/js/question-image.js"></script>
 <script>
     const ctx = '${ctx}';
     const attemptId = '${attempt.id}';
@@ -111,13 +102,18 @@
         cards.forEach(function (card, i) {
             card.classList.toggle('is-hidden', i !== currentIndex);
         });
-        progressEl.textContent = 'Question ' + (currentIndex + 1) + ' of ' + questionCount;
+        progressEl.textContent = (examForm.dataset.questionOf || 'Question {0} of {1}')
+            .replace('{0}', String(currentIndex + 1))
+            .replace('{1}', String(questionCount));
         prevBtn.disabled = currentIndex === 0;
         const isLast = currentIndex === questionCount - 1;
         nextBtn.classList.toggle('is-hidden', isLast);
         submitBtn.classList.toggle('is-hidden', !isLast);
         questionEndsAt = Date.now() + remainingMs[currentIndex];
         questionTimerEl.classList.remove('timer-warning', 'timer-expired');
+        if (window.ExamQuestionImages) {
+            ExamQuestionImages.prepareCard(cards[currentIndex]);
+        }
         updateTimers();
     }
 
@@ -135,9 +131,33 @@
         }
     }
 
+    function csrfToken() {
+        const el = document.querySelector('input[name="_csrf"]');
+        return el ? el.value : '';
+    }
+
+    function currentQuestionId() {
+        const card = cards[currentIndex];
+        return card ? card.getAttribute('data-question-id') : null;
+    }
+
+    function showIntegrityWarning(leaveCount) {
+        const modal = document.getElementById('integrityWarning');
+        const countEl = document.getElementById('integrityLeaveCount');
+        if (countEl && typeof leaveCount === 'number') {
+            countEl.textContent = String(leaveCount);
+        }
+        if (modal) {
+            modal.classList.remove('is-hidden');
+        }
+    }
+
     function submitExam() {
         if (submitted) return;
         submitted = true;
+        if (window.ExamTracking) {
+            ExamTracking.disable();
+        }
         examForm.submit();
     }
 
@@ -178,9 +198,15 @@
             questionId: String(questionId),
             selectedOption: option
         });
-        fetch(ctx + '/user/exam', {
+        if (csrfToken()) {
+            body.set('_csrf', csrfToken());
+        }
+        fetch(ctx + '${examPostPath}', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': csrfToken()
+            },
             body: body.toString()
         }).then(function (res) {
             if (res.redirected || res.status === 403) {
@@ -192,8 +218,29 @@
     prevBtn.addEventListener('click', goPrev);
     nextBtn.addEventListener('click', goNext);
 
+    const warningBtn = document.getElementById('integrityWarningBtn');
+    if (warningBtn) {
+        warningBtn.addEventListener('click', function () {
+            document.getElementById('integrityWarning').classList.add('is-hidden');
+        });
+    }
+
     showQuestion(0);
     setInterval(updateTimers, 1000);
+    if (window.ExamTracking) {
+        ExamTracking.init({
+            ctx: ctx,
+            attemptId: attemptId,
+            endpoint: '${examPostPath}',
+            csrfToken: csrfToken(),
+            leaveCount: ${attempt.leaveCount},
+            getQuestionId: currentQuestionId,
+            getRemainingMs: function () {
+                return Math.max(0, questionEndsAt - Date.now());
+            },
+            onReturn: showIntegrityWarning
+        });
+    }
 </script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

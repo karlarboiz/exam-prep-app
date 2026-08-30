@@ -40,7 +40,7 @@ Every time a task is implemented (or deliberately deferred), sync [feature-track
 
 1. **Search** the category files under `docs/feature-tracker/` for the task (or a clear match by wording).
 2. **If it is present** — set **Status** to **Done** when the work shipped, or leave / set **Pending** if it is not finished (partial work, blocked, or explicitly out of scope for this change). Update **Notes** when helpful.
-3. **If it is not present** — add a new row in the **category file that fits best** (auth, access-grants, admin-content, exam-results, security, diagnostic, or a new category file + link from [feature-tracker/README.md](feature-tracker/README.md) if none fit).
+3. **If it is not present** — add a new row in the **category file that fits best** (auth, access-grants, admin-content, exam-results, examinee-tracking, security, diagnostic, weekly-regimen, or a new category file + link from [feature-tracker/README.md](feature-tracker/README.md) if none fit).
 4. Do this even for small fixes that close a tracked gap — the tracker is the source of truth for Done / Pending.
 
 Do **not** put backlog lists in this pre-implementation guide; only update the tracker files.
@@ -130,21 +130,33 @@ Run these after any auth, grant, or exam change.
 1. Login `admin` / seeded password → `/admin/dashboard`
 2. Create subject → question → exam (attach questions, set order, set active)
 3. Confirm user list loads; change a student's exam level or role
-4. `/admin/questions` → download template, import, export
+4. `/admin/questions` → download template, import (batch defaults to `cse-import-YYYY-MM-DD`), export
 4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
+5. `/admin/integrity` → flagged list loads (empty or with suspect leaves)
 
 ### Funnel → student
 
 1. `POST /api/access-tokens` with `X-Api-Key` → raw token once
-2. Open `/register?token=…` → create user
-3. Login as that user → `/user/dashboard` → start exam → answer → submit → result
-4. History shows attempt; reopen result review (including unanswered)
+2. Open `/register`, paste the token (or a one-time `?token=` that is stripped into the session) → create user
+3. Login as that user → `/user/diagnostic` → complete → `/user/dashboard` shows this week’s regimen
+4. Start this week’s exam → submit → study plan + email outbox row; review misses (no new official score)
+5. History shows attempt; reopen result review (including unanswered)
 
 ### Expiry gate
 
 1. With a redeemed grant past `expires_at`, hit `/user/dashboard` → redirect `/user/subscription-expired`
 2. Login still works; quiz routes stay blocked
 3. Admin routes remain reachable for `ADMIN`
+
+### Account
+
+1. Login as admin or student → header account chip → `/account`
+2. Profile shows username / email editable; role and exam level stay read-only
+3. Wrong current password on profile save → error, username/email unchanged
+4. Valid profile save → success banner; login with the new username works
+5. Wrong current password on password change → error, old password still works
+6. Valid password change → success banner; login with the new password works
+7. `/forgot-password` with a real email → outbox row; `/reset-password?token=` strips into session → new password works
 
 ### Negative
 

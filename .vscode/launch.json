@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "QuestionImportJob",
+      "request": "launch",
+      "mainClass": "com.examprep.job.QuestionImportJob",
+      "projectName": "exam-prep-app"
+    },
+    {
+      "type": "java",
+      "name": "Attach to remote JVM (5005)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005
+    }
+  ]
+}

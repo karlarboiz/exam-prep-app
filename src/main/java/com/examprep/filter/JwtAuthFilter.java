@@ -20,7 +20,8 @@ import java.util.Set;
 public class JwtAuthFilter implements Filter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/login", "/register", "/css/", "/error/", "/api/access-tokens", "/api/access-tokens/revoke"
+            "/login", "/register", "/forgot-password", "/reset-password",
+            "/locale", "/css/", "/js/", "/error/", "/api/access-tokens", "/api/access-tokens/revoke"
     );
 
     private final AuthService authService = new AuthService();
@@ -77,7 +78,11 @@ public class JwtAuthFilter implements Filter {
         try {
             Claims claims = JwtUtil.parseToken(token);
             Long userId = JwtUtil.getUserId(claims);
-            return authService.findById(userId).orElse(null);
+            User user = authService.findById(userId).orElse(null);
+            if (user == null || user.getTokenVersion() != JwtUtil.getTokenVersion(claims)) {
+                return null;
+            }
+            return user;
         } catch (Exception e) {
             return null;
         }

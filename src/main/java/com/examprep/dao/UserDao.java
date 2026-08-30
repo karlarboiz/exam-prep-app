@@ -1,6 +1,7 @@
 package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
+import com.examprep.model.AppLocale;
 import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class UserDao {
 
     private static final String SELECT_COLUMNS =
-            "SELECT id, username, email, password_hash, role, exam_level, created_at, diagnostic_completed_at FROM users";
+            "SELECT id, username, email, password_hash, role, exam_level, created_at, diagnostic_completed_at, locale, token_version FROM users";
 
     public Optional<User> findById(Long id) throws SQLException {
         String sql = SELECT_COLUMNS + " WHERE id = ?";
@@ -178,6 +179,46 @@ public class UserDao {
         }
     }
 
+    public void updateLocale(Long id, AppLocale locale) throws SQLException {
+        String sql = "UPDATE users SET locale = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, locale != null ? locale.getCode() : AppLocale.DEFAULT.getCode());
+            ps.setLong(2, id);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("User not found");
+            }
+        }
+    }
+
+    public void updateUsernameAndEmail(Long id, String username, String email) throws SQLException {
+        String sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, email);
+            ps.setLong(3, id);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("User not found");
+            }
+        }
+    }
+
+    public void updatePasswordHash(Long id, String passwordHash) throws SQLException {
+        String sql = "UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setLong(2, id);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("User not found");
+            }
+        }
+    }
+
     public void delete(Long id) throws SQLException {
         String sql = "DELETE FROM users WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
@@ -202,10 +243,20 @@ public class UserDao {
     }
 
     public void markDiagnosticCompleted(Long userId) throws SQLException {
-        String sql = "UPDATE users SET diagnostic_completed_at = ? WHERE id = ? AND diagnostic_completed_at IS NULL";
+        setDiagnosticCompletedAt(userId, LocalDateTime.now(), true);
+    }
+
+    public void setDiagnosticCompletedAt(Long userId, LocalDateTime at) throws SQLException {
+        setDiagnosticCompletedAt(userId, at, false);
+    }
+
+    private void setDiagnosticCompletedAt(Long userId, LocalDateTime at, boolean onlyIfNull) throws SQLException {
+        String sql = onlyIfNull
+                ? "UPDATE users SET diagnostic_completed_at = ? WHERE id = ? AND diagnostic_completed_at IS NULL"
+                : "UPDATE users SET diagnostic_completed_at = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(1, Timestamp.valueOf(at));
             ps.setLong(2, userId);
             ps.executeUpdate();
         }
@@ -227,6 +278,8 @@ public class UserDao {
         if (diagnosticCompletedAt != null) {
             user.setDiagnosticCompletedAt(diagnosticCompletedAt.toLocalDateTime());
         }
+        user.setLocale(AppLocale.fromCode(rs.getString("locale")));
+        user.setTokenVersion(rs.getInt("token_version"));
         return user;
     }
 }

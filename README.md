@@ -18,6 +18,19 @@ docker build -t exam-prep-app .
 docker run --rm -p 8080:8080 exam-prep-app
 ```
 
+For a production-like run, set secrets and `ENVIRONMENT=production` (startup fails if JWT / funnel / ID-cipher secrets are still `change-me-*`). Behind a TLS proxy also set `PROXY_TRUST_FORWARDED` only if you terminate TLS in front of Tomcat:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e ENVIRONMENT=production \
+  -e JWT_SECRET='use-a-32-char-or-longer-random-string' \
+  -e ID_CIPHER_SECRET='use-a-32-char-or-longer-random-string' \
+  -e FUNNEL_API_KEY='use-a-32-char-or-longer-random-string' \
+  -e ADMIN_PASSWORD='your-admin-password' \
+  -v examprep-data:/usr/local/tomcat/data \
+  exam-prep-app
+```
+
 App: http://localhost:8080
 
 ## Documentation

@@ -20,11 +20,56 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>SecurityHeadersFilter</filter-name>
+        <filter-class>com.examprep.filter.SecurityHeadersFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SecurityHeadersFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>ApiRateLimitFilter</filter-name>
+        <filter-class>com.examprep.filter.ApiRateLimitFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ApiRateLimitFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>JwtAuthFilter</filter-name>
         <filter-class>com.examprep.filter.JwtAuthFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>JwtAuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>LocaleFilter</filter-name>
+        <filter-class>com.examprep.filter.LocaleFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LocaleFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>CsrfFilter</filter-name>
+        <filter-class>com.examprep.filter.CsrfFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CsrfFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AuthRateLimitFilter</filter-name>
+        <filter-class>com.examprep.filter.AuthRateLimitFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthRateLimitFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

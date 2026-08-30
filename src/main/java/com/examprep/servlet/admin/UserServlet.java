@@ -1,5 +1,6 @@
 package com.examprep.servlet.admin;
 
+import com.examprep.i18n.Messages;
 import com.examprep.model.ExamLevel;
 import com.examprep.model.Role;
 import com.examprep.model.User;
@@ -56,7 +57,7 @@ public class UserServlet extends HttpServlet {
                 default -> throw new IllegalArgumentException("Unknown action");
             }
         } catch (Exception e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             doGet(req, resp);
         }
     }

@@ -1,5 +1,6 @@
 package com.examprep.servlet.admin;
 
+import com.examprep.i18n.Messages;
 import com.examprep.service.AdminService;
 import com.examprep.util.IdCipher;
 import jakarta.servlet.ServletException;
@@ -45,12 +46,12 @@ public class SubjectServlet extends HttpServlet {
                     boolean professional = req.getParameter("professional") != null;
                     boolean subProfessional = req.getParameter("subProfessional") != null;
                     if (name == null || name.isBlank()) {
-                        req.setAttribute("error", "Name is required");
+                        req.setAttribute("error", Messages.get(req, "error.name.required"));
                         doGet(req, resp);
                         return;
                     }
                     if (!professional && !subProfessional) {
-                        req.setAttribute("error", "Select at least one level: Professional or Sub-Professional");
+                        req.setAttribute("error", Messages.get(req, "error.subject.levelRequired"));
                         doGet(req, resp);
                         return;
                     }
@@ -67,12 +68,12 @@ public class SubjectServlet extends HttpServlet {
                     boolean professional = req.getParameter("professional") != null;
                     boolean subProfessional = req.getParameter("subProfessional") != null;
                     if (name == null || name.isBlank()) {
-                        req.setAttribute("error", "Name is required");
+                        req.setAttribute("error", Messages.get(req, "error.name.required"));
                         doGet(req, resp);
                         return;
                     }
                     if (!professional && !subProfessional) {
-                        req.setAttribute("error", "Select at least one level: Professional or Sub-Professional");
+                        req.setAttribute("error", Messages.get(req, "error.subject.levelRequired"));
                         doGet(req, resp);
                         return;
                     }
@@ -91,7 +92,7 @@ public class SubjectServlet extends HttpServlet {
             }
             resp.sendRedirect(req.getContextPath() + "/admin/subjects");
         } catch (Exception e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             doGet(req, resp);
         }
     }

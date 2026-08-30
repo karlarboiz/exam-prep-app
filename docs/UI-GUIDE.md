@@ -45,7 +45,7 @@ Typography today: system UI stack on `body`. Keep sizes consistent with existing
 
 ```
 body (column flex, min-height 100vh)
-├── .site-header > .container > .header-inner  (logo + .main-nav)
+├── .site-header > .container > .header-inner  (logo + .header-nav)
 ├── .main-content > .container                 (page body, flex: 1)
 └── .site-footer > .container                  (muted centered)
 ```
@@ -106,7 +106,9 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 ### Badges
 
 `.badge-success`, `.badge-muted`, `.badge-admin`, `.badge-user`,  
-`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`
+`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`,  
+`.badge-WEAK` / `.badge-DEVELOPING` / `.badge-STRONG`,  
+`.badge-WEEKLY` / `.badge-CHECKPOINT` / `.badge-OPEN` / `.badge-MISSED`
 
 ---
 
@@ -120,6 +122,9 @@ Use existing pages as the visual reference before inventing new layouts.
 |--------|-------|----------|
 | Login | `/login` | [login](pages/auth/login.md) |
 | Register | `/register` | [register](pages/auth/register.md) |
+| Forgot password | `/forgot-password` | [forgot-password](pages/auth/forgot-password.md) |
+| Reset password | `/reset-password` | [reset-password](pages/auth/reset-password.md) |
+| Account | `/account` | [account](pages/auth/account.md) |
 | 403 / 404 | error pages | [403](pages/error/403.md), [404](pages/error/404.md) |
 
 ### Student
@@ -128,6 +133,10 @@ Use existing pages as the visual reference before inventing new layouts.
 |--------|-------|----------|
 | Dashboard | `/user/dashboard` | [dashboard](pages/user/dashboard.md) |
 | Take exam | `/user/exam` | [take-exam](pages/user/take-exam.md) |
+| Weekly exam | `/user/weekly` | [take-exam](pages/user/take-exam.md) |
+| Checkpoint | `/user/checkpoint` | [take-exam](pages/user/take-exam.md) |
+| Study plan | `/user/study-plan` | [study-plan](pages/user/study-plan.md) |
+| Review | `/user/review` | [review](pages/user/review.md) |
 | Result | `/user/result` | [result](pages/user/result.md) |
 | History | `/user/history` | [history](pages/user/history.md) |
 | Subscription expired | `/user/subscription-expired` | [subscription-expired](pages/user/subscription-expired.md) |
@@ -142,6 +151,8 @@ Use existing pages as the visual reference before inventing new layouts.
 | Exams | `/admin/exams` | [exams](pages/admin/exams.md) |
 | Users | `/admin/users` | [users](pages/admin/users.md) |
 | Access grants | `/admin/access-grants` | [access-grants](pages/admin/access-grants.md) |
+| Integrity | `/admin/integrity` | [integrity](pages/admin/integrity.md) |
+| n8n | `/admin/n8n` | [n8n](pages/admin/n8n.md) |
 
 ### Layout partials
 
