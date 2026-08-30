@@ -6,7 +6,7 @@ Site header: logo, destination nav, account cluster. Included by content JSPs. S
 
 The header splits chrome: destination links sit after the logo; the right side is a compact account pill (avatar initial, username, role, icon logout). The avatar chip links to **Account** (`/account`).
 
-Admin nav includes Dashboard, Subjects, Questions, Exams, Users, **Access** (access grants), and **Integrity**.
+Admin nav includes Dashboard, Subjects, Questions, Exams, Users, **Access** (access grants), **Integrity**, and **n8n**.
 User nav includes Dashboard, **Study plan**, and History, each with a small inline icon. The current route uses `.is-active`.
 
 ## Mobile navigation

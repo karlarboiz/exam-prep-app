@@ -35,6 +35,7 @@
         <a href="${ctx}/admin/exams" class="btn btn-primary"><fmt:message key="admin.dashboard.manageExams"/></a>
         <a href="${ctx}/admin/users" class="btn btn-outline"><fmt:message key="admin.dashboard.viewUsers"/></a>
         <a href="${ctx}/admin/integrity" class="btn btn-outline"><fmt:message key="admin.dashboard.integrity"/></a>
+        <a href="${ctx}/admin/n8n" class="btn btn-outline"><fmt:message key="admin.dashboard.n8n"/></a>
     </div>
 </div>
 

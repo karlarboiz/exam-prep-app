@@ -53,7 +53,17 @@ public final class Messages {
             Map.entry("Exam time has expired", "error.attempt.expired"),
             Map.entry("No questions available to build a diagnostic", "error.diagnostic.noQuestions"),
             Map.entry("Name is required", "error.name.required"),
-            Map.entry("Select at least one level: Professional or Sub-Professional", "error.subject.levelRequired")
+            Map.entry("Select at least one level: Professional or Sub-Professional", "error.subject.levelRequired"),
+            Map.entry("n8n question webhook is not configured", "error.n8n.questions.unconfigured"),
+            Map.entry("n8n analyze webhook is not configured", "error.n8n.analyze.unconfigured"),
+            Map.entry("Describe the question batch you want", "error.n8n.questions.messageRequired"),
+            Map.entry("Question count must be between 1 and 100", "error.n8n.count"),
+            Map.entry("Difficulty must be EASY, MEDIUM, or HARD", "error.n8n.difficulty"),
+            Map.entry("Choose a file to analyze", "error.n8n.fileRequired"),
+            Map.entry("File type is not allowed", "error.n8n.fileType"),
+            Map.entry("File is too large", "error.n8n.fileLarge"),
+            Map.entry("n8n did not accept the question request", "error.n8n.questions.rejected"),
+            Map.entry("n8n did not accept the file", "error.n8n.analyze.rejected")
     );
 
     private Messages() {

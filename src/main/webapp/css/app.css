@@ -771,6 +771,10 @@ input[type="file"] {
 .badge-UNUSED { background: #fef3c7; color: var(--color-warning); }
 .badge-REDEEMED { background: #dcfce7; color: var(--color-success); }
 .badge-REVOKED { background: #fee2e2; color: var(--color-danger); }
+.badge-ACCEPTED { background: #dcfce7; color: var(--color-success); }
+.badge-FAILED { background: #fee2e2; color: var(--color-danger); }
+.badge-QUESTIONS { background: #dbeafe; color: var(--color-primary); }
+.badge-ANALYZE { background: #e0e7ff; color: #4338ca; }
 .badge-suspect { background: #fee2e2; color: var(--color-danger); }
 
 .exam-integrity-note {

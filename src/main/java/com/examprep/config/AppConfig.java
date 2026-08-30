@@ -35,7 +35,10 @@ public final class AppConfig {
         overrideFromEnv("MAIL_FROM", "mail.from");
         overrideFromEnv("APP_PUBLIC_URL", "app.public.url");
         overrideFromEnv("PROXY_TRUST_FORWARDED", "proxy.trust.forwarded");
-        
+        overrideFromEnv("N8N_WEBHOOK_QUESTIONS", "n8n.webhook.questions");
+        overrideFromEnv("N8N_WEBHOOK_ANALYZE", "n8n.webhook.analyze");
+        overrideFromEnv("N8N_WEBHOOK_SECRET", "n8n.webhook.secret");
+
         validateSecurityConfig();
     }
 
@@ -59,6 +62,9 @@ public final class AppConfig {
         validateSecret("jwt.secret", "JWT_SECRET", errors);
         validateSecret("id.cipher.secret", "ID_CIPHER_SECRET", errors);
         validateSecret("funnel.api.key", "FUNNEL_API_KEY", errors);
+        if (n8nWebhookConfigured()) {
+            validateSecret("n8n.webhook.secret", "N8N_WEBHOOK_SECRET", errors);
+        }
 
         if (!errors.isEmpty()) {
             String message = "Production security validation failed:\n" + String.join("\n", errors);
@@ -84,6 +90,15 @@ public final class AppConfig {
         if (value.length() < 32) {
             errors.add("  - " + key + " must be at least 32 characters long. Set environment variable " + envName);
         }
+    }
+
+    public static boolean n8nWebhookConfigured() {
+        return isPresent("n8n.webhook.questions") || isPresent("n8n.webhook.analyze");
+    }
+
+    private static boolean isPresent(String key) {
+        String value = PROPS.getProperty(key);
+        return value != null && !value.isBlank();
     }
 
     public static boolean isProduction() {

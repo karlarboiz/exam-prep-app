@@ -5,7 +5,7 @@ Secrets, cookies, and related production defaults.
 | Feature | Status | Notes |
 |---------|--------|-------|
 | JWT session cookie `HttpOnly` | Done | Set in `WebUtil.setAuthCookie` |
-| Fail-fast / require non-default secrets in production | Done | `AppConfig` validates secrets in production mode. Checks for insecure patterns and minimum length. Set `ENVIRONMENT=production` to enable validation |
+| Fail-fast / require non-default secrets in production | Done | `AppConfig` validates secrets in production mode. Checks for insecure patterns and minimum length. Set `ENVIRONMENT=production` to enable validation. `n8n.webhook.secret` is required only when an n8n webhook URL is set |
 | Auth cookie `Secure` flag | Done | `WebUtil` reads `cookie.secure`; also set when the request is HTTPS or SameSite=None |
 | Auth cookie `SameSite` | Done | `WebUtil` reads `cookie.samesite` (`Strict` / `Lax` / `None`) |
 | Timing attack protection for API keys | Done | `SecurityUtil.constantTimeEquals` uses constant-time comparison via SHA-256 hashing in `CreateAccessTokenServlet` and `RevokeAccessTokenServlet` |
