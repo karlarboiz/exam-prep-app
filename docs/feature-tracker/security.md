@@ -14,3 +14,4 @@ Secrets, cookies, and related production defaults.
 | CSRF protection | Done | `CsrfFilter` validates tokens on POST/PUT/DELETE requests. `CsrfUtil` for token generation/validation. Use `<ep:csrf/>` tag in forms. API endpoints exempt |
 | Rate limiting on API endpoints | Done | `ApiRateLimitFilter` implements sliding window rate limiting. Default: 10 requests per minute per IP. Configurable via `rate.limit.api.max.requests` and `rate.limit.api.window.minutes` |
 | Admin password policy | Done | Admin credentials configurable via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables. Production deployments require `ADMIN_PASSWORD` to be set, otherwise startup fails |
+| Header nav toggle CSP-safe | Done | Burger script moved from inline `<script>` in `header.jsp` to `js/nav-toggle.js` so `script-src 'self'` can run it |
