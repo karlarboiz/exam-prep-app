@@ -115,17 +115,5 @@
         </c:if>
     </div>
 </header>
-<script>
-(function () {
-    var toggle = document.getElementById('nav-toggle');
-    var nav = document.getElementById('main-nav');
-    if (!toggle || !nav) return;
-
-    toggle.addEventListener('click', function () {
-        var open = nav.classList.toggle('is-open');
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        toggle.classList.toggle('is-active', open);
-    });
-})();
-</script>
+<script src="${ctx}/js/nav-toggle.js"></script>
 <main class="container main-content">

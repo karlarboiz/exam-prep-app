@@ -20,3 +20,4 @@ Secrets, cookies, and related production defaults.
 | JSP output encoding | Done | `<c:out>` on user/admin-authored text |
 | Register token kept out of the URL | Done | Session + paste form; `?token=` still accepted then stripped |
 | Admin password policy | Done | Admin credentials configurable via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables. Production deployments require `ADMIN_PASSWORD` to be set, otherwise startup fails |
+| Header nav toggle CSP-safe | Done | Burger script moved from inline `<script>` in `header.jsp` to `js/nav-toggle.js` so `script-src 'self'` can run it |
