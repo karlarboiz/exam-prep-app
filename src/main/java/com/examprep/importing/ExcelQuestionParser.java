@@ -72,6 +72,10 @@ public class ExcelQuestionParser {
                 if (subProfessionalCol != null) {
                     importRow.setSubProfessional(cellValue(row, subProfessionalCol));
                 }
+                Integer batchLabelCol = headerIndex.get("batch_label");
+                if (batchLabelCol != null) {
+                    importRow.setBatchLabel(cellValue(row, batchLabelCol));
+                }
                 rows.add(importRow);
             }
             return rows;

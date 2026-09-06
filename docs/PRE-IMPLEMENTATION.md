@@ -130,14 +130,15 @@ Run these after any auth, grant, or exam change.
 1. Login `admin` / seeded password → `/admin/dashboard`
 2. Create subject → question → exam (attach questions, set order, set active)
 3. Confirm user list loads; change a student's exam level or role
-4. `/admin/questions` → download template, import, export; select two rows → Delete selected
+4. `/admin/questions` → download template, import (batch defaults to `cse-import-YYYY-MM-DD`), export; select two rows → Delete selected
 4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
 5. `/admin/integrity` → flagged list loads (empty or with suspect leaves)
+6. `/admin/n8n` → Connect Google Drive (or the unconfigured empty state); browse a folder; send a question request with one checked file; n8n receives `driveFiles` (not the whole folder)
 
 ### Funnel → student
 
 1. `POST /api/access-tokens` with `X-Api-Key` → raw token once
-2. Open `/register?token=…` → create user
+2. Open `/register`, paste the token (or a one-time `?token=` that is stripped into the session) → create user
 3. Login as that user → `/user/diagnostic` → complete → `/user/dashboard` shows this week’s regimen
 4. Start this week’s exam → submit → study plan + email outbox row; review misses (no new official score)
 5. History shows attempt; reopen result review (including unanswered)
@@ -150,10 +151,13 @@ Run these after any auth, grant, or exam change.
 
 ### Account
 
-1. Login as admin or student → header **Account** → `/account`
-2. Profile shows username / email (read-only)
-3. Wrong current password → error, old password still works
-4. Valid change → success banner; login with the new password works
+1. Login as admin or student → header account chip → `/account`
+2. Profile shows username / email editable; role and exam level stay read-only
+3. Wrong current password on profile save → error, username/email unchanged
+4. Valid profile save → success banner; login with the new username works
+5. Wrong current password on password change → error, old password still works
+6. Valid password change → success banner; login with the new password works
+7. `/forgot-password` with a real email → outbox row; `/reset-password?token=` strips into session → new password works
 
 ### Negative
 

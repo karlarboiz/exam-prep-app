@@ -12,10 +12,13 @@ Source stylesheet: `src/main/webapp/css/app.css`
 
 | Class | Role |
 |-------|------|
-| `.site-header` | Top bar with logo + nav |
-| `.header-inner` | Flex space-between header content (wraps on small screens) |
+| `.site-header` | Top bar with logo, destination nav, and account cluster |
+| `.header-inner` | Flex header row (wraps on small screens) |
+| `.logo` / `.logo-mark` | Wordmark plus small book icon |
 | `.nav-toggle` | Hamburger control; visible only ≤900px |
-| `.main-nav` | Inline links on desktop; stacked panel when `.is-open` on mobile |
+| `.header-nav` | Destination links + account cluster; stacked panel when `.is-open` on mobile |
+| `.nav-links` | Primary destinations (active item uses `.is-active`) |
+| `.account-menu` | Avatar chip + logout control on the right |
 | `.main-content` | Page body |
 | `.site-footer` | Centered muted footer |
 | `.grid-2` | Two columns; stacks at ≤768px |
@@ -24,14 +27,14 @@ Source stylesheet: `src/main/webapp/css/app.css`
 
 ## Overflow
 
-Grid and flex children use `min-width: 0` so wide tables, tokens, and question text cannot force the page wider than the viewport. `.card` scrolls horizontally when a table is still too wide. `html` / `body` clip leftover horizontal overflow.
+Grid and flex children use `min-width: 0` so wide tables, tokens, and question text cannot force the page wider than the viewport. At ≤768px, `.data-table` stacks each row into labeled fields so lists stay readable without sideways scrolling. `.card` still scrolls horizontally as a fallback. `html` / `body` clip leftover horizontal overflow.
 
 ## Breakpoints
 
 | Max width | Behavior |
 |-----------|----------|
-| **900px** | Header switches to hamburger + collapsible `.main-nav` |
-| **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; tables scroll inside cards |
+| **900px** | Header switches to hamburger + collapsible `.header-nav` (`flex: 0 0 100%` so the panel wraps under the logo) |
+| **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; `.data-table` rows become labeled stacked records |
 | **480px** | Compact stat values and full-width large buttons |
 
 ## Shared chrome

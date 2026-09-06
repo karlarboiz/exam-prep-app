@@ -20,7 +20,8 @@ Then drill into the folders below as needed.
 ## Features
 
 - [access-grants/](features/access-grants/overview.md) — one-time purchase tokens, redeem, expiry gate, revoke
-- [auth/](features/auth/login.md) — login / register / logout / [change password](features/auth/change-password.md)
+- [i18n/](features/i18n/overview.md) — Tagalog (default) / English UI switcher
+- [auth/](features/auth/login.md) — login / register / logout / [profile](features/auth/profile.md) / [change password](features/auth/change-password.md) / [forgot password](features/auth/forgot-password.md)
 - [jwt-auth-filter/](features/jwt-auth-filter/jwt.md) — session JWT + public paths
 - [diagnostic/](features/diagnostic/overview.md) — first-login placement diagnostic (hard gate + sampled)
 - Admin subjects / exams / questions / users / [access grants](features/access-grants/admin-access-grants.md)
@@ -28,6 +29,7 @@ Then drill into the folders below as needed.
 - Take exam, results & history
 - [weekly-regimen/](features/weekly-regimen/overview.md) — weekly official exam, study plan, review, checkpoint
 - [examinee-tracking/](features/examinee-tracking/overview.md) — tab-leave integrity signals
+- [n8n/](features/n8n/overview.md) — admin send-only webhooks to n8n (question batches, Drive file picker, file analyze)
 - [testing/](features/testing/overview.md) — automated JUnit tests
 
 ```

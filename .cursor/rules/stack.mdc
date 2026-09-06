@@ -1,0 +1,14 @@
+---
+description: Exam-prep app stack — Java 17 Maven WAR, JSP, H2, JWT
+alwaysApply: true
+---
+
+# Stack
+
+- Java 17, Maven WAR (`pom.xml`). Do not add Spring, React, or a second CSS file.
+- Web: Jakarta Servlet 6 + JSP/JSTL under `src/main/webapp/`. Java in `com.examprep`.
+- DB: H2 + HikariCP. Schema is `src/main/resources/schema.sql` (applied on startup). Config is `src/main/resources/app.properties`.
+- Auth: JWT cookie `access_token` via `JwtAuthFilter`. Quiz access: access grants + `SubscriptionFilter`.
+- Styles: only `src/main/webapp/css/app.css`. Reuse tokens and classes from `docs/UI-GUIDE.md`.
+- Local run: `mvn cargo:run` (Tomcat 10, port 8080) or Docker as in the README.
+- `target/` is build output, not source.

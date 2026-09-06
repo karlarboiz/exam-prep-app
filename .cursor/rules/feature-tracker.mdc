@@ -1,0 +1,18 @@
+---
+description: Sync docs/feature-tracker after every product task
+alwaysApply: true
+---
+
+# Feature tracker
+
+`docs/feature-tracker/` is the Done / Pending source of truth.
+
+After implementing or deliberately deferring work:
+
+1. Find the row in the matching category file (auth, access-grants, admin-content, exam-results, examinee-tracking, security, diagnostic, weekly-regimen).
+2. Set **Status** to **Done** or **Pending**. Add a short **Notes** line when useful.
+3. If no row exists, add one in the best-fit category (or a new category file + link from the tracker README).
+
+Also update `docs/features/`, `docs/models/`, or `docs/pages/` when behavior, fields, or screens change.
+
+Skip the tracker only for Cursor/config-only changes with no product behavior.

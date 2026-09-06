@@ -7,13 +7,20 @@ import com.examprep.model.StudyPlan;
 import com.examprep.model.User;
 import com.examprep.model.WeeklyRegimen;
 import com.examprep.model.WeeklySubjectScore;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Properties;
 
 /**
- * Study-plan digest. Writes {@code email_outbox} and logs. Skip when the access grant has expired.
- * The in-app study plan remains the source of truth.
+ * Writes {@code email_outbox} always. Sends via SMTP when {@code mail.smtp.host} is set.
  */
 public class MailService {
 
@@ -30,10 +37,61 @@ public class MailService {
         }
         String subject = "Week " + regimen.getWeekNumber() + " study plan";
         String body = buildBody(user, regimen, plan);
-        outboxDao.insert(user.getId(), regimen.getId(), user.getEmail(), subject, body);
+        send(user.getId(), regimen.getId(), user.getEmail(), subject, body);
         regimenDao.markEmailSent(regimen.getId(), now);
-        System.out.println("[mail] to=" + user.getEmail() + " subject=" + subject);
         return true;
+    }
+
+    public void send(Long userId, Long regimenId, String toAddress, String subject, String body)
+            throws SQLException {
+        outboxDao.insert(userId, regimenId, toAddress, subject, body);
+        if (!isSmtpConfigured()) {
+            System.out.println("[mail] to=" + toAddress + " subject=" + subject + " (outbox only)");
+            return;
+        }
+        try {
+            sendSmtp(toAddress, subject, body);
+            System.out.println("[mail] to=" + toAddress + " subject=" + subject + " (smtp)");
+        } catch (Exception e) {
+            System.err.println("[mail] SMTP send failed for " + toAddress + ": " + e.getMessage());
+        }
+    }
+
+    public static boolean isSmtpConfigured() {
+        String host = AppConfig.get("mail.smtp.host", "");
+        return host != null && !host.isBlank();
+    }
+
+    private void sendSmtp(String toAddress, String subject, String body) throws Exception {
+        String host = AppConfig.get("mail.smtp.host", "");
+        String port = AppConfig.get("mail.smtp.port", "587");
+        String username = AppConfig.get("mail.smtp.username", "");
+        String password = AppConfig.get("mail.smtp.password", "");
+        String from = AppConfig.get("mail.from", username.isBlank() ? "noreply@localhost" : username);
+        boolean startTls = AppConfig.getBoolean("mail.smtp.starttls", true);
+
+        Properties props = new Properties();
+        props.put("mail.smtp.host", host);
+        props.put("mail.smtp.port", port);
+        props.put("mail.smtp.starttls.enable", Boolean.toString(startTls));
+        boolean auth = username != null && !username.isBlank();
+        props.put("mail.smtp.auth", Boolean.toString(auth));
+
+        Session session = auth
+                ? Session.getInstance(props, new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(username, password);
+                    }
+                })
+                : Session.getInstance(props);
+
+        MimeMessage message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(from));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress));
+        message.setSubject(subject, "UTF-8");
+        message.setText(body, "UTF-8");
+        Transport.send(message);
     }
 
     private String buildBody(User user, WeeklyRegimen regimen, StudyPlan plan) {

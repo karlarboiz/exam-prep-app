@@ -22,6 +22,13 @@ Reusable patterns from `app.css`:
 - `.empty-state` — muted centered “no data”
 - `.expired-panel` — subscription-expired messaging inside `.auth-card`
 
+## Header chrome
+
+- `.nav-links a` — pill destination links; `.is-active` uses `--color-primary-soft`
+- `.account-menu` — pill cluster on the right (avatar, username, role, logout)
+- `.account-chip` — link to `/account`; avatar initial + username + role pill (`.is-admin` tints the avatar)
+- `.account-logout` — icon-only on desktop; icon + “Log out” on mobile
+
 ## Badges
 
 - `.badge-success`, `.badge-muted`
@@ -32,6 +39,9 @@ Reusable patterns from `app.css`:
 
 - `.data-table` — full-width admin/user tables with header background `--color-bg`
 - `.col-check` — narrow checkbox column on the question bank table
+- Body cells take `data-label` matching the column header (i18n key already used in `<th>`)
+- ≤768px: thead is visually hidden; each row stacks as label/value pairs; `.actions` stays a button row
+- `.table-inline-form` (users admin) stretches to full width on small screens
 
 ## Exam / timer
 

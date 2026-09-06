@@ -1,5 +1,6 @@
 package com.examprep.servlet.user;
 
+import com.examprep.i18n.Messages;
 import com.examprep.model.User;
 import com.examprep.service.ExamService;
 import com.examprep.service.WeeklyRegimenService;
@@ -29,7 +30,7 @@ public class DashboardServlet extends HttpServlet {
             try {
                 req.setAttribute("weekly", weeklyRegimenService.resolveDashboard(user.getId()));
             } catch (IllegalStateException e) {
-                req.setAttribute("weeklyError", e.getMessage());
+                req.setAttribute("weeklyError", Messages.fromException(req, e.getMessage()));
             }
             req.getRequestDispatcher("/WEB-INF/jsp/user/dashboard.jsp").forward(req, resp);
         } catch (Exception e) {

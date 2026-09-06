@@ -32,16 +32,26 @@ public final class JwtUtil {
     }
 
     public static String generateToken(Long userId, String username, Role role) {
+        return generateToken(userId, username, role, 0);
+    }
+
+    public static String generateToken(Long userId, String username, Role role, int tokenVersion) {
         int ttlHours = AppConfig.getInt("jwt.ttl.hours", 24);
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("username", username)
                 .claim("role", role.name())
+                .claim("tv", tokenVersion)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(ttlHours, ChronoUnit.HOURS)))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public static int getTokenVersion(Claims claims) {
+        Number version = claims.get("tv", Number.class);
+        return version != null ? version.intValue() : 0;
     }
 
     public static Claims parseToken(String token) throws JwtException {

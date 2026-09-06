@@ -28,7 +28,22 @@ public final class AppConfig {
         overrideFromEnv("FUNNEL_API_KEY", "funnel.api.key");
         overrideFromEnv("ADMIN_USERNAME", "admin.username");
         overrideFromEnv("ADMIN_PASSWORD", "admin.password");
-        
+        overrideFromEnv("SMTP_HOST", "mail.smtp.host");
+        overrideFromEnv("SMTP_PORT", "mail.smtp.port");
+        overrideFromEnv("SMTP_USERNAME", "mail.smtp.username");
+        overrideFromEnv("SMTP_PASSWORD", "mail.smtp.password");
+        overrideFromEnv("MAIL_FROM", "mail.from");
+        overrideFromEnv("APP_PUBLIC_URL", "app.public.url");
+        overrideFromEnv("PROXY_TRUST_FORWARDED", "proxy.trust.forwarded");
+        overrideFromEnv("N8N_WEBHOOK_QUESTIONS", "n8n.webhook.questions");
+        overrideFromEnv("N8N_WEBHOOK_ANALYZE", "n8n.webhook.analyze");
+        overrideFromEnv("N8N_WEBHOOK_SECRET", "n8n.webhook.secret");
+        overrideFromEnv("GOOGLE_DRIVE_FOLDER_ID", "google.drive.folderId");
+        overrideFromEnv("GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON", "google.drive.serviceAccountJson");
+        overrideFromEnv("GOOGLE_OAUTH_CLIENT_ID", "google.oauth.clientId");
+        overrideFromEnv("GOOGLE_OAUTH_CLIENT_SECRET", "google.oauth.clientSecret");
+        overrideFromEnv("GOOGLE_OAUTH_REDIRECT_URI", "google.oauth.redirectUri");
+
         validateSecurityConfig();
     }
 
@@ -52,6 +67,15 @@ public final class AppConfig {
         validateSecret("jwt.secret", "JWT_SECRET", errors);
         validateSecret("id.cipher.secret", "ID_CIPHER_SECRET", errors);
         validateSecret("funnel.api.key", "FUNNEL_API_KEY", errors);
+        if (n8nWebhookConfigured()) {
+            validateSecret("n8n.webhook.secret", "N8N_WEBHOOK_SECRET", errors);
+        }
+        if (isPresent("google.drive.folderId") && !isPresent("google.drive.serviceAccountJson")) {
+            errors.add("  - google.drive.serviceAccountJson is not set. Set environment variable GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON");
+        }
+        if (isPresent("google.oauth.clientId") && !isPresent("google.oauth.clientSecret")) {
+            errors.add("  - google.oauth.clientSecret is not set. Set environment variable GOOGLE_OAUTH_CLIENT_SECRET");
+        }
 
         if (!errors.isEmpty()) {
             String message = "Production security validation failed:\n" + String.join("\n", errors);
@@ -77,6 +101,15 @@ public final class AppConfig {
         if (value.length() < 32) {
             errors.add("  - " + key + " must be at least 32 characters long. Set environment variable " + envName);
         }
+    }
+
+    public static boolean n8nWebhookConfigured() {
+        return isPresent("n8n.webhook.questions") || isPresent("n8n.webhook.analyze");
+    }
+
+    private static boolean isPresent(String key) {
+        String value = PROPS.getProperty(key);
+        return value != null && !value.isBlank();
     }
 
     public static boolean isProduction() {

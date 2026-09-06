@@ -1,0 +1,24 @@
+---
+description: Java layering — model, DAO, service, filter, servlet
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Java layers
+
+Keep work in the existing packages under `com.examprep`:
+
+| Layer | Package |
+|-------|---------|
+| Model / enums | `model` |
+| Persistence | `dao` |
+| Rules | `service` |
+| HTTP / routing | `servlet` (admin, user, auth, api) |
+| Cross-cutting | `filter` |
+| Startup / config | `config` |
+
+- Servlets stay thin: validate, call a service, set request attributes, forward to JSP or redirect.
+- Do not put SQL in servlets or JSP. Do not put HTML in services.
+- New filters only when auth, CSRF, or entitlement paths change.
+- Match existing naming: `*Servlet`, `*Service`, `*Dao`.
+- Java 17 language level. No new frameworks.

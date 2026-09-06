@@ -5,7 +5,7 @@
                 ${answers[q.id] == opt.letter ? 'checked' : ''}
                 onchange="saveAnswer(${q.id}, '${opt.letter}')">
             <span class="option-letter">${opt.letter}.</span>
-            <span class="option-text">${opt.text}</span>
+            <span class="option-text"><c:out value="${opt.text}"/></span>
         </label>
     </c:forEach>
 </div>

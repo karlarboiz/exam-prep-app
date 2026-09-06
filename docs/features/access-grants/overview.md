@@ -6,7 +6,7 @@ Quiz access is controlled by **one-time purchase access grants**, not by the log
 
 1. Funnel completes a purchase and calls `POST /api/access-tokens` with the shared API key and `examLevel` — or an admin mints a token from `/admin/access-grants`.
 2. This app generates a high-entropy raw token, stores only its SHA-256 hash (`UNUSED`) plus exam level, and returns the raw token once.
-3. Buyer opens `/register?token=...`, creates an account; exam track is fixed from the grant.
+3. Buyer opens `/register`, pastes the token, and creates an account; exam track is fixed from the grant.
 4. The grant is marked `REDEEMED`, locked to that `user_id`, and cannot be reused.
 5. Ongoing access to `/user/**` requires a redeemed grant with `expires_at` still in the future and status not `REVOKED`.
 6. Session auth remains the existing JWT cookie (`access_token`).

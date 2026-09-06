@@ -7,7 +7,7 @@
 
 ## Rules
 
-- Registration **requires** a valid access token (query `?token=` or form field `token`).
+- Registration **requires** a valid access token (pasted on `/register`, or a one-time `?token=` that is moved into the session).
 - Token must be `UNUSED`, not revoked, `expires_at` still in the future, and have an `exam_level`.
 - Exam level is **not** chosen on the form; it is read from the grant and shown read-only.
 - On success, in one DB transaction:
