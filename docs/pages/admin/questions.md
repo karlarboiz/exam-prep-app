@@ -6,7 +6,7 @@
 
 Question bank management: prompt, A–D options, correct answer, difficulty, optional explanation, subject and batch filters.
 
-The bank table has a checkbox column (header select-all) and a **Delete selected** toolbar (`.col-check`, `.bank-toolbar`). Individual row delete remains. Empty filter results use `.empty-state`. After a batch delete, a success alert reports the count.
+The bank table has a checkbox column (header select-all) and a **Delete selected** toolbar (`.col-check`, `.bank-toolbar`). Individual row delete remains. Empty filter results use `.empty-state`. After a batch delete, a success alert reports the count. Select-all, confirm, and edit-form image preview live in `js/admin-questions.js` so they run under CSP `script-src 'self'`.
 
 Excel:
 
