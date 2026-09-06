@@ -47,9 +47,9 @@
                 <tbody>
                 <c:forEach var="s" items="${subjectScores}">
                     <tr>
-                        <td><c:out value="${s.subjectName}"/></td>
-                        <td>${s.scorePercent}%</td>
-                        <td><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
+                        <td data-label="<fmt:message key="diagnosticResult.subject"/>"><c:out value="${s.subjectName}"/></td>
+                        <td data-label="<fmt:message key="diagnosticResult.score"/>">${s.scorePercent}%</td>
+                        <td data-label="<fmt:message key="diagnosticResult.band"/>"><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
                     </tr>
                 </c:forEach>
                 </tbody>

@@ -110,10 +110,10 @@
                 <tbody>
                 <c:forEach var="row" items="${recentRequests}">
                     <tr>
-                        <td><span class="badge badge-${row.kind}"><fmt:message key="n8n.kind.${row.kind}"/></span></td>
-                        <td><c:out value="${row.summary}"/></td>
-                        <td><span class="badge badge-${row.status}"><fmt:message key="n8n.status.${row.status}"/></span></td>
-                        <td>${ep:fmt(row.createdAt)}</td>
+                        <td data-label="<fmt:message key="n8n.recent.kind"/>"><span class="badge badge-${row.kind}"><fmt:message key="n8n.kind.${row.kind}"/></span></td>
+                        <td data-label="<fmt:message key="n8n.recent.summary"/>"><c:out value="${row.summary}"/></td>
+                        <td data-label="<fmt:message key="n8n.recent.status"/>"><span class="badge badge-${row.status}"><fmt:message key="n8n.status.${row.status}"/></span></td>
+                        <td data-label="<fmt:message key="n8n.recent.sentAt"/>">${ep:fmt(row.createdAt)}</td>
                     </tr>
                 </c:forEach>
                 </tbody>

@@ -5,4 +5,4 @@
 **Servlet:** `StudyPlanServlet`  
 **Feature:** [weekly-regimen](../../features/weekly-regimen/overview.md)
 
-Subject bands, 3–5 focus targets, optional “digest sent” hint. CTA to untimed [review](review.md). Uses `.card`, `.data-table`, `.badge-*`, `.actions`.
+Subject bands, 3–5 focus targets, optional “digest sent” hint. CTA to untimed [review](review.md). Uses `.card`, `.data-table` (stacked labeled rows on mobile), `.badge-*`, `.actions`.

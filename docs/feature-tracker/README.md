@@ -23,6 +23,7 @@ How a capability works (implementation docs): [features/](../features/)
 | Weekly regimen (study cycle) | [weekly-regimen.md](weekly-regimen.md) |
 | I18n (Tagalog / English UI) | [i18n.md](i18n.md) |
 | n8n connector (admin send-only) | [n8n.md](n8n.md) |
+| UI (mobile tables, layout) | [ui.md](ui.md) |
 
 ## Status values
 

@@ -12,6 +12,6 @@ Excel:
 - `GET ?action=template` downloads a sample `.xlsx`.
 - `GET ?action=export` downloads the current bank (honors the subject and batch filters).
 
-The question table and edit form show each item’s batch (or Unlabeled). Manual edit does not change the batch label.
+The question table and edit form show each item’s batch (or Unlabeled). Manual edit does not change the batch label. On small screens the bank table stacks into labeled rows.
 
 See [question-import](../../features/question-import/overview.md).

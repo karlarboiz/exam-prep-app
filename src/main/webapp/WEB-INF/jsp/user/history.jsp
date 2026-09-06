@@ -31,16 +31,16 @@
                 <tbody>
                 <c:forEach var="h" items="${history}">
                     <tr>
-                        <td><c:out value="${h.examTitle}"/></td>
-                        <td>
+                        <td data-label="<fmt:message key="history.exam"/>"><c:out value="${h.examTitle}"/></td>
+                        <td data-label="<fmt:message key="history.type"/>">
                             <span class="badge badge-${h.attemptKind}"><fmt:message key="attemptKind.${h.attemptKind}"/></span>
                         </td>
-                        <td><c:out value="${h.subjectName}"/></td>
-                        <td>${ep:fmt(h.startedAt)}</td>
-                        <td>${h.completedAt != null ? ep:fmt(h.completedAt) : '-'}</td>
-                        <td>${h.scorePercent != null ? h.scorePercent : '-'}%</td>
-                        <td><span class="badge badge-${h.status}"><fmt:message key="status.${h.status}"/></span></td>
-                        <td>
+                        <td data-label="<fmt:message key="history.subject"/>"><c:out value="${h.subjectName}"/></td>
+                        <td data-label="<fmt:message key="history.started"/>">${ep:fmt(h.startedAt)}</td>
+                        <td data-label="<fmt:message key="history.completed"/>">${h.completedAt != null ? ep:fmt(h.completedAt) : '-'}</td>
+                        <td data-label="<fmt:message key="history.score"/>">${h.scorePercent != null ? h.scorePercent : '-'}%</td>
+                        <td data-label="<fmt:message key="history.status"/>"><span class="badge badge-${h.status}"><fmt:message key="status.${h.status}"/></span></td>
+                        <td class="actions">
                             <c:if test="${h.status != 'IN_PROGRESS'}">
                                 <c:choose>
                                     <c:when test="${h.attemptKind == 'WEEKLY' && h.regimenId != null}">
