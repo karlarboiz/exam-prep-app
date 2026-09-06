@@ -563,6 +563,20 @@ input[type="file"] {
     background: var(--color-bg);
 }
 
+.data-table .col-check {
+    width: 2.25rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.data-table .col-check input {
+    margin: 0;
+}
+
+.bank-toolbar {
+    margin-bottom: 0.75rem;
+}
+
 @media (max-width: 768px) {
     .data-table,
     .data-table tbody {
@@ -614,6 +628,10 @@ input[type="file"] {
 
     .data-table td:first-child {
         font-weight: 600;
+    }
+
+    .data-table td.col-check {
+        font-weight: 400;
     }
 
     .data-table td::before {

@@ -38,6 +38,7 @@ Reusable patterns from `app.css`:
 ## Tables
 
 - `.data-table` — full-width admin/user tables with header background `--color-bg`
+- `.col-check` — narrow checkbox column on the question bank table
 - Body cells take `data-label` matching the column header (i18n key already used in `<th>`)
 - ≤768px: thead is visually hidden; each row stacks as label/value pairs; `.actions` stays a button row
 - `.table-inline-form` (users admin) stretches to full width on small screens

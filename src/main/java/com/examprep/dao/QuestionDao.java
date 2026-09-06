@@ -349,11 +349,22 @@ public class QuestionDao {
     }
 
     public void delete(Long id) throws SQLException {
-        String sql = "DELETE FROM questions WHERE id = ?";
+        deleteByIds(List.of(id));
+    }
+
+    public int deleteByIds(List<Long> ids) throws SQLException {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        String placeholders = ids.stream().map(id -> "?").collect(java.util.stream.Collectors.joining(","));
+        String sql = "DELETE FROM questions WHERE id IN (" + placeholders + ")";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, id);
-            ps.executeUpdate();
+            int i = 1;
+            for (Long id : ids) {
+                ps.setLong(i++, id);
+            }
+            return ps.executeUpdate();
         }
     }
 

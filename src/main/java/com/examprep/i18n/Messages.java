@@ -69,7 +69,8 @@ public final class Messages {
             Map.entry("Select at most 20 Drive files", "error.n8n.drive.tooMany"),
             Map.entry("A selected Drive file is not in the configured folder", "error.n8n.drive.unknownFile"),
             Map.entry("Connect Google Drive first", "error.n8n.drive.connectFirst"),
-            Map.entry("Google Drive sign-in is not configured", "error.n8n.drive.oauthUnconfigured")
+            Map.entry("Google Drive sign-in is not configured", "error.n8n.drive.oauthUnconfigured"),
+            Map.entry("Select at least one question to delete", "error.questions.selectOne")
     );
 
     private Messages() {

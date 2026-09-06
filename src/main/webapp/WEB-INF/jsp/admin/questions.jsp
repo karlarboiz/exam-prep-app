@@ -14,6 +14,9 @@
 <c:if test="${not empty importSuccess}">
     <div class="alert alert-success">${importSuccess}</div>
 </c:if>
+<c:if test="${not empty deleteSuccess}">
+    <div class="alert alert-success">${deleteSuccess}</div>
+</c:if>
 <c:if test="${not empty importErrors}">
     <div class="alert alert-error">
         <p><fmt:message key="questions.importErrors"/></p>
@@ -179,9 +182,36 @@
 <div class="card">
     <h2><fmt:message key="questions.bank"/></h2>
     <fmt:message key="confirm.deleteQuestion" var="confirmDeleteQuestion"/>
+    <fmt:message key="confirm.deleteSelected" var="confirmDeleteSelected"/>
+    <fmt:message key="questions.selectNone" var="selectNoneMsg"/>
+    <c:if test="${not empty questions}">
+        <form id="batchDeleteForm" method="post" action="${ctx}/admin/questions"
+              data-select-none="${selectNoneMsg}"
+              data-confirm-tpl="${confirmDeleteSelected}">
+            <ep:csrf/>
+            <input type="hidden" name="action" value="deleteBatch">
+            <c:if test="${not empty filterSubjectId}">
+                <input type="hidden" name="subjectId" value="${filterSubjectId}">
+            </c:if>
+            <c:if test="${not empty filterBatchLabel}">
+                <input type="hidden" name="batchLabel" value="${filterBatchLabel}">
+            </c:if>
+            <div class="actions bank-toolbar">
+                <button type="submit" class="btn btn-danger" id="deleteSelectedBtn"><fmt:message key="questions.deleteSelected"/></button>
+            </div>
+        </form>
+    </c:if>
+    <c:if test="${empty questions}">
+        <p class="empty-state"><fmt:message key="questions.empty"/></p>
+    </c:if>
+    <c:if test="${not empty questions}">
     <table class="data-table">
         <thead>
         <tr>
+            <th class="col-check">
+                <label class="sr-only" for="selectAllQuestions"><fmt:message key="questions.selectAll"/></label>
+                <input type="checkbox" id="selectAllQuestions" form="batchDeleteForm">
+            </th>
             <th><fmt:message key="questions.colSubject"/></th>
             <th><fmt:message key="questions.colBatch"/></th>
             <th><fmt:message key="questions.colQuestion"/></th>
@@ -192,6 +222,11 @@
         <tbody>
         <c:forEach var="q" items="${questions}">
             <tr>
+                <td class="col-check" data-label="">
+                    <label class="sr-only" for="q-select-${q.id}"><fmt:message key="questions.selectOne"/></label>
+                    <input type="checkbox" id="q-select-${q.id}" class="question-check" name="ids"
+                           value="${q.id}" form="batchDeleteForm">
+                </td>
                 <td data-label="<fmt:message key="questions.colSubject"/>"><c:out value="${q.subjectName}"/></td>
                 <td data-label="<fmt:message key="questions.colBatch"/>">
                     <c:choose>
@@ -214,6 +249,12 @@
                         <ep:csrf/>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="${q.id}">
+                        <c:if test="${not empty filterSubjectId}">
+                            <input type="hidden" name="subjectId" value="${filterSubjectId}">
+                        </c:if>
+                        <c:if test="${not empty filterBatchLabel}">
+                            <input type="hidden" name="batchLabel" value="${filterBatchLabel}">
+                        </c:if>
                         <button type="submit" class="btn btn-sm btn-danger"><fmt:message key="action.delete"/></button>
                     </form>
                 </td>
@@ -221,6 +262,7 @@
         </c:forEach>
         </tbody>
     </table>
+    </c:if>
 </div>
 
 <script src="${ctx}/js/question-image.js"></script>
@@ -256,6 +298,47 @@
 
     input.addEventListener('input', refreshPreview);
     refreshPreview();
+})();
+
+(function () {
+    var form = document.getElementById('batchDeleteForm');
+    var selectAll = document.getElementById('selectAllQuestions');
+    if (!form || !selectAll) return;
+
+    function questionChecks() {
+        return Array.prototype.slice.call(document.querySelectorAll('input.question-check'));
+    }
+
+    function syncSelectAll() {
+        var boxes = questionChecks();
+        var checked = boxes.filter(function (box) { return box.checked; }).length;
+        selectAll.checked = boxes.length > 0 && checked === boxes.length;
+        selectAll.indeterminate = checked > 0 && checked < boxes.length;
+    }
+
+    selectAll.addEventListener('change', function () {
+        questionChecks().forEach(function (box) {
+            box.checked = selectAll.checked;
+        });
+        selectAll.indeterminate = false;
+    });
+
+    questionChecks().forEach(function (box) {
+        box.addEventListener('change', syncSelectAll);
+    });
+
+    form.addEventListener('submit', function (event) {
+        var count = questionChecks().filter(function (box) { return box.checked; }).length;
+        if (count === 0) {
+            event.preventDefault();
+            alert(form.getAttribute('data-select-none'));
+            return;
+        }
+        var confirmTpl = form.getAttribute('data-confirm-tpl') || '';
+        if (!confirm(confirmTpl.replace('{0}', String(count)))) {
+            event.preventDefault();
+        }
+    });
 })();
 </script>
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

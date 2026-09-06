@@ -18,6 +18,9 @@ import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/admin/questions")
@@ -48,6 +51,7 @@ public class QuestionServlet extends HttpServlet {
             String subjectId = req.getParameter("subjectId");
             String batchLabel = req.getParameter("batchLabel");
             String editId = req.getParameter("edit");
+            setDeleteSuccess(req);
 
             if (editId != null) {
                 try {
@@ -93,7 +97,11 @@ public class QuestionServlet extends HttpServlet {
                 }
                 case "delete" -> {
                     adminService.deleteQuestion(IdCipher.dec(req.getParameter("id")));
-                    resp.sendRedirect(req.getContextPath() + "/admin/questions");
+                    resp.sendRedirect(questionsRedirect(req, null));
+                }
+                case "deleteBatch" -> {
+                    int deleted = adminService.deleteQuestions(decodeIds(req.getParameterValues("ids")));
+                    resp.sendRedirect(questionsRedirect(req, deleted));
                 }
                 case "import" -> {
                     handleImport(req);
@@ -165,6 +173,55 @@ public class QuestionServlet extends HttpServlet {
                 ? Long.parseLong(subjectId)
                 : null;
         return adminService.getQuestions(parsedSubjectId, batchLabel);
+    }
+
+    private static void setDeleteSuccess(HttpServletRequest req) {
+        String deletedParam = req.getParameter("deleted");
+        if (deletedParam == null || deletedParam.isBlank()) {
+            return;
+        }
+        try {
+            int deleted = Integer.parseInt(deletedParam);
+            if (deleted > 0) {
+                req.setAttribute("deleteSuccess", Messages.format(req, "questions.deleted", deleted));
+            }
+        } catch (NumberFormatException ignored) {
+            // Ignore tampered flash param
+        }
+    }
+
+    private static List<Long> decodeIds(String[] rawIds) {
+        if (rawIds == null || rawIds.length == 0) {
+            return List.of();
+        }
+        List<Long> ids = new ArrayList<>();
+        for (String rawId : rawIds) {
+            if (rawId == null || rawId.isBlank()) {
+                continue;
+            }
+            ids.add(IdCipher.dec(rawId));
+        }
+        return ids;
+    }
+
+    private static String questionsRedirect(HttpServletRequest req, Integer deletedCount) {
+        StringBuilder url = new StringBuilder(req.getContextPath()).append("/admin/questions");
+        String sep = "?";
+        String subjectId = req.getParameter("subjectId");
+        if (subjectId != null && !subjectId.isBlank() && subjectId.chars().allMatch(Character::isDigit)) {
+            url.append(sep).append("subjectId=").append(subjectId);
+            sep = "&";
+        }
+        String batchLabel = req.getParameter("batchLabel");
+        if (batchLabel != null && !batchLabel.isBlank()) {
+            url.append(sep).append("batchLabel=")
+                    .append(URLEncoder.encode(batchLabel, StandardCharsets.UTF_8));
+            sep = "&";
+        }
+        if (deletedCount != null) {
+            url.append(sep).append("deleted=").append(deletedCount);
+        }
+        return url.toString();
     }
 
     private void writeExcel(HttpServletResponse resp, String filename, ExcelBody writer) throws Exception {

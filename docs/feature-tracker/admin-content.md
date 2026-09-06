@@ -16,3 +16,4 @@ Subjects, questions, exams, and bulk import.
 | Excel import batch label | Done | Required on write; admin/CLI default `cse-import-YYYY-MM-DD`; stamps every item; other batches are not updated |
 | Question bank Excel export | Done | `GET /admin/questions?action=export` (optional `subjectId`) |
 | Reorder questions on a practice exam | Done | Up/Down on `/admin/exams`; stored as `exam_questions.sort_order` |
+| Batch delete questions | Done | Checkboxes + select-all on `/admin/questions`; `POST action=deleteBatch` |

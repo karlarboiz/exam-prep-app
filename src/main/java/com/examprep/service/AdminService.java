@@ -10,9 +10,11 @@ import com.examprep.model.Subject;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class AdminService {
 
@@ -76,6 +78,27 @@ public class AdminService {
 
     public void deleteQuestion(Long id) throws SQLException {
         questionDao.delete(id);
+    }
+
+    public int deleteQuestions(List<Long> ids) throws SQLException {
+        List<Long> uniqueIds = uniqueIds(ids);
+        if (uniqueIds.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one question to delete");
+        }
+        return questionDao.deleteByIds(uniqueIds);
+    }
+
+    private static List<Long> uniqueIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> unique = new LinkedHashSet<>();
+        for (Long id : ids) {
+            if (id != null) {
+                unique.add(id);
+            }
+        }
+        return List.copyOf(unique);
     }
 
     public List<Exam> getAllExams() throws SQLException {
