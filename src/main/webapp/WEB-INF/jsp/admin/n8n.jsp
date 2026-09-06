@@ -16,44 +16,121 @@
     <div class="alert alert-success"><c:out value="${success}"/></div>
 </c:if>
 
-<div class="grid-2">
-    <div class="card">
-        <h2><fmt:message key="n8n.questions.heading"/></h2>
+<div class="card">
+    <h2><fmt:message key="n8n.questions.heading"/></h2>
         <c:choose>
             <c:when test="${questionsConfigured}">
                 <p class="hint"><fmt:message key="n8n.questions.help"/></p>
                 <form method="post" action="${ctx}/admin/n8n" class="form">
                     <ep:csrf/>
                     <input type="hidden" name="action" value="questions">
-                    <div class="form-group">
-                        <label for="message"><fmt:message key="n8n.questions.message"/></label>
-                        <textarea id="message" name="message" rows="5" required maxlength="4000"><c:out value="${formMessage}"/></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject"><fmt:message key="n8n.questions.subject"/></label>
-                        <input type="text" id="subject" name="subject" maxlength="100" value="<c:out value='${formSubject}'/>">
-                    </div>
                     <div class="grid-2">
-                        <div class="form-group">
-                            <label for="count"><fmt:message key="n8n.questions.count"/></label>
-                            <input type="number" id="count" name="count" min="1" max="100"
-                                   value="${empty formCount ? 10 : formCount}">
+                        <div>
+                            <div class="form-group">
+                                <label for="message"><fmt:message key="n8n.questions.message"/></label>
+                                <textarea id="message" name="message" rows="5" required maxlength="4000"><c:out value="${formMessage}"/></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject"><fmt:message key="n8n.questions.subject"/></label>
+                                <input type="text" id="subject" name="subject" maxlength="100" value="<c:out value='${formSubject}'/>">
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="count"><fmt:message key="n8n.questions.count"/></label>
+                                    <input type="number" id="count" name="count" min="1" max="100"
+                                           value="${empty formCount ? 10 : formCount}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="difficulty"><fmt:message key="n8n.questions.difficulty"/></label>
+                                    <select id="difficulty" name="difficulty">
+                                        <option value="" ${empty formDifficulty ? 'selected' : ''}><fmt:message key="n8n.questions.difficultyAny"/></option>
+                                        <option value="EASY" ${formDifficulty == 'EASY' ? 'selected' : ''}><fmt:message key="questions.easy"/></option>
+                                        <option value="MEDIUM" ${formDifficulty == 'MEDIUM' ? 'selected' : ''}><fmt:message key="questions.medium"/></option>
+                                        <option value="HARD" ${formDifficulty == 'HARD' ? 'selected' : ''}><fmt:message key="questions.hard"/></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="batchLabel"><fmt:message key="n8n.questions.batchLabel"/></label>
+                                <input type="text" id="batchLabel" name="batchLabel" maxlength="100"
+                                       placeholder="${suggestedBatchLabel}"
+                                       value="${empty formBatchLabel ? suggestedBatchLabel : formBatchLabel}">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="difficulty"><fmt:message key="n8n.questions.difficulty"/></label>
-                            <select id="difficulty" name="difficulty">
-                                <option value="" ${empty formDifficulty ? 'selected' : ''}><fmt:message key="n8n.questions.difficultyAny"/></option>
-                                <option value="EASY" ${formDifficulty == 'EASY' ? 'selected' : ''}><fmt:message key="questions.easy"/></option>
-                                <option value="MEDIUM" ${formDifficulty == 'MEDIUM' ? 'selected' : ''}><fmt:message key="questions.medium"/></option>
-                                <option value="HARD" ${formDifficulty == 'HARD' ? 'selected' : ''}><fmt:message key="questions.hard"/></option>
-                            </select>
+                            <label><fmt:message key="n8n.drive.heading"/></label>
+                            <p class="hint"><fmt:message key="n8n.drive.help"/></p>
+                            <c:choose>
+                                <c:when test="${driveOAuthConfigured and not driveConnected}">
+                                    <p class="empty-state"><fmt:message key="n8n.drive.connectHelp"/></p>
+                                    <p class="actions">
+                                        <a href="${ctx}/admin/n8n/drive/connect" class="btn btn-primary"><fmt:message key="n8n.drive.connect"/></a>
+                                    </p>
+                                </c:when>
+                                <c:when test="${not driveOAuthConfigured and not driveConfigured}">
+                                    <p class="empty-state"><fmt:message key="n8n.drive.unconfigured"/></p>
+                                </c:when>
+                                <c:when test="${not empty driveError}">
+                                    <p class="alert alert-error"><c:out value="${driveError}"/></p>
+                                    <c:if test="${driveConnected}">
+                                        <p class="actions">
+                                            <a href="${ctx}/admin/n8n/drive/connect" class="btn btn-outline"><fmt:message key="n8n.drive.reconnect"/></a>
+                                        </p>
+                                    </c:if>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:if test="${driveConnected}">
+                                        <p class="hint"><fmt:message key="n8n.drive.connectedAs"/> <c:out value="${driveEmail}"/></p>
+                                    </c:if>
+                                    <c:if test="${not empty driveFolderName}">
+                                        <p class="drive-folder-path">
+                                            <c:if test="${not empty driveParentId}">
+                                                <a href="${ctx}/admin/n8n?folder=${driveParentId}"><fmt:message key="n8n.drive.up"/></a>
+                                                <span aria-hidden="true"> / </span>
+                                            </c:if>
+                                            <c:out value="${driveFolderName}"/>
+                                        </p>
+                                    </c:if>
+                                    <input type="hidden" name="driveFolderId" value="<c:out value='${driveFolderId}'/>">
+                                    <c:if test="${not empty driveFiles}">
+                                        <div class="actions">
+                                            <button type="button" class="btn btn-sm btn-outline" data-drive-check="all"><fmt:message key="n8n.drive.selectAll"/></button>
+                                            <button type="button" class="btn btn-sm btn-outline" data-drive-check="none"><fmt:message key="n8n.drive.clear"/></button>
+                                        </div>
+                                    </c:if>
+                                    <div class="checkbox-list drive-file-list">
+                                        <c:forEach var="folder" items="${driveFolders}">
+                                            <a class="drive-file-item drive-folder-link" href="${ctx}/admin/n8n?folder=${folder.id}">
+                                                <span class="drive-file-name"><c:out value="${folder.name}"/></span>
+                                                <span class="drive-file-meta"><fmt:message key="n8n.drive.folder"/></span>
+                                            </a>
+                                        </c:forEach>
+                                        <c:forEach var="file" items="${driveFiles}">
+                                            <label class="checkbox-item drive-file-item">
+                                                <input type="checkbox" name="driveFileIds" value="${file.id}"
+                                                    <c:forEach var="selId" items="${selectedDriveFileIds}">
+                                                        <c:if test="${selId == file.id}">checked</c:if>
+                                                    </c:forEach>>
+                                                <span class="drive-file-name"><c:out value="${file.name}"/></span>
+                                                <span class="drive-file-meta"><c:out value="${file.kindLabel}"/></span>
+                                            </label>
+                                        </c:forEach>
+                                        <c:if test="${empty driveFolders and empty driveFiles}">
+                                            <p class="empty-state"><fmt:message key="n8n.drive.empty"/></p>
+                                        </c:if>
+                                    </div>
+                                    <c:if test="${driveConnected}">
+                                        <p class="actions">
+                                            <button type="submit" class="btn btn-sm btn-outline"
+                                                    formaction="${ctx}/admin/n8n/drive/disconnect"
+                                                    formmethod="post" formnovalidate>
+                                                <fmt:message key="n8n.drive.disconnect"/>
+                                            </button>
+                                        </p>
+                                    </c:if>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="batchLabel"><fmt:message key="n8n.questions.batchLabel"/></label>
-                        <input type="text" id="batchLabel" name="batchLabel" maxlength="100"
-                               placeholder="${suggestedBatchLabel}"
-                               value="${empty formBatchLabel ? suggestedBatchLabel : formBatchLabel}">
                     </div>
                     <button type="submit" class="btn btn-primary"><fmt:message key="n8n.questions.submit"/></button>
                 </form>
@@ -89,7 +166,6 @@
             </c:otherwise>
         </c:choose>
     </div>
-</div>
 
 <div class="card">
     <h2><fmt:message key="n8n.recent.heading"/></h2>
@@ -125,5 +201,7 @@
 <p class="exam-meta">
     <a href="${ctx}/admin/questions"><fmt:message key="n8n.importLink"/></a>
 </p>
+
+<script src="${ctx}/js/n8n-drive.js"></script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

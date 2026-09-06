@@ -2,6 +2,7 @@ package com.examprep.service;
 
 import com.examprep.dao.N8nRequestDao;
 import com.examprep.dao.UserDao;
+import com.examprep.model.GoogleDriveFile;
 import com.examprep.model.N8nRequest;
 import com.examprep.model.N8nRequestKind;
 import com.examprep.model.N8nRequestStatus;
@@ -85,6 +86,7 @@ class N8nServiceTest extends DatabaseTestSupport {
         assertTrue(lastQuestionsBody.get().contains("\"count\":\"20\""));
         assertTrue(lastQuestionsBody.get().contains("\"difficulty\":\"MEDIUM\""));
         assertTrue(lastQuestionsBody.get().contains("outputContract"));
+        assertTrue(lastQuestionsBody.get().contains("\"driveFiles\":[]"));
     }
 
     @Test
@@ -152,6 +154,43 @@ class N8nServiceTest extends DatabaseTestSupport {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 service.analyzeFile(admin, "notes.pdf", "application/pdf", new byte[0], null));
         assertTrue(ex.getMessage().toLowerCase().contains("choose a file"));
+    }
+
+    @Test
+    void questionRequestIncludesSelectedDriveFiles() throws Exception {
+        User admin = createAdmin();
+        GoogleDriveService drive = FakeDriveService.withFiles(
+                new GoogleDriveFile("file-1", "constitution.pdf", "application/pdf"),
+                new GoogleDriveFile("file-2", "notes.docx",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"));
+        N8nService service = new N8nService(questionsUrl, analyzeUrl, "n8n-secret",
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
+                new N8nRequestDao(), drive);
+
+        N8nRequest row = service.requestQuestions(admin, "20 constitution items", null,
+                "10", null, null, new String[] {"file-1"});
+
+        assertEquals("20 constitution items · constitution.pdf", row.getSummary());
+        assertTrue(lastQuestionsBody.get().contains("\"id\":\"file-1\""));
+        assertTrue(lastQuestionsBody.get().contains("constitution.pdf"));
+        assertFalse(lastQuestionsBody.get().contains("file-2"));
+        assertTrue(lastQuestionsBody.get().contains("\"driveFolderId\":\"folder-abc\""));
+    }
+
+    @Test
+    void questionRequestRejectsUnknownDriveFile() throws Exception {
+        User admin = createAdmin();
+        GoogleDriveService drive = FakeDriveService.withFiles(
+                new GoogleDriveFile("file-1", "constitution.pdf", "application/pdf"));
+        N8nService service = new N8nService(questionsUrl, analyzeUrl, "n8n-secret",
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
+                new N8nRequestDao(), drive);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make questions", null, null, null, null,
+                        new String[] {"missing"}));
+        assertTrue(ex.getMessage().contains("not in the configured folder"));
+        assertTrue(service.recentRequests().isEmpty());
     }
 
     private N8nService newService() {

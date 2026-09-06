@@ -29,7 +29,7 @@ Then drill into the folders below as needed.
 - Take exam, results & history
 - [weekly-regimen/](features/weekly-regimen/overview.md) — weekly official exam, study plan, review, checkpoint
 - [examinee-tracking/](features/examinee-tracking/overview.md) — tab-leave integrity signals
-- [n8n/](features/n8n/overview.md) — admin send-only webhooks to n8n (question batches + file analyze)
+- [n8n/](features/n8n/overview.md) — admin send-only webhooks to n8n (question batches, Drive file picker, file analyze)
 - [testing/](features/testing/overview.md) — automated JUnit tests
 
 ```

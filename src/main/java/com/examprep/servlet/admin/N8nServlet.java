@@ -25,10 +25,17 @@ public class N8nServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            User admin = WebUtil.getCurrentUser(req);
             req.setAttribute("questionsConfigured", n8nService.isQuestionsConfigured());
             req.setAttribute("analyzeConfigured", n8nService.isAnalyzeConfigured());
+            req.setAttribute("driveConfigured", n8nService.isDriveConfigured());
+            req.setAttribute("driveOAuthConfigured", n8nService.isOAuthConfigured());
+            req.setAttribute("driveConnected", n8nService.isDriveConnected(admin));
+            req.setAttribute("driveEmail", n8nService.connectedGoogleEmail(admin));
             req.setAttribute("recentRequests", n8nService.recentRequests());
             req.setAttribute("suggestedBatchLabel", QuestionImportService.suggestedBatchLabel());
+            applyDriveFlash(req);
+            loadDriveFiles(req, admin);
             req.getRequestDispatcher("/WEB-INF/jsp/admin/n8n.jsp").forward(req, resp);
         } catch (Exception e) {
             throw new ServletException(e);
@@ -52,7 +59,9 @@ public class N8nServlet extends HttpServlet {
                             req.getParameter("subject"),
                             req.getParameter("count"),
                             req.getParameter("difficulty"),
-                            req.getParameter("batchLabel"));
+                            req.getParameter("batchLabel"),
+                            req.getParameterValues("driveFileIds"),
+                            req.getParameter("driveFolderId"));
                     req.setAttribute("success", Messages.get(req, "n8n.questions.sent"));
                 }
                 case "analyze" -> {
@@ -91,5 +100,55 @@ public class N8nServlet extends HttpServlet {
         req.setAttribute("formDifficulty", req.getParameter("difficulty"));
         req.setAttribute("formBatchLabel", req.getParameter("batchLabel"));
         req.setAttribute("formAnalyzeMessage", req.getParameter("analyzeMessage"));
+        req.setAttribute("selectedDriveFileIds", req.getParameterValues("driveFileIds"));
+        req.setAttribute("formDriveFolderId", req.getParameter("driveFolderId"));
+    }
+
+    private void loadDriveFiles(HttpServletRequest req, User admin) {
+        boolean oauthReady;
+        try {
+            oauthReady = n8nService.isDriveConnected(admin);
+        } catch (Exception e) {
+            req.setAttribute("driveError", Messages.get(req, "error.n8n.drive.listFailed"));
+            return;
+        }
+        if (!oauthReady && !n8nService.isDriveConfigured()) {
+            return;
+        }
+        try {
+            String folderId = req.getParameter("folder");
+            if (folderId == null || folderId.isBlank()) {
+                Object remembered = req.getAttribute("formDriveFolderId");
+                if (remembered instanceof String rememberedFolder && !rememberedFolder.isBlank()) {
+                    folderId = rememberedFolder;
+                }
+            }
+            var listing = n8nService.listDrive(admin, folderId);
+            req.setAttribute("driveListing", listing);
+            req.setAttribute("driveFiles", listing.getFiles());
+            req.setAttribute("driveFolders", listing.getFolders());
+            req.setAttribute("driveFolderId", listing.getFolderId());
+            req.setAttribute("driveFolderName", listing.getFolderName());
+            req.setAttribute("driveParentId", listing.getParentId());
+        } catch (RuntimeException e) {
+            req.setAttribute("driveError", Messages.get(req, "error.n8n.drive.listFailed"));
+        } catch (Exception e) {
+            req.setAttribute("driveError", Messages.get(req, "error.n8n.drive.listFailed"));
+        }
+    }
+
+    private static void applyDriveFlash(HttpServletRequest req) {
+        String drive = req.getParameter("drive");
+        if (drive == null) {
+            return;
+        }
+        switch (drive) {
+            case "connected" -> req.setAttribute("success", Messages.get(req, "n8n.drive.connected"));
+            case "disconnected" -> req.setAttribute("success", Messages.get(req, "n8n.drive.disconnected"));
+            case "denied" -> req.setAttribute("error", Messages.get(req, "error.n8n.drive.denied"));
+            case "error" -> req.setAttribute("error", Messages.get(req, "error.n8n.drive.signInFailed"));
+            default -> {
+            }
+        }
     }
 }
