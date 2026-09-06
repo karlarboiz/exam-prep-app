@@ -27,10 +27,10 @@
         <tbody>
         <c:forEach var="u" items="${users}">
             <tr>
-                <td><c:out value="${u.username}"/></td>
-                <td><c:out value="${u.email}"/></td>
-                <td>${ep:fmt(u.createdAt)}</td>
-                <td>
+                <td data-label="<fmt:message key="users.username"/>"><c:out value="${u.username}"/></td>
+                <td data-label="<fmt:message key="users.email"/>"><c:out value="${u.email}"/></td>
+                <td data-label="<fmt:message key="users.registered"/>">${ep:fmt(u.createdAt)}</td>
+                <td data-label="<fmt:message key="users.roleLevel"/>">
                     <form method="post" action="${ctx}/admin/users" class="table-inline-form">
                         <ep:csrf/>
                         <input type="hidden" name="action" value="update">

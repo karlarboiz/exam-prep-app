@@ -32,9 +32,9 @@
                 <tbody>
                 <c:forEach var="a" items="${flagged}">
                     <tr>
-                        <td><c:out value="${a.username}"/></td>
-                        <td>${a.examTitle}</td>
-                        <td>
+                        <td data-label="<fmt:message key="integrity.user"/>"><c:out value="${a.username}"/></td>
+                        <td data-label="<fmt:message key="integrity.exam"/>">${a.examTitle}</td>
+                        <td data-label="<fmt:message key="integrity.type"/>">
                             <c:choose>
                                 <c:when test="${a.diagnostic}">
                                     <span class="badge badge-diagnostic"><fmt:message key="attemptKind.DIAGNOSTIC"/></span>
@@ -44,12 +44,12 @@
                                 </c:otherwise>
                             </c:choose>
                         </td>
-                        <td>${ep:fmt(a.startedAt)}</td>
-                        <td><span class="badge badge-${a.status}"><fmt:message key="status.${a.status}"/></span></td>
-                        <td>${a.scorePercent != null ? a.scorePercent : '—'}%</td>
-                        <td>${a.leaveCount}</td>
-                        <td><span class="badge badge-suspect">${a.suspectLeaveCount}</span></td>
-                        <td>
+                        <td data-label="<fmt:message key="integrity.started"/>">${ep:fmt(a.startedAt)}</td>
+                        <td data-label="<fmt:message key="integrity.status"/>"><span class="badge badge-${a.status}"><fmt:message key="status.${a.status}"/></span></td>
+                        <td data-label="<fmt:message key="integrity.score"/>">${a.scorePercent != null ? a.scorePercent : '—'}%</td>
+                        <td data-label="<fmt:message key="integrity.leaves"/>">${a.leaveCount}</td>
+                        <td data-label="<fmt:message key="integrity.suspect"/>"><span class="badge badge-suspect">${a.suspectLeaveCount}</span></td>
+                        <td class="actions">
                             <a href="${ctx}/admin/integrity?attemptId=${ep:enc(a.id)}" class="btn btn-sm"><fmt:message key="integrity.view"/></a>
                         </td>
                     </tr>

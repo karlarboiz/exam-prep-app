@@ -192,20 +192,20 @@
         <tbody>
         <c:forEach var="q" items="${questions}">
             <tr>
-                <td><c:out value="${q.subjectName}"/></td>
-                <td>
+                <td data-label="<fmt:message key="questions.colSubject"/>"><c:out value="${q.subjectName}"/></td>
+                <td data-label="<fmt:message key="questions.colBatch"/>">
                     <c:choose>
                         <c:when test="${not empty q.batchLabel}"><span class="badge badge-admin">${q.batchLabel}</span></c:when>
                         <c:otherwise><span class="badge badge-muted"><fmt:message key="questions.unlabeled"/></span></c:otherwise>
                     </c:choose>
                 </td>
-                <td>
+                <td data-label="<fmt:message key="questions.colQuestion"/>">
                     <c:out value="${q.prompt}"/>
                     <c:if test="${not empty q.imageUrl}">
                         <span class="badge badge-muted"><fmt:message key="questions.imageBadge"/></span>
                     </c:if>
                 </td>
-                <td>${q.correctOption}</td>
+                <td data-label="<fmt:message key="questions.colCorrect"/>">${q.correctOption}</td>
                 <td class="actions">
                     <a href="${ctx}/admin/questions?edit=${ep:enc(q.id)}" class="btn btn-sm"><fmt:message key="action.edit"/></a>
                     <form method="post" action="${ctx}/admin/questions" class="inline-form"

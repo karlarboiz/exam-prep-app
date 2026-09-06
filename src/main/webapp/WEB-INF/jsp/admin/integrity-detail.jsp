@@ -55,16 +55,16 @@
                 <tbody>
                 <c:forEach var="e" items="${events}">
                     <tr>
-                        <td>${ep:fmt(e.occurredAt)}</td>
-                        <td>${e.eventType}</td>
-                        <td>
+                        <td data-label="<fmt:message key="integrityDetail.when"/>">${ep:fmt(e.occurredAt)}</td>
+                        <td data-label="<fmt:message key="integrityDetail.event"/>">${e.eventType}</td>
+                        <td data-label="<fmt:message key="integrityDetail.question"/>">
                             <c:if test="${e.questionNumber != null}"><fmt:message key="integrityDetail.questionPrefix"><fmt:param value="${e.questionNumber}"/></fmt:message> </c:if>
                             ${e.questionPrompt}
                         </td>
-                        <td>${e.questionDifficulty}</td>
-                        <td><c:choose><c:when test="${e.questionAnswered}"><fmt:message key="common.yes"/></c:when><c:otherwise><fmt:message key="common.no"/></c:otherwise></c:choose></td>
-                        <td>${e.awayDurationLabel}</td>
-                        <td>
+                        <td data-label="<fmt:message key="integrityDetail.difficulty"/>">${e.questionDifficulty}</td>
+                        <td data-label="<fmt:message key="integrityDetail.answered"/>"><c:choose><c:when test="${e.questionAnswered}"><fmt:message key="common.yes"/></c:when><c:otherwise><fmt:message key="common.no"/></c:otherwise></c:choose></td>
+                        <td data-label="<fmt:message key="integrityDetail.away"/>">${e.awayDurationLabel}</td>
+                        <td data-label="<fmt:message key="integrityDetail.flag"/>">
                             <c:if test="${e.suspect}">
                                 <span class="badge badge-suspect"><fmt:message key="integrityDetail.suspectBadge"/></span>
                             </c:if>

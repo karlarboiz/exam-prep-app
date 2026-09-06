@@ -99,24 +99,24 @@
                 <tbody>
                 <c:forEach var="g" items="${grants}">
                     <tr>
-                        <td>${g.id}</td>
-                        <td><span class="badge badge-${g.status}"><fmt:message key="grantStatus.${g.status}"/></span></td>
-                        <td>
+                        <td data-label="<fmt:message key="grants.id"/>">${g.id}</td>
+                        <td data-label="<fmt:message key="grants.status"/>"><span class="badge badge-${g.status}"><fmt:message key="grantStatus.${g.status}"/></span></td>
+                        <td data-label="<fmt:message key="grants.examLevel"/>">
                             <c:choose>
                                 <c:when test="${g.examLevel != null}"><fmt:message key="examLevel.${g.examLevel}"/></c:when>
                                 <c:otherwise><fmt:message key="common.dash"/></c:otherwise>
                             </c:choose>
                         </td>
-                        <td>${ep:fmt(g.expiresAt)}</td>
-                        <td>
+                        <td data-label="<fmt:message key="grants.expires"/>">${ep:fmt(g.expiresAt)}</td>
+                        <td data-label="<fmt:message key="grants.user"/>">
                             <c:choose>
                                 <c:when test="${not empty g.username}"><c:out value="${g.username}"/></c:when>
                                 <c:otherwise><fmt:message key="common.dash"/></c:otherwise>
                             </c:choose>
                         </td>
-                        <td>${empty g.planCode ? '—' : g.planCode}</td>
-                        <td>${empty g.sourceRef ? '—' : g.sourceRef}</td>
-                        <td>${ep:fmt(g.createdAt)}</td>
+                        <td data-label="<fmt:message key="grants.plan"/>">${empty g.planCode ? '—' : g.planCode}</td>
+                        <td data-label="<fmt:message key="grants.source"/>">${empty g.sourceRef ? '—' : g.sourceRef}</td>
+                        <td data-label="<fmt:message key="grants.createdAt"/>">${ep:fmt(g.createdAt)}</td>
                         <td class="actions">
                             <c:if test="${g.status == 'UNUSED' || g.status == 'REDEEMED'}">
                                 <form method="post" action="${ctx}/admin/access-grants" class="inline-form"
