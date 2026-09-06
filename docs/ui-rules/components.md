@@ -31,6 +31,7 @@ Reusable patterns from `app.css`:
 ## Tables
 
 - `.data-table` — full-width admin/user tables with header background `--color-bg`
+- `.col-check` — narrow checkbox column on the question bank table
 
 ## Exam / timer
 

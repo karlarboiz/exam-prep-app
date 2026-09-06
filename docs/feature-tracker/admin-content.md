@@ -15,3 +15,4 @@ Subjects, questions, exams, and bulk import.
 | Excel import upsert / de-dupe | Done | Match subject + prompt (case-insensitive); later rows win |
 | Question bank Excel export | Done | `GET /admin/questions?action=export` (optional `subjectId`) |
 | Reorder questions on a practice exam | Done | Up/Down on `/admin/exams`; stored as `exam_questions.sort_order` |
+| Batch delete questions | Done | Checkboxes + select-all on `/admin/questions`; `POST action=deleteBatch` |

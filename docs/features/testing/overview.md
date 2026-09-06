@@ -27,4 +27,5 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Import creates leveled subjects | `QuestionImportServiceTest` |
 | Import rejects both-false level flags | `QuestionImportServiceTest` |
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
+| Question batch delete | `QuestionDaoTest`, `AdminServiceTest` |
 | Week clock / quotas / official lock / missed week | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |

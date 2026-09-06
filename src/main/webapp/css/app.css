@@ -366,6 +366,20 @@ input[type="file"] {
     background: var(--color-bg);
 }
 
+.data-table .col-check {
+    width: 2.25rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.data-table .col-check input {
+    margin: 0;
+}
+
+.bank-toolbar {
+    margin-bottom: 0.75rem;
+}
+
 .inline-form {
     display: inline;
 }

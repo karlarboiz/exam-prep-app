@@ -13,6 +13,9 @@
 <c:if test="${not empty importSuccess}">
     <div class="alert alert-success">${importSuccess}</div>
 </c:if>
+<c:if test="${not empty deleteSuccess}">
+    <div class="alert alert-success">${deleteSuccess}</div>
+</c:if>
 <c:if test="${not empty importErrors}">
     <div class="alert alert-error">
         <p>Import row errors:</p>
@@ -147,13 +150,40 @@
 
 <div class="card">
     <h2>Question Bank</h2>
+    <c:if test="${not empty questions}">
+        <form id="batchDeleteForm" method="post" action="${ctx}/admin/questions">
+            <ep:csrf/>
+            <input type="hidden" name="action" value="deleteBatch">
+            <c:if test="${not empty filterSubjectId}">
+                <input type="hidden" name="subjectId" value="${filterSubjectId}">
+            </c:if>
+            <div class="actions bank-toolbar">
+                <button type="submit" class="btn btn-danger" id="deleteSelectedBtn">Delete selected</button>
+            </div>
+        </form>
+    </c:if>
+    <c:if test="${empty questions}">
+        <p class="empty-state">No questions match this filter.</p>
+    </c:if>
+    <c:if test="${not empty questions}">
     <table class="data-table">
         <thead>
-        <tr><th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+        <tr>
+            <th class="col-check">
+                <label class="sr-only" for="selectAllQuestions">Select all questions</label>
+                <input type="checkbox" id="selectAllQuestions" form="batchDeleteForm">
+            </th>
+            <th>Subject</th><th>Question</th><th>Correct</th><th>Actions</th>
+        </tr>
         </thead>
         <tbody>
         <c:forEach var="q" items="${questions}">
             <tr>
+                <td class="col-check">
+                    <label class="sr-only" for="q-select-${q.id}">Select question</label>
+                    <input type="checkbox" id="q-select-${q.id}" class="question-check" name="ids"
+                           value="${q.id}" form="batchDeleteForm">
+                </td>
                 <td>${q.subjectName}</td>
                 <td>
                     ${q.prompt}
@@ -168,6 +198,9 @@
                         <ep:csrf/>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="${q.id}">
+                        <c:if test="${not empty filterSubjectId}">
+                            <input type="hidden" name="subjectId" value="${filterSubjectId}">
+                        </c:if>
                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                     </form>
                 </td>
@@ -175,6 +208,7 @@
         </c:forEach>
         </tbody>
     </table>
+    </c:if>
 </div>
 
 <script src="${ctx}/js/question-image.js"></script>
@@ -210,6 +244,46 @@
 
     input.addEventListener('input', refreshPreview);
     refreshPreview();
+})();
+
+(function () {
+    var form = document.getElementById('batchDeleteForm');
+    var selectAll = document.getElementById('selectAllQuestions');
+    if (!form || !selectAll) return;
+
+    function questionChecks() {
+        return Array.prototype.slice.call(document.querySelectorAll('input.question-check'));
+    }
+
+    function syncSelectAll() {
+        var boxes = questionChecks();
+        var checked = boxes.filter(function (box) { return box.checked; }).length;
+        selectAll.checked = boxes.length > 0 && checked === boxes.length;
+        selectAll.indeterminate = checked > 0 && checked < boxes.length;
+    }
+
+    selectAll.addEventListener('change', function () {
+        questionChecks().forEach(function (box) {
+            box.checked = selectAll.checked;
+        });
+        selectAll.indeterminate = false;
+    });
+
+    questionChecks().forEach(function (box) {
+        box.addEventListener('change', syncSelectAll);
+    });
+
+    form.addEventListener('submit', function (event) {
+        var count = questionChecks().filter(function (box) { return box.checked; }).length;
+        if (count === 0) {
+            event.preventDefault();
+            alert('Select at least one question to delete.');
+            return;
+        }
+        if (!confirm('Delete ' + count + ' selected question(s)? This cannot be undone.')) {
+            event.preventDefault();
+        }
+    });
 })();
 </script>
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>
