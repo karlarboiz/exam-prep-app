@@ -38,6 +38,11 @@ public final class AppConfig {
         overrideFromEnv("N8N_WEBHOOK_QUESTIONS", "n8n.webhook.questions");
         overrideFromEnv("N8N_WEBHOOK_ANALYZE", "n8n.webhook.analyze");
         overrideFromEnv("N8N_WEBHOOK_SECRET", "n8n.webhook.secret");
+        overrideFromEnv("GOOGLE_DRIVE_FOLDER_ID", "google.drive.folderId");
+        overrideFromEnv("GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON", "google.drive.serviceAccountJson");
+        overrideFromEnv("GOOGLE_OAUTH_CLIENT_ID", "google.oauth.clientId");
+        overrideFromEnv("GOOGLE_OAUTH_CLIENT_SECRET", "google.oauth.clientSecret");
+        overrideFromEnv("GOOGLE_OAUTH_REDIRECT_URI", "google.oauth.redirectUri");
 
         validateSecurityConfig();
     }
@@ -64,6 +69,12 @@ public final class AppConfig {
         validateSecret("funnel.api.key", "FUNNEL_API_KEY", errors);
         if (n8nWebhookConfigured()) {
             validateSecret("n8n.webhook.secret", "N8N_WEBHOOK_SECRET", errors);
+        }
+        if (isPresent("google.drive.folderId") && !isPresent("google.drive.serviceAccountJson")) {
+            errors.add("  - google.drive.serviceAccountJson is not set. Set environment variable GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON");
+        }
+        if (isPresent("google.oauth.clientId") && !isPresent("google.oauth.clientSecret")) {
+            errors.add("  - google.oauth.clientSecret is not set. Set environment variable GOOGLE_OAUTH_CLIENT_SECRET");
         }
 
         if (!errors.isEmpty()) {

@@ -27,9 +27,13 @@ docker run --rm -p 8080:8080 \
   -e ID_CIPHER_SECRET='use-a-32-char-or-longer-random-string' \
   -e FUNNEL_API_KEY='use-a-32-char-or-longer-random-string' \
   -e ADMIN_PASSWORD='your-admin-password' \
+  -e GOOGLE_OAUTH_CLIENT_ID='your-oauth-client-id' \
+  -e GOOGLE_OAUTH_CLIENT_SECRET='your-oauth-client-secret' \
   -v examprep-data:/usr/local/tomcat/data \
   exam-prep-app
 ```
+
+Optional n8n / Drive env vars: `N8N_WEBHOOK_QUESTIONS`, `N8N_WEBHOOK_ANALYZE`, `N8N_WEBHOOK_SECRET`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`. Add the callback URL to the Google OAuth client, then tap **Connect Google Drive** on `/admin/n8n`. See [n8n overview](docs/features/n8n/overview.md).
 
 App: http://localhost:8080
 

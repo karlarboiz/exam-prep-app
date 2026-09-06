@@ -63,7 +63,13 @@ public final class Messages {
             Map.entry("File type is not allowed", "error.n8n.fileType"),
             Map.entry("File is too large", "error.n8n.fileLarge"),
             Map.entry("n8n did not accept the question request", "error.n8n.questions.rejected"),
-            Map.entry("n8n did not accept the file", "error.n8n.analyze.rejected")
+            Map.entry("n8n did not accept the file", "error.n8n.analyze.rejected"),
+            Map.entry("Google Drive is not configured", "error.n8n.drive.unconfigured"),
+            Map.entry("Could not list Google Drive files", "error.n8n.drive.listFailed"),
+            Map.entry("Select at most 20 Drive files", "error.n8n.drive.tooMany"),
+            Map.entry("A selected Drive file is not in the configured folder", "error.n8n.drive.unknownFile"),
+            Map.entry("Connect Google Drive first", "error.n8n.drive.connectFirst"),
+            Map.entry("Google Drive sign-in is not configured", "error.n8n.drive.oauthUnconfigured")
     );
 
     private Messages() {

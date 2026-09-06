@@ -2,6 +2,9 @@ package com.examprep.service;
 
 import com.examprep.config.AppConfig;
 import com.examprep.dao.N8nRequestDao;
+import com.examprep.model.GoogleDriveAccount;
+import com.examprep.model.GoogleDriveFile;
+import com.examprep.model.GoogleDriveListing;
 import com.examprep.model.N8nRequest;
 import com.examprep.model.N8nRequestKind;
 import com.examprep.model.N8nRequestStatus;
@@ -16,6 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -43,22 +47,39 @@ public class N8nService {
     private final String secret;
     private final HttpClient httpClient;
     private final N8nRequestDao requestDao;
+    private final GoogleDriveService driveService;
+    private final GoogleOAuthService oauthService;
 
     public N8nService() {
         this(AppConfig.get("n8n.webhook.questions", ""),
                 AppConfig.get("n8n.webhook.analyze", ""),
                 AppConfig.get("n8n.webhook.secret", ""),
                 HttpClient.newBuilder().connectTimeout(TIMEOUT).build(),
-                new N8nRequestDao());
+                new N8nRequestDao(),
+                new GoogleDriveService(),
+                new GoogleOAuthService());
     }
 
     N8nService(String questionsUrl, String analyzeUrl, String secret,
                HttpClient httpClient, N8nRequestDao requestDao) {
+        this(questionsUrl, analyzeUrl, secret, httpClient, requestDao, null, null);
+    }
+
+    N8nService(String questionsUrl, String analyzeUrl, String secret,
+               HttpClient httpClient, N8nRequestDao requestDao, GoogleDriveService driveService) {
+        this(questionsUrl, analyzeUrl, secret, httpClient, requestDao, driveService, null);
+    }
+
+    N8nService(String questionsUrl, String analyzeUrl, String secret,
+               HttpClient httpClient, N8nRequestDao requestDao, GoogleDriveService driveService,
+               GoogleOAuthService oauthService) {
         this.questionsUrl = blankToEmpty(questionsUrl);
         this.analyzeUrl = blankToEmpty(analyzeUrl);
         this.secret = blankToEmpty(secret);
         this.httpClient = httpClient;
         this.requestDao = requestDao;
+        this.driveService = driveService;
+        this.oauthService = oauthService;
     }
 
     public boolean isQuestionsConfigured() {
@@ -69,12 +90,71 @@ public class N8nService {
         return !analyzeUrl.isBlank();
     }
 
+    public boolean isDriveConfigured() {
+        return driveService != null && driveService.isConfigured();
+    }
+
+    public boolean isOAuthConfigured() {
+        return oauthService != null && oauthService.isConfigured();
+    }
+
+    public boolean isDriveConnected(User admin) throws SQLException {
+        return isOAuthConfigured() && oauthService.isConnected(admin);
+    }
+
+    public String connectedGoogleEmail(User admin) throws SQLException {
+        return oauthService == null ? null
+                : oauthService.findAccount(admin).map(GoogleDriveAccount::getGoogleEmail).orElse(null);
+    }
+
+    public void disconnectDrive(User admin) throws SQLException {
+        requireAdmin(admin);
+        if (oauthService != null) {
+            oauthService.disconnect(admin);
+        }
+    }
+
+    public GoogleDriveListing listDrive(User admin, String folderId) throws SQLException {
+        if (isDriveConnected(admin)) {
+            return driveService.listFolder(oauthService.accessToken(admin), folderId);
+        }
+        if (!isDriveConfigured()) {
+            return new GoogleDriveListing();
+        }
+        GoogleDriveListing listing = new GoogleDriveListing();
+        listing.setFolderId(driveService.folderId());
+        listing.setFolderName(driveService.folderId());
+        listing.getFiles().addAll(driveService.listFolderFiles());
+        return listing;
+    }
+
+    public List<GoogleDriveFile> listDriveFiles() {
+        if (!isDriveConfigured()) {
+            return List.of();
+        }
+        return driveService.listFolderFiles();
+    }
+
     public List<N8nRequest> recentRequests() throws SQLException {
         return requestDao.findRecent(RECENT_LIMIT);
     }
 
     public N8nRequest requestQuestions(User admin, String message, String subject,
                                        String countRaw, String difficulty, String batchLabel)
+            throws SQLException {
+        return requestQuestions(admin, message, subject, countRaw, difficulty, batchLabel, null, null);
+    }
+
+    public N8nRequest requestQuestions(User admin, String message, String subject,
+                                       String countRaw, String difficulty, String batchLabel,
+                                       String[] driveFileIds)
+            throws SQLException {
+        return requestQuestions(admin, message, subject, countRaw, difficulty, batchLabel, driveFileIds, null);
+    }
+
+    public N8nRequest requestQuestions(User admin, String message, String subject,
+                                       String countRaw, String difficulty, String batchLabel,
+                                       String[] driveFileIds, String driveFolderId)
             throws SQLException {
         requireAdmin(admin);
         if (!isQuestionsConfigured()) {
@@ -91,17 +171,27 @@ public class N8nService {
                             + " characters and cannot be the reserved unlabeled filter");
         }
 
-        String json = SimpleJson.object(
-                "requestedBy", admin.getUsername(),
-                "message", trimmedMessage,
-                "subject", nullToEmpty(trimmedSubject),
-                "count", nullToEmpty(count),
-                "difficulty", nullToEmpty(normalizedDifficulty),
-                "batchLabel", nullToEmpty(normalizedBatch),
-                "outputContract", OUTPUT_CONTRACT
+        List<GoogleDriveFile> selectedFiles = resolveDriveFiles(admin, driveFileIds, driveFolderId);
+        String resolvedFolder = "";
+        if (isDriveConnected(admin)) {
+            resolvedFolder = GoogleDriveService.normalizeFolderId(driveFolderId);
+        } else if (isDriveConfigured()) {
+            resolvedFolder = driveService.folderId();
+        }
+        String json = SimpleJson.rawObject(
+                "requestedBy", SimpleJson.quoted(admin.getUsername()),
+                "message", SimpleJson.quoted(trimmedMessage),
+                "subject", SimpleJson.quoted(nullToEmpty(trimmedSubject)),
+                "count", SimpleJson.quoted(nullToEmpty(count)),
+                "difficulty", SimpleJson.quoted(nullToEmpty(normalizedDifficulty)),
+                "batchLabel", SimpleJson.quoted(nullToEmpty(normalizedBatch)),
+                "outputContract", SimpleJson.quoted(OUTPUT_CONTRACT),
+                "driveFolderId", SimpleJson.quoted(nullToEmpty(resolvedFolder)),
+                "driveFiles", driveFilesJson(selectedFiles)
         );
-        return send(admin.getId(), N8nRequestKind.QUESTIONS, trimmedMessage, questionsUrl,
-                "application/json; charset=UTF-8", json.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+        return send(admin.getId(), N8nRequestKind.QUESTIONS, questionSummary(trimmedMessage, selectedFiles),
+                questionsUrl, "application/json; charset=UTF-8",
+                json.getBytes(java.nio.charset.StandardCharsets.UTF_8),
                 "n8n did not accept the question request");
     }
 
@@ -180,6 +270,52 @@ public class N8nService {
             throws SQLException {
         requestDao.insert(adminUserId, kind, clip(summary, SUMMARY_MAX),
                 N8nRequestStatus.FAILED, clip(error, ERROR_MAX));
+    }
+
+    private List<GoogleDriveFile> resolveDriveFiles(User admin, String[] driveFileIds, String driveFolderId)
+            throws SQLException {
+        boolean requested = driveFileIds != null && driveFileIds.length > 0;
+        if (!requested) {
+            return List.of();
+        }
+        if (isDriveConnected(admin)) {
+            return driveService.resolveSelected(oauthService.accessToken(admin), driveFolderId, driveFileIds);
+        }
+        if (!isDriveConfigured()) {
+            throw new IllegalArgumentException("Connect Google Drive first");
+        }
+        return driveService.resolveSelected(driveFileIds);
+    }
+
+    private static String driveFilesJson(List<GoogleDriveFile> files) {
+        List<String> items = new ArrayList<>();
+        for (GoogleDriveFile file : files) {
+            items.add(SimpleJson.object(
+                    "id", file.getId(),
+                    "name", nullToEmpty(file.getName()),
+                    "mimeType", nullToEmpty(file.getMimeType())));
+        }
+        return SimpleJson.array(items);
+    }
+
+    private static String questionSummary(String message, List<GoogleDriveFile> files) {
+        if (files == null || files.isEmpty()) {
+            return message;
+        }
+        StringBuilder names = new StringBuilder();
+        int shown = 0;
+        for (GoogleDriveFile file : files) {
+            if (shown > 0) {
+                names.append(", ");
+            }
+            names.append(file.getName() == null || file.getName().isBlank() ? file.getId() : file.getName());
+            shown++;
+            if (shown == 3 && files.size() > 3) {
+                names.append(", +").append(files.size() - 3);
+                break;
+            }
+        }
+        return message + " · " + names;
     }
 
     private static void requireAdmin(User admin) {
