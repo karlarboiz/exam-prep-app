@@ -105,17 +105,17 @@
             <tbody>
             <c:forEach var="exam" items="${exams}">
                 <tr>
-                    <td><c:out value="${exam.title}"/></td>
-                    <td>${exam.subjectName}</td>
-                    <td>
+                    <td data-label="<fmt:message key="exams.colTitle"/>"><c:out value="${exam.title}"/></td>
+                    <td data-label="<fmt:message key="exams.colSubject"/>">${exam.subjectName}</td>
+                    <td data-label="<fmt:message key="exams.colType"/>">
                         <c:choose>
                             <c:when test="${exam.diagnostic}"><fmt:message key="exams.typeDiagnostic"><fmt:param value="${exam.questionsPerSubject}"/></fmt:message></c:when>
                             <c:otherwise><fmt:message key="exams.typePractice"/></c:otherwise>
                         </c:choose>
                     </td>
-                    <td><fmt:message key="common.min"><fmt:param value="${exam.durationMinutes}"/></fmt:message></td>
-                    <td>${exam.diagnostic ? '—' : exam.questionCount}</td>
-                    <td><span class="badge ${exam.active ? 'badge-success' : 'badge-muted'}"><c:choose><c:when test="${exam.active}"><fmt:message key="exams.active"/></c:when><c:otherwise><fmt:message key="exams.inactive"/></c:otherwise></c:choose></span></td>
+                    <td data-label="<fmt:message key="exams.colDuration"/>"><fmt:message key="common.min"><fmt:param value="${exam.durationMinutes}"/></fmt:message></td>
+                    <td data-label="<fmt:message key="exams.colQuestions"/>">${exam.diagnostic ? '—' : exam.questionCount}</td>
+                    <td data-label="<fmt:message key="exams.colStatus"/>"><span class="badge ${exam.active ? 'badge-success' : 'badge-muted'}"><c:choose><c:when test="${exam.active}"><fmt:message key="exams.active"/></c:when><c:otherwise><fmt:message key="exams.inactive"/></c:otherwise></c:choose></span></td>
                     <td class="actions">
                         <a href="${ctx}/admin/exams?edit=${ep:enc(exam.id)}" class="btn btn-sm"><fmt:message key="action.edit"/></a>
                         <form method="post" action="${ctx}/admin/exams" class="inline-form"

@@ -27,14 +27,14 @@ Source stylesheet: `src/main/webapp/css/app.css`
 
 ## Overflow
 
-Grid and flex children use `min-width: 0` so wide tables, tokens, and question text cannot force the page wider than the viewport. `.card` scrolls horizontally when a table is still too wide. `html` / `body` clip leftover horizontal overflow.
+Grid and flex children use `min-width: 0` so wide tables, tokens, and question text cannot force the page wider than the viewport. At ≤768px, `.data-table` stacks each row into labeled fields so lists stay readable without sideways scrolling. `.card` still scrolls horizontally as a fallback. `html` / `body` clip leftover horizontal overflow.
 
 ## Breakpoints
 
 | Max width | Behavior |
 |-----------|----------|
 | **900px** | Header switches to hamburger + collapsible `.header-nav` (`flex: 0 0 100%` so the panel wraps under the logo) |
-| **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; tables scroll inside cards |
+| **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; `.data-table` rows become labeled stacked records |
 | **480px** | Compact stat values and full-width large buttons |
 
 ## Shared chrome

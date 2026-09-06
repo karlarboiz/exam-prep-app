@@ -98,7 +98,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 | Timer | `.timer-bar`, `.timer-value`, `.timer-warning`, `.timer-expired` | Take exam |
 | Score | `.result-summary`, `.score-circle`, `.score-value` | Result |
 | Review row | `.review-card` + `.correct` / `.incorrect` | Result |
-| Table | `.data-table` | Admin lists, history |
+| Table | `.data-table` | Admin lists, history (stacks into labeled rows at ≤768px) |
 | Empty | `.empty-state` | No exams / no token |
 | Expired sub | `.expired-panel` inside `.auth-card` | Subscription expired |
 | Errors | `.error-page` | 403 / 404 |
@@ -169,8 +169,8 @@ Use existing pages as the visual reference before inventing new layouts.
 - [ ] Header + footer included (unless auth-card-only / error-page pattern already used)
 - [ ] Primary action is a `.btn-primary`
 - [ ] Error and empty states use `.alert-*` / `.empty-state`
-- [ ] Tables use `.data-table`; exam lists use `.exam-grid`
-- [ ] ≤768px: no unbroken two-column layout (use `.grid-2` or stack)
+- [ ] Tables use `.data-table` with `data-label` on each body cell (same text as the column header); exam lists use `.exam-grid`
+- [ ] ≤768px: no unbroken two-column layout (use `.grid-2` or stack); tables become labeled stacked rows, not sideways-scroll-only
 - [ ] Page note updated under `docs/pages/…` if markup contract changed
 
 ---

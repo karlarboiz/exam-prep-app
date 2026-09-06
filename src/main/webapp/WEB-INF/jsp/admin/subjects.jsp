@@ -66,9 +66,9 @@
             <tbody>
             <c:forEach var="subject" items="${subjects}">
                 <tr>
-                    <td><c:out value="${subject.name}"/></td>
-                    <td>${subject.description}</td>
-                    <td>
+                    <td data-label="<fmt:message key="subjects.name"/>"><c:out value="${subject.name}"/></td>
+                    <td data-label="<fmt:message key="subjects.description"/>">${subject.description}</td>
+                    <td data-label="<fmt:message key="subjects.level"/>">
                         <c:choose>
                             <c:when test="${subject.professional and subject.subProfessional}"><fmt:message key="subjects.both"/></c:when>
                             <c:when test="${subject.professional}"><fmt:message key="subjects.professional"/></c:when>

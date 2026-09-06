@@ -89,9 +89,9 @@
                 <tbody>
                 <c:forEach var="s" items="${weekly.studyPlan.subjectScores}">
                     <tr>
-                        <td>${s.subjectName}</td>
-                        <td>${s.scorePercent}%</td>
-                        <td><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
+                        <td data-label="<fmt:message key="dashboard.subject"/>">${s.subjectName}</td>
+                        <td data-label="<fmt:message key="dashboard.score"/>">${s.scorePercent}%</td>
+                        <td data-label="<fmt:message key="dashboard.band"/>"><span class="badge badge-${s.band}"><fmt:message key="band.${s.band}"/></span></td>
                     </tr>
                 </c:forEach>
                 </tbody>
@@ -162,11 +162,11 @@
             <tbody>
             <c:forEach var="h" items="${history}" begin="0" end="4">
                 <tr>
-                    <td>${h.examTitle}</td>
-                    <td><span class="badge badge-${h.attemptKind}"><fmt:message key="attemptKind.${h.attemptKind}"/></span></td>
-                    <td>${h.scorePercent != null ? h.scorePercent : '-'}%</td>
-                    <td><span class="badge badge-${h.status}"><fmt:message key="status.${h.status}"/></span></td>
-                    <td>
+                    <td data-label="<fmt:message key="dashboard.exam"/>">${h.examTitle}</td>
+                    <td data-label="<fmt:message key="dashboard.type"/>"><span class="badge badge-${h.attemptKind}"><fmt:message key="attemptKind.${h.attemptKind}"/></span></td>
+                    <td data-label="<fmt:message key="dashboard.score"/>">${h.scorePercent != null ? h.scorePercent : '-'}%</td>
+                    <td data-label="<fmt:message key="dashboard.status"/>"><span class="badge badge-${h.status}"><fmt:message key="status.${h.status}"/></span></td>
+                    <td class="actions">
                         <c:if test="${h.status != 'IN_PROGRESS'}">
                             <c:choose>
                                 <c:when test="${h.attemptKind == 'WEEKLY' && h.regimenId != null}">

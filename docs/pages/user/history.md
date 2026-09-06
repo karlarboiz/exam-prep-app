@@ -4,4 +4,4 @@
 **Route:** `/user/history`  
 **Feature:** [history](../../features/results-history/history.md)
 
-Table of past attempts with `AttemptKind` badges, status badges, and type-aware Continue / View Result links (weekly → study plan, checkpoint → result, diagnostic → diagnostic result).
+Table of past attempts with `AttemptKind` badges, status badges, and type-aware Continue / View Result links (weekly → study plan, checkpoint → result, diagnostic → diagnostic result). On small screens the `.data-table` stacks each attempt into labeled rows.

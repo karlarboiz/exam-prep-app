@@ -18,6 +18,7 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Area | Test class |
 |------|------------|
 | Access grant create / redeem / revoke / active access | `AccessGrantServiceTest` |
+| Auth login / register / JWT / admin user guards | `AuthServiceTest` |
 | Admin user role / exam level / delete guards | `AuthServiceTest` |
 | Logged-in password change | `AuthServiceTest` |
 | Profile username / email edit | `AuthServiceTest` |

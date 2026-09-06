@@ -563,6 +563,107 @@ input[type="file"] {
     background: var(--color-bg);
 }
 
+@media (max-width: 768px) {
+    .data-table,
+    .data-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .data-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .data-table tr {
+        display: block;
+        width: 100%;
+        margin: 0;
+        padding: 0.9rem 0;
+        border-bottom: 1px solid var(--color-border);
+        background: transparent;
+    }
+
+    .data-table tbody tr:first-child {
+        padding-top: 0;
+    }
+
+    .data-table tbody tr:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        display: grid;
+        grid-template-columns: minmax(5.5rem, 32%) minmax(0, 1fr);
+        gap: 0.35rem 0.75rem;
+        align-items: start;
+        width: 100%;
+        padding: 0.35rem 0;
+        border-bottom: none;
+        text-align: left;
+    }
+
+    .data-table td:first-child {
+        font-weight: 600;
+    }
+
+    .data-table td::before {
+        content: attr(data-label);
+        color: var(--color-muted);
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        line-height: 1.45;
+        padding-top: 0.15rem;
+    }
+
+    .data-table td:not([data-label])::before,
+    .data-table td[data-label=""]::before {
+        content: none;
+    }
+
+    .data-table td:not([data-label]),
+    .data-table td[data-label=""] {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .data-table td.actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 0.4rem;
+        padding-top: 0.65rem;
+    }
+
+    .data-table td.actions::before {
+        content: none;
+    }
+
+    .table-inline-form {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .table-inline-form select,
+    .table-inline-form .btn {
+        width: 100%;
+    }
+}
+
 .inline-form {
     display: inline;
 }

@@ -4,4 +4,4 @@
 **Route:** `/admin/users`  
 **Feature:** [admin-users](../../features/admin-users/overview.md)
 
-Table of users with inline role and exam-level selects (`.table-inline-form`) plus Save, and Delete (hidden for the signed-in admin). Errors use `.alert-error`.
+Table of users with inline role and exam-level selects (`.table-inline-form`) plus Save, and Delete (hidden for the signed-in admin). Errors use `.alert-error`. On small screens the table stacks into labeled rows and the inline form stretches full width.
