@@ -17,3 +17,4 @@ Subjects, questions, exams, and bulk import.
 | Question bank Excel export | Done | `GET /admin/questions?action=export` (optional `subjectId`) |
 | Reorder questions on a practice exam | Done | Up/Down on `/admin/exams`; stored as `exam_questions.sort_order` |
 | Batch delete questions | Done | Checkboxes + select-all on `/admin/questions`; `POST action=deleteBatch`; JS in `js/admin-questions.js` for CSP |
+| Drag-and-drop option letter assignment | Done | Edit form on `/admin/questions`; letters stay A–D in order; text moves; correct key follows the text |

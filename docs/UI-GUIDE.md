@@ -84,6 +84,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 - Admin filters: `.filter-bar` · Multi-select questions: `.checkbox-list` / `.checkbox-item`.
 - Question bank batch delete: `.col-check` + `.bank-toolbar`.
 - Practice exam order: `.exam-question-row` with Up/Down.
+- Question option letter order: `.option-order-list` / `.option-order-row` with `.option-drag-handle`.
 - Users admin row editors: `.table-inline-form`.
 
 ---

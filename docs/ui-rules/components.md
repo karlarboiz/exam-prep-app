@@ -47,6 +47,7 @@ Reusable patterns from `app.css`:
 
 - `.timer-bar`, `.timer-value`, `.timer-warning`, `.timer-expired`
 - `.option-label`, `.option-letter`, `.options`
+- `.option-order-list`, `.option-order-row`, `.option-drag-handle` — admin question edit (reorder A–D)
 - `.score-circle`, `.score-value`, `.result-summary`
 - `.error-page` — 403/404
 - `.alert-warning` — amber warning alert (expired subscription)

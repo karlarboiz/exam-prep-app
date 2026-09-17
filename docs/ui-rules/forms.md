@@ -25,6 +25,7 @@
 - `.checkbox-list` + `.checkbox-item` for multi-select question lists when editing exams.
 - `.col-check` + `.bank-toolbar` for question-bank select-all / delete-selected.
 - `.exam-question-row` + `.exam-q-order-actions` for Up/Down order on practice exams.
+- `.option-order-list` + `.option-order-row` + `.option-drag-handle` for A–D option assignment on question edit.
 
 ## Registration token
 

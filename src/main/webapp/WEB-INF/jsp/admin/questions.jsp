@@ -118,21 +118,50 @@
                 <label for="prompt"><fmt:message key="questions.prompt"/></label>
                 <textarea id="prompt" name="prompt" rows="3" required><c:out value="${editQuestion.prompt}"/></textarea>
             </div>
+            <fmt:message key="questions.optionLetter" var="optionLetterTpl"/>
+            <fmt:message key="questions.optionDrag" var="optionDragLabel"/>
             <div class="form-group">
-                <label for="optionA"><fmt:message key="questions.optionA"/></label>
-                <input type="text" id="optionA" name="optionA" value="<c:out value='${editQuestion.optionA}'/>" required>
-            </div>
-            <div class="form-group">
-                <label for="optionB"><fmt:message key="questions.optionB"/></label>
-                <input type="text" id="optionB" name="optionB" value="<c:out value='${editQuestion.optionB}'/>" required>
-            </div>
-            <div class="form-group">
-                <label for="optionC"><fmt:message key="questions.optionC"/></label>
-                <input type="text" id="optionC" name="optionC" value="<c:out value='${editQuestion.optionC}'/>" required>
-            </div>
-            <div class="form-group">
-                <label for="optionD"><fmt:message key="questions.optionD"/></label>
-                <input type="text" id="optionD" name="optionD" value="<c:out value='${editQuestion.optionD}'/>" required>
+                <span class="option-order-heading"><fmt:message key="questions.options"/></span>
+                <p class="field-hint"><fmt:message key="questions.optionOrderHint"/></p>
+                <div id="optionOrderList" class="option-order-list"
+                     data-option-label-tpl="${optionLetterTpl}">
+                    <div class="option-order-row" data-letter="A">
+                        <button type="button" class="option-drag-handle" draggable="true" aria-label="${optionDragLabel}">
+                            <span class="option-drag-icon" aria-hidden="true"></span>
+                        </button>
+                        <label class="option-letter" for="optionA">A</label>
+                        <input type="text" id="optionA" name="optionA" required
+                               aria-label="${fn:replace(optionLetterTpl, '{0}', 'A')}"
+                               value="<c:out value='${editQuestion.optionA}'/>">
+                    </div>
+                    <div class="option-order-row" data-letter="B">
+                        <button type="button" class="option-drag-handle" draggable="true" aria-label="${optionDragLabel}">
+                            <span class="option-drag-icon" aria-hidden="true"></span>
+                        </button>
+                        <label class="option-letter" for="optionB">B</label>
+                        <input type="text" id="optionB" name="optionB" required
+                               aria-label="${fn:replace(optionLetterTpl, '{0}', 'B')}"
+                               value="<c:out value='${editQuestion.optionB}'/>">
+                    </div>
+                    <div class="option-order-row" data-letter="C">
+                        <button type="button" class="option-drag-handle" draggable="true" aria-label="${optionDragLabel}">
+                            <span class="option-drag-icon" aria-hidden="true"></span>
+                        </button>
+                        <label class="option-letter" for="optionC">C</label>
+                        <input type="text" id="optionC" name="optionC" required
+                               aria-label="${fn:replace(optionLetterTpl, '{0}', 'C')}"
+                               value="<c:out value='${editQuestion.optionC}'/>">
+                    </div>
+                    <div class="option-order-row" data-letter="D">
+                        <button type="button" class="option-drag-handle" draggable="true" aria-label="${optionDragLabel}">
+                            <span class="option-drag-icon" aria-hidden="true"></span>
+                        </button>
+                        <label class="option-letter" for="optionD">D</label>
+                        <input type="text" id="optionD" name="optionD" required
+                               aria-label="${fn:replace(optionLetterTpl, '{0}', 'D')}"
+                               value="<c:out value='${editQuestion.optionD}'/>">
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="correctOption"><fmt:message key="questions.correct"/></label>

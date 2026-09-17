@@ -10,6 +10,8 @@
 
 CRUD for multiple-choice questions: prompt, options A–D, correct option, difficulty, optional explanation, and subject.
 
+On the edit form, option rows are drag-and-drop (grip handle, or arrow keys on the handle). Letters stay **A–D in visual order**; the option text moves. The **correct option letter follows the moved text** (if C was keyed and that row is dragged to the first slot, the key becomes A). Saving still posts `optionA`–`optionD` and `correctOption` as today. Manual typing of option text is unchanged.
+
 Questions are later attached to exams (many-to-many via exam–question links).
 
 | HTTP | Action | Description |
