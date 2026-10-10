@@ -64,6 +64,18 @@ public class ExcelQuestionParser {
                     importRow.setDifficulty(cellValue(row, difficultyCol));
                 }
                 importRow.setExplanation(cellValue(row, headerIndex.get("explanation")));
+                Integer professionalCol = headerIndex.get("is_professional");
+                if (professionalCol != null) {
+                    importRow.setProfessional(cellValue(row, professionalCol));
+                }
+                Integer subProfessionalCol = headerIndex.get("is_sub_professional");
+                if (subProfessionalCol != null) {
+                    importRow.setSubProfessional(cellValue(row, subProfessionalCol));
+                }
+                Integer batchLabelCol = headerIndex.get("batch_label");
+                if (batchLabelCol != null) {
+                    importRow.setBatchLabel(cellValue(row, batchLabelCol));
+                }
                 rows.add(importRow);
             }
             return rows;

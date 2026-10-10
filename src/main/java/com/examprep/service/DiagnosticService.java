@@ -7,15 +7,18 @@ import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AttemptAnswer;
+import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.DiagnosticResult;
 import com.examprep.model.DiagnosticSubjectScore;
 import com.examprep.model.Exam;
 import com.examprep.model.ExamAttempt;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Question;
 import com.examprep.model.ReadinessLabel;
 import com.examprep.model.Subject;
 import com.examprep.model.SubjectBand;
+import com.examprep.model.User;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,6 +43,7 @@ public class DiagnosticService {
     private final SubjectDao subjectDao = new SubjectDao();
     private final UserDao userDao = new UserDao();
     private final DiagnosticSubjectScoreDao subjectScoreDao = new DiagnosticSubjectScoreDao();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     public boolean isDiagnosticCompleted(Long userId) throws SQLException {
         return userDao.isDiagnosticCompleted(userId);
@@ -60,8 +64,13 @@ public class DiagnosticService {
             }
         }
 
-        ExamAttempt attempt = attemptDao.create(userId, exam.getId());
-        List<Long> sampledIds = sampleQuestionIds(exam);
+        ExamLevel examLevel = userDao.findById(userId)
+                .map(User::getExamLevel)
+                .orElse(null);
+
+        ExamAttempt attempt = attemptDao.create(userId, exam.getId(), AttemptKind.DIAGNOSTIC, null, null);
+        behaviorTrackingService.disableTracking(attempt.getId());
+        List<Long> sampledIds = sampleQuestionIds(exam, examLevel);
         if (sampledIds.isEmpty()) {
             throw new IllegalStateException("No questions available to build a diagnostic");
         }
@@ -85,6 +94,7 @@ public class DiagnosticService {
         if (attemptDao.findAnswersByAttemptId(attemptId).isEmpty()) {
             attemptDao.updateStartedAt(attemptId, LocalDateTime.now());
         }
+        behaviorTrackingService.enableTracking(attemptId);
         return getDeadline(getAttempt(attemptId));
     }
 
@@ -138,6 +148,7 @@ public class DiagnosticService {
 
         BigDecimal overallScore = calculateOverallScore(attemptId, questions.size());
         attemptDao.completeAttempt(attemptId, overallScore, finalStatus);
+        behaviorTrackingService.refreshSummary(attemptId);
 
         List<DiagnosticSubjectScore> subjectScores = buildSubjectScores(attemptId, questions);
         subjectScoreDao.replaceForAttempt(attemptId, subjectScores);
@@ -212,7 +223,7 @@ public class DiagnosticService {
         return sum.divide(BigDecimal.valueOf(subjectScores.size()), 2, RoundingMode.HALF_UP);
     }
 
-    private List<Long> sampleQuestionIds(Exam exam) throws SQLException {
+    private List<Long> sampleQuestionIds(Exam exam, ExamLevel examLevel) throws SQLException {
         int perSubject = exam.getQuestionsPerSubject() != null
                 ? exam.getQuestionsPerSubject()
                 : DEFAULT_QUESTIONS_PER_SUBJECT;
@@ -220,7 +231,7 @@ public class DiagnosticService {
             perSubject = DEFAULT_QUESTIONS_PER_SUBJECT;
         }
 
-        List<Subject> subjects = subjectDao.findAll();
+        List<Subject> subjects = subjectDao.findByExamLevel(examLevel);
         List<Long> sampled = new ArrayList<>();
         for (Subject subject : subjects) {
             List<Question> pool = questionDao.findBySubjectId(subject.getId());

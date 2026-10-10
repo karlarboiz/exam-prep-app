@@ -8,6 +8,7 @@ public class Exam {
     private int durationMinutes;
     private boolean active;
     private boolean diagnostic;
+    private boolean weekly;
     private Integer questionsPerSubject;
     private String subjectName;
     private int questionCount;
@@ -61,6 +62,14 @@ public class Exam {
 
     public void setDiagnostic(boolean diagnostic) {
         this.diagnostic = diagnostic;
+    }
+
+    public boolean isWeekly() {
+        return weekly;
+    }
+
+    public void setWeekly(boolean weekly) {
+        this.weekly = weekly;
     }
 
     public Integer getQuestionsPerSubject() {

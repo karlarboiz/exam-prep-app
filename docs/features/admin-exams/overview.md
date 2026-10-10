@@ -19,7 +19,7 @@
 | | Practice | Diagnostic |
 |--|----------|------------|
 | Flag | `is_diagnostic = false` | `is_diagnostic = true` |
-| Questions | Explicit `exam_questions` multi-select | Sampled at runtime (`questions_per_subject`) |
+| Questions | Explicit `exam_questions` multi-select with Up/Down order | Sampled at runtime (`questions_per_subject`) |
 | Student list | Shown on dashboard when active | Hidden from practice list; used by placement gate |
 | Active uniqueness | Many allowed | Saving an **active** diagnostic deactivates other diagnostics |
 
@@ -27,7 +27,7 @@ Subject on a diagnostic exam is an anchor FK only; sampling uses **all** subject
 
 ## Edit mode
 
-`GET /admin/exams?edit={id}` loads `editExam` and `selectedQuestionIds` for the form.
+`GET /admin/exams?edit={id}` loads `editExam` and `selectedQuestionIds` for the form. Selected questions are listed first in `exam_questions.sort_order`; Up/Down on the form rewrites that order on save.
 
 ## Access
 

@@ -12,6 +12,9 @@ public class QuestionImportRow {
     private String correctOption;
     private String difficulty;
     private String explanation;
+    private String professional;
+    private String subProfessional;
+    private String batchLabel;
 
     public QuestionImportRow(int excelRowNumber) {
         this.excelRowNumber = excelRowNumber;
@@ -91,5 +94,29 @@ public class QuestionImportRow {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getProfessional() {
+        return professional;
+    }
+
+    public void setProfessional(String professional) {
+        this.professional = professional;
+    }
+
+    public String getSubProfessional() {
+        return subProfessional;
+    }
+
+    public void setSubProfessional(String subProfessional) {
+        this.subProfessional = subProfessional;
+    }
+
+    public String getBatchLabel() {
+        return batchLabel;
+    }
+
+    public void setBatchLabel(String batchLabel) {
+        this.batchLabel = batchLabel;
     }
 }

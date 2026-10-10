@@ -2,13 +2,13 @@
 
 Java servlet exam practice app (JSP + H2).
 
-Student access is **subscription-token gated**: the funnel calls this app to create a one-time access token; users redeem it at registration. The locked grant’s `expires_at` controls how long quizzes remain available.
+Student access is **one-time purchase token gated** (not a renewable subscription): the funnel calls this app to create a one-time access token; users redeem it at registration. The locked grant’s `expires_at` controls how long quizzes remain available — typically prep time plus a short post-exam review window (e.g. 3 days after the exam), after which access ends.
 
 ## CI/CD
 
 GitHub Actions workflows:
 
-- **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`/`master`/`develop`: JDK 17 + `mvn package`, uploads `exam-prep-app.war`
+- **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`/`master`/`develop`: JDK 17 + `mvn package` (includes tests), uploads `exam-prep-app.war`
 - **Docker** (`.github/workflows/docker.yml`) — on push to `main`/`master`: builds image and pushes to `ghcr.io/<owner>/exam-prep-app`
 
 Local Docker run (after build):
@@ -18,17 +18,44 @@ docker build -t exam-prep-app .
 docker run --rm -p 8080:8080 exam-prep-app
 ```
 
+For a production-like run, set secrets and `ENVIRONMENT=production` (startup fails if JWT / funnel / ID-cipher secrets are still `change-me-*`). Behind a TLS proxy also set `PROXY_TRUST_FORWARDED` only if you terminate TLS in front of Tomcat:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e ENVIRONMENT=production \
+  -e JWT_SECRET='use-a-32-char-or-longer-random-string' \
+  -e ID_CIPHER_SECRET='use-a-32-char-or-longer-random-string' \
+  -e FUNNEL_API_KEY='use-a-32-char-or-longer-random-string' \
+  -e ADMIN_PASSWORD='your-admin-password' \
+  -e GOOGLE_OAUTH_CLIENT_ID='your-oauth-client-id' \
+  -e GOOGLE_OAUTH_CLIENT_SECRET='your-oauth-client-secret' \
+  -v examprep-data:/usr/local/tomcat/data \
+  exam-prep-app
+```
+
+Optional n8n / Drive env vars: `N8N_WEBHOOK_QUESTIONS`, `N8N_WEBHOOK_ANALYZE`, `N8N_WEBHOOK_SECRET`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`. Add the callback URL to the Google OAuth client, then tap **Connect Google Drive** on `/admin/n8n`. See [n8n overview](docs/features/n8n/overview.md).
+
 App: http://localhost:8080
 
 ## Documentation
 
-Full project docs live under [`docs/`](docs/README.md):
+Full project docs live under [`docs/`](docs/README.md).
 
-- **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter
+Start with:
+
+- [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md) — start-task guide (build order, checklist, smoke paths)
+- [docs/feature-tracker/](docs/feature-tracker/README.md) — Done / Pending status by category
+- [docs/UI-GUIDE.md](docs/UI-GUIDE.md) — UI tokens, layout, components, screen map
+
+Then:
+
+- **features/** — access-grants, auth, admin CRUD, take exam, results, JWT filter, testing
 - **models/** — domain objects (including AccessGrant)
 - **pages/** — JSP screen notes
-- **ui-rules/** — colors, layout, forms, components
+- **ui-rules/** — split styling notes (summarized in the UI guide)
 
 ## Funnel API (brief)
 
-`POST /api/access-tokens` with header `X-Api-Key: <funnel.api.key>`. See [docs/features/access-grants/create-token-api.md](docs/features/access-grants/create-token-api.md).
+- `POST /api/access-tokens` — create token (`X-Api-Key`). See [create-token-api](docs/features/access-grants/create-token-api.md).
+- `POST /api/access-tokens/revoke` — revoke by id. See [revoke-token-api](docs/features/access-grants/revoke-token-api.md).
+- Admin mint / list / revoke: `/admin/access-grants`. See [admin-access-grants](docs/features/access-grants/admin-access-grants.md).

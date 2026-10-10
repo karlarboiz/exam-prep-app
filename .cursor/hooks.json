@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/feature-tracker-reminder.py",
+        "timeout": 5
+      }
+    ],
+    "stop": [
+      {
+        "type": "prompt",
+        "prompt": "If this session changed product code under src/ (Java, JSP, CSS, schema.sql) and docs/feature-tracker/ was not updated, update the matching tracker row (or add one) before finishing. If the change was Cursor/config-only or the tracker is already synced, do not continue.",
+        "loop_limit": 1,
+        "timeout": 15
+      }
+    ]
+  }
+}

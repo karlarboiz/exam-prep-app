@@ -8,6 +8,7 @@ import com.examprep.model.AttemptAnswer;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.Exam;
 import com.examprep.model.ExamAttempt;
+import com.examprep.model.ExamLevel;
 import com.examprep.model.Question;
 import com.examprep.model.Subject;
 
@@ -26,17 +27,41 @@ public class ExamService {
     private final ExamDao examDao = new ExamDao();
     private final QuestionDao questionDao = new QuestionDao();
     private final AttemptDao attemptDao = new AttemptDao();
+    private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     public List<Subject> getSubjects() throws SQLException {
         return subjectDao.findAll();
+    }
+
+    public List<Subject> getSubjects(ExamLevel examLevel) throws SQLException {
+        return subjectDao.findByExamLevel(examLevel);
     }
 
     public List<Exam> getActiveExams() throws SQLException {
         return examDao.findActive();
     }
 
+    public List<Exam> getActiveExams(ExamLevel examLevel) throws SQLException {
+        return examDao.findActiveByExamLevel(examLevel);
+    }
+
     public Optional<Exam> getExam(Long examId) throws SQLException {
         return examDao.findById(examId);
+    }
+
+    public boolean isExamAvailableForLevel(Exam exam, ExamLevel examLevel) throws SQLException {
+        if (exam == null || exam.isDiagnostic() || exam.isWeekly() || !exam.isActive()) {
+            return false;
+        }
+        if (examLevel == null) {
+            return true;
+        }
+        Optional<Subject> subject = subjectDao.findById(exam.getSubjectId());
+        if (subject.isEmpty()) {
+            return false;
+        }
+        Subject s = subject.get();
+        return examLevel == ExamLevel.PROFESSIONAL ? s.isProfessional() : s.isSubProfessional();
     }
 
     public List<Question> getExamQuestions(Long examId) throws SQLException {
@@ -97,11 +122,15 @@ public class ExamService {
             if (selected != null && !selected.isBlank()) {
                 boolean correct = question.getCorrectOption().equalsIgnoreCase(selected);
                 attemptDao.saveAnswer(attemptId, question.getId(), selected.toUpperCase(), correct);
+            } else {
+                // Persist unanswered so answer review matches the score denominator
+                attemptDao.saveAnswer(attemptId, question.getId(), null, false);
             }
         }
 
         BigDecimal score = calculateScore(attemptId, questions.size());
         attemptDao.completeAttempt(attemptId, score, finalStatus);
+        behaviorTrackingService.refreshSummary(attemptId);
         return attemptDao.findById(attemptId).orElseThrow();
     }
 

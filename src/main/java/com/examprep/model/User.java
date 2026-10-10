@@ -9,8 +9,11 @@ public class User {
     private String email;
     private String passwordHash;
     private Role role;
+    private ExamLevel examLevel;
     private LocalDateTime createdAt;
     private LocalDateTime diagnosticCompletedAt;
+    private AppLocale locale = AppLocale.DEFAULT;
+    private int tokenVersion;
 
     public User() {
     }
@@ -64,6 +67,14 @@ public class User {
         this.role = role;
     }
 
+    public ExamLevel getExamLevel() {
+        return examLevel;
+    }
+
+    public void setExamLevel(ExamLevel examLevel) {
+        this.examLevel = examLevel;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -80,8 +91,24 @@ public class User {
         this.diagnosticCompletedAt = diagnosticCompletedAt;
     }
 
+    public AppLocale getLocale() {
+        return locale != null ? locale : AppLocale.DEFAULT;
+    }
+
+    public void setLocale(AppLocale locale) {
+        this.locale = locale != null ? locale : AppLocale.DEFAULT;
+    }
+
     public boolean isDiagnosticCompleted() {
         return diagnosticCompletedAt != null;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
     }
 
     public boolean isAdmin() {

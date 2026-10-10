@@ -4,4 +4,4 @@
 **Route:** `/admin/dashboard`  
 **Servlet:** `AdminDashboardServlet`
 
-Overview stats and quick links to subjects, exams, questions, and users. Uses `.stats-grid` / `.stat-card`.
+Overview stats and quick links to subjects, exams, questions, users, integrity, and n8n. Uses `.stats-grid` / `.stat-card`.

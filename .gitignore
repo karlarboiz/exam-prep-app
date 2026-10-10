@@ -5,3 +5,10 @@ data/
 .classpath
 .project
 .settings/
+*.log
+*.env
+.env*
+*.key
+*.pem
+*service-account*.json
+.DS_Store

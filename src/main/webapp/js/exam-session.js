@@ -1,4 +1,6 @@
 (function () {
+    'use strict';
+
     const root = document.getElementById('examShell');
     if (!root) {
         return;
@@ -10,11 +12,13 @@
     let deadline = root.dataset.deadline ? new Date(root.dataset.deadline) : null;
     const secondsPerQuestion = parseInt(root.dataset.secondsPerQuestion || '0', 10);
     const showIntro = root.dataset.showIntro === 'true';
-    const submitConfirm = root.dataset.submitConfirm || '';
     const failRedirect = root.dataset.failRedirect || '';
     const answerFailRedirect = root.dataset.answerFailRedirect || '';
+    const trackingEndpoint = root.dataset.trackingEndpoint || postUrl.replace(ctx, '') || '';
+    const leaveCount = parseInt(root.dataset.leaveCount || '0', 10);
 
     const examForm = document.getElementById('examForm');
+    const submitConfirm = (examForm && examForm.dataset.confirmSubmit) || root.dataset.submitConfirm || '';
     const timerEl = document.getElementById('timer');
     const questionTimerEl = document.getElementById('question-timer');
     const progressEl = document.getElementById('exam-progress');
@@ -34,11 +38,31 @@
     let examStarted = !showIntro;
     let timerInterval = null;
 
+    function csrfToken() {
+        const el = document.querySelector('input[name="_csrf"]');
+        return el ? el.value : '';
+    }
+
+    function currentQuestionId() {
+        const card = cards[currentIndex];
+        return card ? card.getAttribute('data-question-id') : null;
+    }
+
     function formatTime(ms) {
         const totalSecs = Math.max(0, Math.floor(ms / 1000));
         const mins = Math.floor(totalSecs / 60);
         const secs = totalSecs % 60;
         return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+
+    function updateProgressLabel() {
+        if (!progressEl || !examForm) {
+            return;
+        }
+        const pattern = examForm.dataset.questionOf || 'Question {0} of {1}';
+        progressEl.textContent = pattern
+            .replace('{0}', String(currentIndex + 1))
+            .replace('{1}', String(questionCount));
     }
 
     function showQuestion(index) {
@@ -51,9 +75,7 @@
         cards.forEach(function (card, i) {
             card.classList.toggle('is-hidden', i !== currentIndex);
         });
-        if (progressEl) {
-            progressEl.textContent = 'Question ' + (currentIndex + 1) + ' of ' + questionCount;
-        }
+        updateProgressLabel();
         if (prevBtn) {
             prevBtn.disabled = currentIndex === 0;
         }
@@ -67,6 +89,9 @@
         questionEndsAt = Date.now() + remainingMs[currentIndex];
         if (questionTimerEl) {
             questionTimerEl.classList.remove('timer-warning', 'timer-expired');
+        }
+        if (window.ExamQuestionImages) {
+            window.ExamQuestionImages.prepareCard(cards[currentIndex]);
         }
         updateTimers();
     }
@@ -85,11 +110,43 @@
         }
     }
 
+    function showIntegrityWarning(count) {
+        const modal = document.getElementById('integrityWarning');
+        const countEl = document.getElementById('integrityLeaveCount');
+        if (countEl && typeof count === 'number') {
+            countEl.textContent = String(count);
+        }
+        if (modal) {
+            modal.classList.remove('is-hidden');
+        }
+    }
+
+    function startTracking() {
+        if (!window.ExamTracking) {
+            return;
+        }
+        window.ExamTracking.init({
+            ctx: ctx,
+            attemptId: attemptId,
+            endpoint: trackingEndpoint,
+            csrfToken: csrfToken(),
+            leaveCount: leaveCount,
+            getQuestionId: currentQuestionId,
+            getRemainingMs: function () {
+                return Math.max(0, questionEndsAt - Date.now());
+            },
+            onReturn: showIntegrityWarning
+        });
+    }
+
     function submitExam() {
         if (submitted) {
             return;
         }
         submitted = true;
+        if (window.ExamTracking) {
+            window.ExamTracking.disable();
+        }
         if (examForm) {
             examForm.submit();
         }
@@ -129,21 +186,38 @@
         }
     }
 
+    function postBody(params) {
+        const body = new URLSearchParams(params);
+        const token = csrfToken();
+        if (token) {
+            body.set('_csrf', token);
+        }
+        return body;
+    }
+
+    function postHeaders() {
+        const token = csrfToken();
+        const headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+        if (token) {
+            headers['X-CSRF-Token'] = token;
+        }
+        return headers;
+    }
+
     function saveAnswer(questionId, option) {
         if (!examStarted) {
             return;
         }
-        const body = new URLSearchParams({
-            action: 'answer',
-            ajax: '1',
-            attemptId: attemptId,
-            questionId: String(questionId),
-            selectedOption: option
-        });
         fetch(postUrl, {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: body.toString()
+            headers: postHeaders(),
+            body: postBody({
+                action: 'answer',
+                ajax: '1',
+                attemptId: attemptId,
+                questionId: String(questionId),
+                selectedOption: option
+            }).toString()
         }).then(function (res) {
             if (res.redirected || res.status === 403) {
                 window.location.href = res.url || answerFailRedirect || postUrl;
@@ -169,18 +243,18 @@
             timerInterval = setInterval(updateTimers, 1000);
         }
         updateTimers();
+        startTracking();
     }
 
     function beginAndStart() {
-        const body = new URLSearchParams({
-            action: 'begin',
-            ajax: '1',
-            attemptId: attemptId
-        });
         fetch(postUrl, {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: body.toString()
+            headers: postHeaders(),
+            body: postBody({
+                action: 'begin',
+                ajax: '1',
+                attemptId: attemptId
+            }).toString()
         }).then(function (res) {
             if (res.redirected) {
                 window.location.href = res.url || failRedirect;
@@ -220,6 +294,16 @@
     }
     if (nextBtn) {
         nextBtn.addEventListener('click', goNext);
+    }
+
+    const warningBtn = document.getElementById('integrityWarningBtn');
+    if (warningBtn) {
+        warningBtn.addEventListener('click', function () {
+            const modal = document.getElementById('integrityWarning');
+            if (modal) {
+                modal.classList.add('is-hidden');
+            }
+        });
     }
 
     if (showIntro) {

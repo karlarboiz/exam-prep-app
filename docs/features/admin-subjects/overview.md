@@ -10,9 +10,11 @@
 
 | Action | Description |
 |--------|-------------|
-| create | Add subject (`name`, `description`) |
-| update | Edit existing subject by `id` |
+| create | Add subject (`name`, `description`, Professional / Sub-Professional checkboxes) |
+| update | Edit existing subject by `id` (including level flags) |
 | delete | Remove subject by `id` |
+
+Create/update require at least one of Professional or Sub-Professional.
 
 ## Access
 

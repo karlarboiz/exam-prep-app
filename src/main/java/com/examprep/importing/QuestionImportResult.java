@@ -7,6 +7,7 @@ import java.util.List;
 public class QuestionImportResult {
 
     private int importedCount;
+    private int updatedCount;
     private final List<String> errors = new ArrayList<>();
 
     public int getImportedCount() {
@@ -15,6 +16,14 @@ public class QuestionImportResult {
 
     public void setImportedCount(int importedCount) {
         this.importedCount = importedCount;
+    }
+
+    public int getUpdatedCount() {
+        return updatedCount;
+    }
+
+    public void setUpdatedCount(int updatedCount) {
+        this.updatedCount = updatedCount;
     }
 
     public List<String> getErrors() {

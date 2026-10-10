@@ -1,6 +1,8 @@
 package com.examprep.servlet.admin;
 
+import com.examprep.i18n.Messages;
 import com.examprep.service.AdminService;
+import com.examprep.util.IdCipher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,7 +21,12 @@ public class SubjectServlet extends HttpServlet {
         try {
             String editId = req.getParameter("edit");
             if (editId != null) {
-                adminService.getSubject(Long.parseLong(editId)).ifPresent(s -> req.setAttribute("editSubject", s));
+                try {
+                    long id = IdCipher.dec(editId);
+                    adminService.getSubject(id).ifPresent(s -> req.setAttribute("editSubject", s));
+                } catch (IllegalArgumentException ignored) {
+                    // Bad/garbage token — show create form instead of 500
+                }
             }
             req.setAttribute("subjects", adminService.getAllSubjects());
             req.getRequestDispatcher("/WEB-INF/jsp/admin/subjects.jsp").forward(req, resp);
@@ -36,28 +43,56 @@ public class SubjectServlet extends HttpServlet {
                 case "create" -> {
                     String name = req.getParameter("name");
                     String description = req.getParameter("description");
+                    boolean professional = req.getParameter("professional") != null;
+                    boolean subProfessional = req.getParameter("subProfessional") != null;
                     if (name == null || name.isBlank()) {
-                        req.setAttribute("error", "Name is required");
+                        req.setAttribute("error", Messages.get(req, "error.name.required"));
                         doGet(req, resp);
                         return;
                     }
-                    adminService.createSubject(name.trim(), description != null ? description.trim() : "");
+                    if (!professional && !subProfessional) {
+                        req.setAttribute("error", Messages.get(req, "error.subject.levelRequired"));
+                        doGet(req, resp);
+                        return;
+                    }
+                    adminService.createSubject(
+                            name.trim(),
+                            description != null ? description.trim() : "",
+                            professional,
+                            subProfessional);
                 }
                 case "update" -> {
-                    Long id = Long.parseLong(req.getParameter("id"));
+                    Long id = IdCipher.dec(req.getParameter("id"));
                     String name = req.getParameter("name");
                     String description = req.getParameter("description");
-                    adminService.updateSubject(id, name.trim(), description != null ? description.trim() : "");
+                    boolean professional = req.getParameter("professional") != null;
+                    boolean subProfessional = req.getParameter("subProfessional") != null;
+                    if (name == null || name.isBlank()) {
+                        req.setAttribute("error", Messages.get(req, "error.name.required"));
+                        doGet(req, resp);
+                        return;
+                    }
+                    if (!professional && !subProfessional) {
+                        req.setAttribute("error", Messages.get(req, "error.subject.levelRequired"));
+                        doGet(req, resp);
+                        return;
+                    }
+                    adminService.updateSubject(
+                            id,
+                            name.trim(),
+                            description != null ? description.trim() : "",
+                            professional,
+                            subProfessional);
                 }
                 case "delete" -> {
-                    Long id = Long.parseLong(req.getParameter("id"));
+                    Long id = IdCipher.dec(req.getParameter("id"));
                     adminService.deleteSubject(id);
                 }
                 default -> throw new IllegalArgumentException("Unknown action");
             }
             resp.sendRedirect(req.getContextPath() + "/admin/subjects");
         } catch (Exception e) {
-            req.setAttribute("error", e.getMessage());
+            req.setAttribute("error", Messages.fromException(req, e.getMessage()));
             doGet(req, resp);
         }
     }

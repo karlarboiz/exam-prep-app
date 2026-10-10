@@ -8,8 +8,13 @@ import com.examprep.model.Question;
 import com.examprep.model.Subject;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class AdminService {
 
@@ -25,12 +30,14 @@ public class AdminService {
         return subjectDao.findById(id);
     }
 
-    public Subject createSubject(String name, String description) throws SQLException {
-        return subjectDao.create(name, description);
+    public Subject createSubject(String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        return subjectDao.create(name, description, professional, subProfessional);
     }
 
-    public void updateSubject(Long id, String name, String description) throws SQLException {
-        subjectDao.update(id, name, description);
+    public void updateSubject(Long id, String name, String description, boolean professional, boolean subProfessional)
+            throws SQLException {
+        subjectDao.update(id, name, description, professional, subProfessional);
     }
 
     public void deleteSubject(Long id) throws SQLException {
@@ -43,6 +50,18 @@ public class AdminService {
 
     public List<Question> getQuestionsBySubject(Long subjectId) throws SQLException {
         return questionDao.findBySubjectId(subjectId);
+    }
+
+    public List<Question> getQuestions(Long subjectId, String batchFilter) throws SQLException {
+        if (QuestionImportService.UNLABELED_FILTER.equals(batchFilter)) {
+            return questionDao.findFiltered(subjectId, null, true);
+        }
+        String batchLabel = (batchFilter == null || batchFilter.isBlank()) ? null : batchFilter;
+        return questionDao.findFiltered(subjectId, batchLabel, false);
+    }
+
+    public List<String> getBatchLabels() throws SQLException {
+        return questionDao.listBatchLabels();
     }
 
     public Optional<Question> getQuestion(Long id) throws SQLException {
@@ -61,6 +80,27 @@ public class AdminService {
         questionDao.delete(id);
     }
 
+    public int deleteQuestions(List<Long> ids) throws SQLException {
+        List<Long> uniqueIds = uniqueIds(ids);
+        if (uniqueIds.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one question to delete");
+        }
+        return questionDao.deleteByIds(uniqueIds);
+    }
+
+    private static List<Long> uniqueIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> unique = new LinkedHashSet<>();
+        for (Long id : ids) {
+            if (id != null) {
+                unique.add(id);
+            }
+        }
+        return List.copyOf(unique);
+    }
+
     public List<Exam> getAllExams() throws SQLException {
         return examDao.findAll();
     }
@@ -69,8 +109,28 @@ public class AdminService {
         return examDao.findById(id);
     }
 
+    public List<Question> getQuestionsForExamForm(List<Long> selectedIds) throws SQLException {
+        List<Question> bank = getAllQuestions();
+        if (selectedIds == null || selectedIds.isEmpty()) {
+            return bank;
+        }
+        Map<Long, Question> remaining = new LinkedHashMap<>();
+        for (Question question : bank) {
+            remaining.put(question.getId(), question);
+        }
+        List<Question> ordered = new ArrayList<>();
+        for (Long id : selectedIds) {
+            Question question = remaining.remove(id);
+            if (question != null) {
+                ordered.add(question);
+            }
+        }
+        ordered.addAll(remaining.values());
+        return ordered;
+    }
+
     public Exam createExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
@@ -82,6 +142,12 @@ public class AdminService {
             }
             return examDao.findById(created.getId()).orElse(created);
         }
+        if (exam.isWeekly()) {
+            if (exam.isActive()) {
+                examDao.deactivateOtherWeeklies(created.getId());
+            }
+            return examDao.findById(created.getId()).orElse(created);
+        }
         if (questionIds != null && !questionIds.isEmpty()) {
             examDao.setExamQuestions(created.getId(), questionIds);
         }
@@ -89,13 +155,16 @@ public class AdminService {
     }
 
     public void updateExam(Exam exam, List<Long> questionIds) throws SQLException {
-        if (exam.isDiagnostic()) {
+        if (exam.isDiagnostic() || exam.isWeekly()) {
             if (exam.getQuestionsPerSubject() == null || exam.getQuestionsPerSubject() < 1) {
                 exam.setQuestionsPerSubject(DiagnosticService.DEFAULT_QUESTIONS_PER_SUBJECT);
             }
             examDao.update(exam);
-            if (exam.isActive()) {
+            if (exam.isActive() && exam.isDiagnostic()) {
                 examDao.deactivateOtherDiagnostics(exam.getId());
+            }
+            if (exam.isActive() && exam.isWeekly()) {
+                examDao.deactivateOtherWeeklies(exam.getId());
             }
             examDao.setExamQuestions(exam.getId(), List.of());
             return;

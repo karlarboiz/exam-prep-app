@@ -1,0 +1,23 @@
+---
+description: UI tokens and JSP class reuse from the UI guide
+globs: "**/*.{jsp,css}"
+alwaysApply: false
+---
+
+# UI
+
+Source of truth: [docs/UI-GUIDE.md](docs/UI-GUIDE.md). CSS lives only in `src/main/webapp/css/app.css`.
+
+- Use CSS variables (`--color-*`, `--radius`, `--shadow`). Do not hard-code new hex in JSP.
+- Reuse `.card`, `.btn-*`, `.alert-*`, `.data-table`, `.subtitle`, `.grid-2` before inventing classes.
+- App pages include the shared header and footer.
+- One job per page: title, short `.subtitle`, then the primary action.
+- Cover empty, error, and success states. Stack grids on small screens.
+
+```jsp
+<%-- BAD: inline color --%>
+<p style="color:#2563eb">Saved</p>
+
+<%-- GOOD --%>
+<p class="alert alert-success">Saved</p>
+```

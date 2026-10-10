@@ -3,6 +3,7 @@ package com.examprep.servlet.user;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.User;
 import com.examprep.service.ExamService;
+import com.examprep.util.IdCipher;
 import com.examprep.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,7 +28,7 @@ public class ResultsServlet extends HttpServlet {
         }
 
         try {
-            Long attemptId = Long.parseLong(attemptIdParam);
+            Long attemptId = IdCipher.dec(attemptIdParam);
             ExamAttempt attempt = examService.getAttempt(attemptId);
             if (!attempt.getUserId().equals(user.getId()) && !user.isAdmin()) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
