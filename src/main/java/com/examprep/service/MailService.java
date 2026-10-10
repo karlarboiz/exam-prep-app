@@ -3,6 +3,7 @@ package com.examprep.service;
 import com.examprep.config.AppConfig;
 import com.examprep.dao.EmailOutboxDao;
 import com.examprep.dao.WeeklyRegimenDao;
+import com.examprep.model.FollowUpKind;
 import com.examprep.model.StudyPlan;
 import com.examprep.model.User;
 import com.examprep.model.WeeklyRegimen;
@@ -17,12 +18,16 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 /**
  * Writes {@code email_outbox} always. Sends via SMTP when {@code mail.smtp.host} is set.
+ * Study-plan digests and missed-regimen follow-ups both go through here.
  */
 public class MailService {
+
+    private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final EmailOutboxDao outboxDao = new EmailOutboxDao();
     private final WeeklyRegimenDao regimenDao = new WeeklyRegimenDao();
@@ -39,6 +44,20 @@ public class MailService {
         String body = buildBody(user, regimen, plan);
         send(user.getId(), regimen.getId(), user.getEmail(), subject, body);
         regimenDao.markEmailSent(regimen.getId(), now);
+        return true;
+    }
+
+    /**
+     * One follow-up for a missed or overdue weekly exam or checkpoint.
+     * Caller records {@code regimen_follow_ups} so the same kind is not sent twice.
+     */
+    public boolean sendFollowUp(User user, WeeklyRegimen regimen, FollowUpKind kind) throws SQLException {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank()
+                || regimen == null || kind == null) {
+            return false;
+        }
+        send(user.getId(), regimen.getId(), user.getEmail(), subjectFor(regimen, kind),
+                bodyFor(user, regimen, kind));
         return true;
     }
 
@@ -120,5 +139,50 @@ public class MailService {
         }
         sb.append("Study plan: ").append(link.isBlank() ? "/user/study-plan" : link).append('\n');
         return sb.toString();
+    }
+
+    private static String subjectFor(WeeklyRegimen regimen, FollowUpKind kind) {
+        int week = regimen.getWeekNumber();
+        return switch (kind) {
+            case WEEKLY_EXAM_DUE -> "Week " + week + " exam still open";
+            case WEEKLY_EXAM_MISSED -> "Week " + week + " exam was missed";
+            case CHECKPOINT_DUE -> "Week " + week + " checkpoint still open";
+            case CHECKPOINT_MISSED -> "Week " + week + " checkpoint was missed";
+        };
+    }
+
+    private String bodyFor(User user, WeeklyRegimen regimen, FollowUpKind kind) {
+        String when = regimen.getWeekEnd() == null ? "" : WHEN.format(regimen.getWeekEnd());
+        StringBuilder sb = new StringBuilder();
+        sb.append("Hi ").append(user.getUsername()).append(",\n\n");
+        switch (kind) {
+            case WEEKLY_EXAM_DUE -> sb.append("Follow-up: week ").append(regimen.getWeekNumber())
+                    .append(" exam is still open until ").append(when)
+                    .append(". Submit it so the week is not marked missed.\n\n")
+                    .append("This week's exam: ").append(link("/user/weekly"));
+            case WEEKLY_EXAM_MISSED -> sb.append("Follow-up: week ").append(regimen.getWeekNumber())
+                    .append(" was missed because the exam was not submitted in time. ")
+                    .append("Your last study plan is still in the app, and the next form unlocks on the week clock.\n\n")
+                    .append("Dashboard: ").append(link("/user/dashboard"));
+            case CHECKPOINT_DUE -> sb.append("Follow-up: week ").append(regimen.getWeekNumber())
+                    .append(" exam is in, but the mid-week checkpoint is still open until ").append(when)
+                    .append(".\n\n")
+                    .append("Checkpoint: ").append(link("/user/checkpoint"));
+            case CHECKPOINT_MISSED -> sb.append("Follow-up: week ").append(regimen.getWeekNumber())
+                    .append(" ended without the mid-week checkpoint. ")
+                    .append("That checkpoint was a requirement of the week. Your study plan is still available.\n\n")
+                    .append("Study plan: ")
+                    .append(link("/user/study-plan?regimenId=" + regimen.getId()));
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
+
+    private static String link(String path) {
+        String base = AppConfig.get("app.public.url", "").trim();
+        if (base.isEmpty()) {
+            return path;
+        }
+        return base.replaceAll("/$", "") + path;
     }
 }

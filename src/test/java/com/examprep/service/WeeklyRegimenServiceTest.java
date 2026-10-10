@@ -196,6 +196,87 @@ class WeeklyRegimenServiceTest extends DatabaseTestSupport {
         assertNotEquals(officialId, checkpoint.getId());
     }
 
+    @Test
+    void overdueOpenWeekSendsExamFollowUpOnceThenMissedFollowUp() throws Exception {
+        LocalDateTime start = LocalDateTime.of(2026, 5, 1, 8, 0);
+        User user = readyUser(start, 28);
+        service.setClock(clockAt(start));
+        WeeklyRegimen week = service.ensureCurrentWeek(user.getId());
+        service.sweepFollowUps(user.getId());
+        assertTrue(followUps(week.getId()).isEmpty());
+
+        service.setClock(clockAt(start.plusDays(3)));
+        WeeklyDashboard due = service.resolveDashboard(user.getId());
+        List<EmailOutbox> dueMail = followUps(week.getId());
+        assertEquals(1, dueMail.size());
+        assertTrue(dueMail.get(0).getSubject().contains("still open"));
+        assertTrue(dueMail.get(0).getBody().toLowerCase().contains("follow-up"));
+        assertTrue(due.isExamFollowUpSent());
+
+        service.sweepFollowUps(user.getId());
+        assertEquals(1, followUps(week.getId()).size());
+
+        service.setClock(clockAt(start.plusDays(8)));
+        WeeklyDashboard missed = service.resolveDashboard(user.getId());
+        assertEquals(WeeklyRegimenStatus.MISSED, regimenDao.findById(week.getId()).orElseThrow().getStatus());
+        List<EmailOutbox> all = followUps(week.getId());
+        assertEquals(2, all.size());
+        assertTrue(all.stream().anyMatch(mail -> mail.getSubject().contains("was missed")));
+        assertTrue(missed.isMissedExamFollowUpSent());
+        assertFalse(missed.isExamFollowUpSent());
+    }
+
+    @Test
+    void unfinishedCheckpointSendsFollowUpThenMissedFollowUp() throws Exception {
+        LocalDateTime start = LocalDateTime.of(2026, 5, 4, 8, 0);
+        User user = readyUser(start, 30);
+        service.setClock(clockAt(start));
+        ExamAttempt weekly = service.startWeeklyExam(user.getId());
+        service.submitWeeklyExam(weekly.getId(), allWrong(weekly.getId()));
+        WeeklyRegimen week = regimenDao.findByUserAndWeek(user.getId(), 1).orElseThrow();
+
+        service.setClock(clockAt(start.plusDays(3)));
+        WeeklyDashboard due = service.resolveDashboard(user.getId());
+        List<EmailOutbox> mail = followUps(week.getId());
+        assertEquals(1, mail.size(), mail.toString());
+        assertTrue(mail.get(0).getSubject().contains("checkpoint still open"));
+        assertTrue(due.isCheckpointFollowUpSent());
+        assertFalse(due.isExamFollowUpSent());
+
+        service.setClock(clockAt(start.plusDays(8)));
+        service.sweepFollowUps(user.getId());
+        List<EmailOutbox> missed = followUps(week.getId());
+        assertEquals(2, missed.size());
+        assertTrue(missed.stream().anyMatch(row -> row.getSubject().contains("checkpoint was missed")));
+    }
+
+    @Test
+    void completedCheckpointSkipsCheckpointFollowUp() throws Exception {
+        LocalDateTime start = LocalDateTime.of(2026, 5, 6, 8, 0);
+        User user = readyUser(start, 30);
+        service.setClock(clockAt(start));
+        ExamAttempt weekly = service.startWeeklyExam(user.getId());
+        service.submitWeeklyExam(weekly.getId(), allWrong(weekly.getId()));
+        ExamAttempt checkpoint = service.startCheckpoint(user.getId());
+        service.submitCheckpoint(checkpoint.getId(), allCorrect(checkpoint.getId()));
+        WeeklyRegimen week = regimenDao.findByUserAndWeek(user.getId(), 1).orElseThrow();
+
+        service.setClock(clockAt(start.plusDays(8)));
+        service.sweepFollowUps(user.getId());
+        assertTrue(followUps(week.getId()).isEmpty());
+    }
+
+    @Test
+    void expiredGrantSkipsFollowUp() throws Exception {
+        LocalDateTime start = LocalDateTime.of(2026, 6, 1, 8, 0);
+        User user = readyUser(start, 10);
+        service.setClock(clockAt(start));
+        WeeklyRegimen week = service.ensureCurrentWeek(user.getId());
+        service.setClock(clockAt(start.plusDays(11)));
+        service.sweepFollowUps(user.getId());
+        assertTrue(outboxDao.findByRegimenId(week.getId()).isEmpty());
+    }
+
     private User readyUser(LocalDateTime diagnosticAt, int grantDays) throws Exception {
         String stamp = String.valueOf(System.nanoTime());
         AccessGrantService.CreatedAccessToken token = accessGrantService.createToken(
@@ -236,6 +317,21 @@ class WeeklyRegimenServiceTest extends DatabaseTestSupport {
             answers.put(q.getId(), "A".equalsIgnoreCase(q.getCorrectOption()) ? "B" : "A");
         }
         return answers;
+    }
+
+    private List<EmailOutbox> followUps(Long regimenId) throws Exception {
+        List<EmailOutbox> rows = new java.util.ArrayList<>();
+        for (EmailOutbox mail : outboxDao.findByRegimenId(regimenId)) {
+            String subject = mail.getSubject().toLowerCase();
+            if (subject.contains("still open") || subject.contains("was missed")) {
+                rows.add(mail);
+            }
+        }
+        return rows;
+    }
+
+    private static Clock clockAt(LocalDateTime time) {
+        return Clock.fixed(time.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
     }
 
     private static WeeklySubjectScore score(Long regimenId, Long subjectId, String percent, SubjectBand band) {

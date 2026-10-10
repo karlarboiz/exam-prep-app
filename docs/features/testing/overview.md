@@ -30,7 +30,7 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Import rejects both-false level flags | `QuestionImportServiceTest` |
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
 | Question batch delete | `QuestionDaoTest`, `AdminServiceTest` |
-| Week clock / quotas / official lock / missed week | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |
+| Week clock / quotas / official lock / missed week / follow-up mail | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |
 | Tagalog / English message bundles | `MessagesTest`, `LocaleSupportTest` |
 | n8n question / analyze send + audit | `N8nServiceTest` |
 | Google Drive folder list + selected ids | `GoogleDriveServiceTest`, `N8nServiceTest` |

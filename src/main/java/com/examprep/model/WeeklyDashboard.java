@@ -13,6 +13,10 @@ public class WeeklyDashboard {
     private boolean canContinueCheckpoint;
     private Long inProgressCheckpointAttemptId;
     private boolean missedWeekNotice;
+    private boolean examFollowUpSent;
+    private boolean missedExamFollowUpSent;
+    private boolean checkpointFollowUpSent;
+    private boolean checkpointMissedFollowUpSent;
     private String bankWarning;
 
     public WeeklyRegimen getCurrent() {
@@ -101,6 +105,38 @@ public class WeeklyDashboard {
 
     public void setMissedWeekNotice(boolean missedWeekNotice) {
         this.missedWeekNotice = missedWeekNotice;
+    }
+
+    public boolean isExamFollowUpSent() {
+        return examFollowUpSent;
+    }
+
+    public void setExamFollowUpSent(boolean examFollowUpSent) {
+        this.examFollowUpSent = examFollowUpSent;
+    }
+
+    public boolean isMissedExamFollowUpSent() {
+        return missedExamFollowUpSent;
+    }
+
+    public void setMissedExamFollowUpSent(boolean missedExamFollowUpSent) {
+        this.missedExamFollowUpSent = missedExamFollowUpSent;
+    }
+
+    public boolean isCheckpointFollowUpSent() {
+        return checkpointFollowUpSent;
+    }
+
+    public void setCheckpointFollowUpSent(boolean checkpointFollowUpSent) {
+        this.checkpointFollowUpSent = checkpointFollowUpSent;
+    }
+
+    public boolean isCheckpointMissedFollowUpSent() {
+        return checkpointMissedFollowUpSent;
+    }
+
+    public void setCheckpointMissedFollowUpSent(boolean checkpointMissedFollowUpSent) {
+        this.checkpointMissedFollowUpSent = checkpointMissedFollowUpSent;
     }
 
     public String getBankWarning() {

@@ -8,6 +8,7 @@ import com.examprep.dao.AttemptDao;
 import com.examprep.dao.DiagnosticSubjectScoreDao;
 import com.examprep.dao.ExamDao;
 import com.examprep.dao.QuestionDao;
+import com.examprep.dao.RegimenFollowUpDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.dao.UserDao;
 import com.examprep.dao.WeeklyRegimenDao;
@@ -20,6 +21,7 @@ import com.examprep.model.DiagnosticSubjectScore;
 import com.examprep.model.Exam;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.ExamLevel;
+import com.examprep.model.FollowUpKind;
 import com.examprep.model.Question;
 import com.examprep.model.StudyPlan;
 import com.examprep.model.Subject;
@@ -34,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +65,7 @@ public class WeeklyRegimenService {
     private final WeeklySubjectScoreDao weeklyScoreDao = new WeeklySubjectScoreDao();
     private final DiagnosticSubjectScoreDao diagnosticScoreDao = new DiagnosticSubjectScoreDao();
     private final MailService mailService = new MailService();
+    private final RegimenFollowUpDao followUpDao = new RegimenFollowUpDao();
     private final BehaviorTrackingService behaviorTrackingService = new BehaviorTrackingService();
 
     private Clock clock = Clock.systemDefaultZone();
@@ -119,7 +123,18 @@ public class WeeklyRegimenService {
         if (locked && !checkpointOk && checkpointInProgress.isEmpty() && !now().isAfter(current.getWeekEnd())) {
             dashboard.setBankWarning(Messages.get(LocaleSupport.current(), "dashboard.bankWarning"));
         }
+        dispatchFollowUps(user);
+        applyFollowUpNotices(dashboard, userId);
         return dashboard;
+    }
+
+    /**
+     * Marks overdue weeks and sends any follow-up that is due. Used by the background sweep
+     * for students who have not opened the dashboard.
+     */
+    public void sweepFollowUps(Long userId) throws SQLException {
+        ensureCurrentWeek(userId);
+        dispatchFollowUps(userDao.findById(userId).orElseThrow());
     }
 
     public WeeklyRegimen ensureCurrentWeek(Long userId) throws SQLException {
@@ -349,6 +364,108 @@ public class WeeklyRegimenService {
 
     int checkpointMinFresh() {
         return AppConfig.getInt("weekly.checkpoint.min.fresh", DEFAULT_CHECKPOINT_MIN_FRESH);
+    }
+
+    int followUpAfterDays() {
+        int days = AppConfig.getInt("weekly.followup.after.days", 3);
+        return Math.max(1, days);
+    }
+
+    /**
+     * Sends at most one email per {@link FollowUpKind} for each week.
+     * Skipped when the access grant is expired or revoked, matching the study-plan digest.
+     */
+    private void dispatchFollowUps(User user) throws SQLException {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank() || !isGrantActive(user.getId())) {
+            return;
+        }
+        for (WeeklyRegimen week : regimenDao.findByUserId(user.getId())) {
+            sendExamFollowUp(user, week);
+            sendCheckpointFollowUp(user, week);
+        }
+    }
+
+    private void sendExamFollowUp(User user, WeeklyRegimen week) throws SQLException {
+        if (week.hasOfficialScore()) {
+            return;
+        }
+        boolean missed = week.getStatus() == WeeklyRegimenStatus.MISSED || now().isAfter(week.getWeekEnd());
+        FollowUpKind kind = missed ? FollowUpKind.WEEKLY_EXAM_MISSED
+                : (!now().isBefore(followUpDue(week)) ? FollowUpKind.WEEKLY_EXAM_DUE : null);
+        if (kind == null || followUpDao.exists(week.getId(), kind)) {
+            return;
+        }
+        if (mailService.sendFollowUp(user, week, kind)) {
+            followUpDao.insert(week.getId(), kind, now());
+        }
+    }
+
+    private void sendCheckpointFollowUp(User user, WeeklyRegimen week) throws SQLException {
+        if (!week.hasOfficialScore()) {
+            return;
+        }
+        boolean missed = now().isAfter(week.getWeekEnd());
+        FollowUpKind kind = missed ? FollowUpKind.CHECKPOINT_MISSED
+                : (!now().isBefore(followUpDue(week)) ? FollowUpKind.CHECKPOINT_DUE : null);
+        if (kind == null || followUpDao.exists(week.getId(), kind)) {
+            return;
+        }
+        if (attemptDao.hasTerminalCheckpoint(user.getId(), week.getId())) {
+            return;
+        }
+        boolean bankAllows = countFreshWeakItems(user, week) >= checkpointMinFresh();
+        boolean alreadyNudged = followUpDao.exists(week.getId(), FollowUpKind.CHECKPOINT_DUE);
+        if (!bankAllows && !alreadyNudged) {
+            return;
+        }
+        if (mailService.sendFollowUp(user, week, kind)) {
+            followUpDao.insert(week.getId(), kind, now());
+        }
+    }
+
+    private void applyFollowUpNotices(WeeklyDashboard dashboard, Long userId) throws SQLException {
+        WeeklyRegimen current = dashboard.getCurrent();
+        if (current == null) {
+            return;
+        }
+        boolean currentExamOpen = !current.hasOfficialScore()
+                && current.getStatus() != WeeklyRegimenStatus.MISSED
+                && !now().isAfter(current.getWeekEnd());
+        dashboard.setExamFollowUpSent(currentExamOpen
+                && followUpDao.exists(current.getId(), FollowUpKind.WEEKLY_EXAM_DUE));
+
+        boolean checkpointDone = attemptDao.hasTerminalCheckpoint(userId, current.getId());
+        dashboard.setCheckpointFollowUpSent(!checkpointDone
+                && !now().isAfter(current.getWeekEnd())
+                && followUpDao.exists(current.getId(), FollowUpKind.CHECKPOINT_DUE));
+
+        boolean missedExam = false;
+        boolean missedCheckpoint = false;
+        for (WeeklyRegimen week : regimenDao.findByUserId(userId)) {
+            if (followUpDao.exists(week.getId(), FollowUpKind.WEEKLY_EXAM_MISSED)) {
+                missedExam = true;
+            }
+            if (followUpDao.exists(week.getId(), FollowUpKind.CHECKPOINT_MISSED)) {
+                missedCheckpoint = true;
+            }
+        }
+        dashboard.setMissedExamFollowUpSent(missedExam);
+        dashboard.setCheckpointMissedFollowUpSent(missedCheckpoint);
+    }
+
+    private boolean isGrantActive(Long userId) throws SQLException {
+        return accessGrantDao.findLatestRedeemedByUserId(userId)
+                .map(grant -> grant.getExpiresAt() != null && !now().isAfter(grant.getExpiresAt()))
+                .orElse(false);
+    }
+
+    private LocalDateTime followUpDue(WeeklyRegimen regimen) {
+        LocalDateTime due = regimen.getWeekStart().plusDays(followUpAfterDays());
+        if (regimen.getWeekEnd() != null && !due.isBefore(regimen.getWeekEnd())) {
+            long seconds = Math.max(1, Duration.between(regimen.getWeekStart(), regimen.getWeekEnd()).getSeconds() / 2);
+            return regimen.getWeekStart().plusSeconds(seconds);
+        }
+        return due;
     }
 
     private WeeklyRegimen createWeek(User user, AccessGrant grant, int weekNumber) throws SQLException {

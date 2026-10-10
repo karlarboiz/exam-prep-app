@@ -142,6 +142,23 @@ public class AttemptDao {
         return Optional.empty();
     }
 
+    public boolean hasTerminalCheckpoint(Long userId, Long regimenId) throws SQLException {
+        String sql = """
+                SELECT 1 FROM exam_attempts
+                WHERE user_id = ? AND regimen_id = ? AND attempt_kind = 'CHECKPOINT'
+                  AND status IN ('COMPLETED', 'EXPIRED')
+                LIMIT 1
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setLong(2, regimenId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public void saveAnswer(Long attemptId, Long questionId, String selectedOption, boolean isCorrect) throws SQLException {
         String sql = """
                 MERGE INTO attempt_answers (attempt_id, question_id, selected_option, is_correct)
