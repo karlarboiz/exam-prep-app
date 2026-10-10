@@ -23,4 +23,5 @@ Depends on diagnostic bands (`diagnostic_subject_scores`) and existing practice 
 | Next-week form over-samples weak subjects | Done | `QuestionSampler.quotas` WEAK &gt; DEVELOPING &gt; STRONG; even mix on final week |
 | Dashboard “this week” instead of open catalog | Done | Primary CTA is regimen; practice exams are “Optional practice” |
 | Carry-forward if they miss a week | Done | `MISSED` when clock rolls with no official submit; last plan kept; next form unlocks |
+| Follow-up email when a week or checkpoint is missed | Done | `regimen_follow_ups`: due email after `weekly.followup.after.days`, missed email when the exam or checkpoint requirement ends unfinished. Dashboard hint plus `FollowUpMailJob`. Skipped after grant expiry |
 | Tests for week lock, sampling, and review | Done | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |

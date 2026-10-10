@@ -12,6 +12,6 @@
 | status | WeeklyRegimenStatus | `OPEN` / `COMPLETED` / `MISSED` |
 | finalWeek | boolean | Mixed readiness exam |
 | officialAttemptId | Long | First terminal weekly submit; never overwritten |
-| emailSentAt | LocalDateTime | Digest written to `email_outbox` |
+| emailSentAt | LocalDateTime | Study-plan digest written to `email_outbox`. Follow-ups are separate rows in `regimen_follow_ups` |
 
 Unique `(user_id, week_number)`. Form items: `weekly_form_questions`.

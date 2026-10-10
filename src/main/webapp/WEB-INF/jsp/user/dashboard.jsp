@@ -24,6 +24,9 @@
 <c:if test="${weekly.missedWeekNotice}">
     <div class="alert alert-warning">
         <fmt:message key="dashboard.missedWeek"/>
+        <c:if test="${weekly.missedExamFollowUpSent && weekly.studyPlan != null}">
+            <p class="hint"><fmt:message key="dashboard.followUpExamMissed"><fmt:param value="${fn:escapeXml(weekly.studyPlan.emailTo)}"/></fmt:message></p>
+        </c:if>
     </div>
 </c:if>
 
@@ -44,6 +47,15 @@
         </c:if>
         <c:if test="${not empty weekly.bankWarning}">
             <p class="hint">${weekly.bankWarning}</p>
+        </c:if>
+        <c:if test="${weekly.examFollowUpSent && weekly.studyPlan != null}">
+            <p class="hint"><fmt:message key="dashboard.followUpExam"><fmt:param value="${fn:escapeXml(weekly.studyPlan.emailTo)}"/></fmt:message></p>
+        </c:if>
+        <c:if test="${weekly.checkpointFollowUpSent && weekly.studyPlan != null}">
+            <p class="hint"><fmt:message key="dashboard.followUpCheckpoint"><fmt:param value="${fn:escapeXml(weekly.studyPlan.emailTo)}"/></fmt:message></p>
+        </c:if>
+        <c:if test="${weekly.checkpointMissedFollowUpSent && weekly.studyPlan != null}">
+            <p class="hint"><fmt:message key="dashboard.followUpCheckpointMissed"><fmt:param value="${fn:escapeXml(weekly.studyPlan.emailTo)}"/></fmt:message></p>
         </c:if>
         <div class="actions">
             <c:if test="${weekly.canStartWeekly}">
