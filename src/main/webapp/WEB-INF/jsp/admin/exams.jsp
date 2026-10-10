@@ -42,8 +42,7 @@
             <div class="form-group checkbox-group">
                 <label>
                     <input type="checkbox" name="diagnostic" id="diagnostic"
-                           ${not empty editExam && editExam.diagnostic ? 'checked' : ''}
-                           onchange="toggleDiagnosticFields()">
+                           ${not empty editExam && editExam.diagnostic ? 'checked' : ''}>
                     Diagnostic (placement test — samples N questions per subject)
                 </label>
             </div>
@@ -111,13 +110,6 @@
     </div>
 </div>
 
-<script>
-    function toggleDiagnosticFields() {
-        var isDiagnostic = document.getElementById('diagnostic').checked;
-        document.getElementById('questionsPerSubjectGroup').style.display = isDiagnostic ? '' : 'none';
-        document.getElementById('questionPickerGroup').style.display = isDiagnostic ? 'none' : '';
-    }
-    toggleDiagnosticFields();
-</script>
+<script src="${ctx}/js/admin-exams.js" defer></script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>

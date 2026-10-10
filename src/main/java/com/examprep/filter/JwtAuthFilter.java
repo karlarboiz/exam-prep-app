@@ -20,7 +20,7 @@ import java.util.Set;
 public class JwtAuthFilter implements Filter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/login", "/register", "/css/", "/error/", "/api/access-tokens"
+            "/login", "/register", "/css/", "/js/", "/error/", "/api/access-tokens"
     );
 
     private final AuthService authService = new AuthService();
