@@ -45,8 +45,7 @@
             <div class="form-group checkbox-group">
                 <label>
                     <input type="checkbox" name="diagnostic" id="diagnostic"
-                           ${not empty editExam && editExam.diagnostic ? 'checked' : ''}
-                           onchange="toggleDiagnosticFields()">
+                           ${not empty editExam && editExam.diagnostic ? 'checked' : ''}>
                     <fmt:message key="exams.diagnostic"/>
                 </label>
             </div>
@@ -66,13 +65,12 @@
                                 <input type="checkbox" class="exam-q-check" name="questionIds" value="${q.id}"
                                     <c:forEach var="selId" items="${selectedQuestionIds}">
                                         <c:if test="${selId == q.id}">checked</c:if>
-                                    </c:forEach>
-                                    onchange="onExamQuestionCheck(this)">
+                                    </c:forEach>>
                                 [<c:out value="${q.subjectName}"/>] <c:out value="${q.prompt}"/>
                             </label>
                             <div class="exam-q-order-actions">
-                                <button type="button" class="btn btn-sm btn-outline" onclick="moveExamQuestion(this, -1)"><fmt:message key="exams.up"/></button>
-                                <button type="button" class="btn btn-sm btn-outline" onclick="moveExamQuestion(this, 1)"><fmt:message key="exams.down"/></button>
+                                <button type="button" class="btn btn-sm btn-outline" data-exam-move="-1"><fmt:message key="exams.up"/></button>
+                                <button type="button" class="btn btn-sm btn-outline" data-exam-move="1"><fmt:message key="exams.down"/></button>
                             </div>
                         </div>
                     </c:forEach>
@@ -134,45 +132,6 @@
     </div>
 </div>
 
-<script>
-    function toggleDiagnosticFields() {
-        var isDiagnostic = document.getElementById('diagnostic').checked;
-        document.getElementById('questionsPerSubjectGroup').style.display = isDiagnostic ? '' : 'none';
-        document.getElementById('questionPickerGroup').style.display = isDiagnostic ? 'none' : '';
-    }
-    function moveExamQuestion(btn, dir) {
-        var row = btn.closest('.exam-question-row');
-        if (!row) return;
-        var sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling;
-        if (!sibling) return;
-        if (dir < 0) {
-            row.parentNode.insertBefore(row, sibling);
-        } else {
-            row.parentNode.insertBefore(sibling, row);
-        }
-    }
-    function onExamQuestionCheck(cb) {
-        var row = cb.closest('.exam-question-row');
-        var list = row && row.parentNode;
-        if (!row || !list) return;
-        if (cb.checked) {
-            var lastChecked = null;
-            list.querySelectorAll('.exam-question-row').forEach(function (r) {
-                var check = r.querySelector('.exam-q-check');
-                if (check && check.checked && r !== row) {
-                    lastChecked = r;
-                }
-            });
-            if (lastChecked) {
-                lastChecked.after(row);
-            } else {
-                list.insertBefore(row, list.firstChild);
-            }
-        } else {
-            list.appendChild(row);
-        }
-    }
-    toggleDiagnosticFields();
-</script>
+<script src="${ctx}/js/admin-exams.js" defer></script>
 
 <%@ include file="/WEB-INF/jsp/layout/footer.jsp" %>
