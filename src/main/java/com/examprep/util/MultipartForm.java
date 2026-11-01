@@ -2,6 +2,7 @@ package com.examprep.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public final class MultipartForm {
         return "multipart/form-data; boundary=" + boundary;
     }
 
-    public void addText(String name, String value) throws IOException {
+    public void addText(String name, String value) {
         if (value == null) {
             return;
         }
@@ -27,23 +28,31 @@ public final class MultipartForm {
         write("\r\n");
     }
 
-    public void addFile(String name, String filename, String contentType, byte[] bytes) throws IOException {
+    public void addFile(String name, String filename, String contentType, byte[] bytes) {
         write("--" + boundary + "\r\n");
         write("Content-Disposition: form-data; name=\"" + name + "\"; filename=\""
                 + sanitizeFilename(filename) + "\"\r\n");
         write("Content-Type: " + (contentType == null || contentType.isBlank()
                 ? "application/octet-stream" : contentType) + "\r\n\r\n");
-        body.write(bytes);
+        try {
+            body.write(bytes);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         write("\r\n");
     }
 
-    public byte[] finish() throws IOException {
+    public byte[] finish() {
         write("--" + boundary + "--\r\n");
         return body.toByteArray();
     }
 
-    private void write(String text) throws IOException {
-        body.write(text.getBytes(StandardCharsets.UTF_8));
+    private void write(String text) {
+        try {
+            body.write(text.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static String sanitizeFilename(String filename) {

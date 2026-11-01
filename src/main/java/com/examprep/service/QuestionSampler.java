@@ -132,7 +132,7 @@ public final class QuestionSampler {
         int difficultyIndex = 0;
         while (picked.size() < take) {
             boolean added = false;
-            for (int i = 0; i < order.length && picked.size() < take; i++) {
+            for (int i = 0; i < order.length; i++) {
                 String key = order[(difficultyIndex + i) % order.length];
                 List<Question> bucket = byDifficulty.get(key);
                 if (!bucket.isEmpty()) {
@@ -151,17 +151,6 @@ public final class QuestionSampler {
                 break;
             }
             picked.add(q.getId());
-        }
-        if (picked.size() < take) {
-            List<Question> remaining = new ArrayList<>(pool);
-            remaining.removeIf(q -> picked.contains(q.getId()));
-            Collections.shuffle(remaining, ThreadLocalRandom.current());
-            for (Question q : remaining) {
-                if (picked.size() >= take) {
-                    break;
-                }
-                picked.add(q.getId());
-            }
         }
         return picked;
     }

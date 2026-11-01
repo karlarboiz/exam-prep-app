@@ -213,22 +213,17 @@ public class N8nService {
         }
         String trimmedMessage = optionalText(message, MESSAGE_MAX);
 
-        try {
-            MultipartForm form = new MultipartForm();
-            form.addText("requestedBy", admin.getUsername());
-            form.addText("originalFilename", safeName);
-            if (trimmedMessage != null) {
-                form.addText("message", trimmedMessage);
-            }
-            form.addFile("file", safeName, inferContentType(safeName, contentType), bytes);
-            byte[] body = form.finish();
-            String summary = trimmedMessage == null ? safeName : safeName + " — " + trimmedMessage;
-            return send(admin.getId(), N8nRequestKind.ANALYZE, summary, analyzeUrl,
-                    form.contentType(), body, "n8n did not accept the file");
-        } catch (IOException e) {
-            recordFailure(admin.getId(), N8nRequestKind.ANALYZE, safeName, e.getMessage());
-            throw new IllegalStateException("n8n did not accept the file");
+        MultipartForm form = new MultipartForm();
+        form.addText("requestedBy", admin.getUsername());
+        form.addText("originalFilename", safeName);
+        if (trimmedMessage != null) {
+            form.addText("message", trimmedMessage);
         }
+        form.addFile("file", safeName, inferContentType(safeName, contentType), bytes);
+        byte[] body = form.finish();
+        String summary = trimmedMessage == null ? safeName : safeName + " — " + trimmedMessage;
+        return send(admin.getId(), N8nRequestKind.ANALYZE, summary, analyzeUrl,
+                form.contentType(), body, "n8n did not accept the file");
     }
 
     public static boolean isAllowedFilename(String fileName) {
