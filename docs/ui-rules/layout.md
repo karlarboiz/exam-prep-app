@@ -15,7 +15,7 @@ Source stylesheet: `src/main/webapp/css/app.css`
 | `.site-header` | Top bar with logo, destination nav, and account cluster |
 | `.header-inner` | Flex header row (wraps on small screens) |
 | `.logo` / `.logo-mark` | Wordmark plus small book icon |
-| `.nav-toggle` | Hamburger control; visible only ≤900px |
+| `.nav-toggle` | Hamburger control; visible only ≤999px |
 | `.header-nav` | Destination links + account cluster; stacked panel when `.is-open` on mobile |
 | `.nav-links` | Primary destinations (active item uses `.is-active`) |
 | `.account-menu` | Avatar chip + logout control on the right |
@@ -33,7 +33,7 @@ Grid and flex children use `min-width: 0` so wide tables, tokens, and question t
 
 | Max width | Behavior |
 |-----------|----------|
-| **900px** | Header switches to hamburger + collapsible `.header-nav` (`flex: 0 0 100%` so the panel wraps under the logo) |
+| **999px** | Header switches to hamburger + collapsible `.header-nav` (`flex: 0 0 100%` so the panel wraps under the logo). The admin link row needs about 980px, so the desktop nav starts at 1000px |
 | **768px** | `.grid-2` stacks; tighter padding; timers, score summary, and exam nav stack; `.data-table` rows become labeled stacked records |
 | **480px** | Compact stat values and full-width large buttons |
 

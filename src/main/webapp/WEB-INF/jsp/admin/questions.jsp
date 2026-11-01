@@ -30,21 +30,25 @@
 
 <div class="filter-bar">
     <form method="get" action="${ctx}/admin/questions">
-        <label><fmt:message key="questions.filterSubject"/></label>
-        <select name="subjectId" onchange="this.form.submit()">
+        <div class="filter-field">
+            <label for="filterSubjectId"><fmt:message key="questions.filterSubject"/></label>
+            <select id="filterSubjectId" name="subjectId" onchange="this.form.submit()">
             <option value=""><fmt:message key="questions.allSubjects"/></option>
             <c:forEach var="s" items="${subjects}">
                 <option value="${s.id}" ${filterSubjectId == s.id ? 'selected' : ''}><c:out value="${s.name}"/></option>
             </c:forEach>
-        </select>
-        <label><fmt:message key="questions.filterBatch"/></label>
-        <select name="batchLabel" onchange="this.form.submit()">
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="filterBatchLabel"><fmt:message key="questions.filterBatch"/></label>
+            <select id="filterBatchLabel" name="batchLabel" onchange="this.form.submit()">
             <option value=""><fmt:message key="questions.allBatches"/></option>
             <option value="__unlabeled__" ${filterBatchLabel == '__unlabeled__' ? 'selected' : ''}><fmt:message key="questions.unlabeled"/></option>
             <c:forEach var="label" items="${batchLabels}">
                 <option value="${label}" ${filterBatchLabel == label ? 'selected' : ''}>${label}</option>
             </c:forEach>
-        </select>
+            </select>
+        </div>
     </form>
 </div>
 
