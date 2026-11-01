@@ -137,7 +137,7 @@ public class MailService {
             }
             sb.append('\n');
         }
-        sb.append("Study plan: ").append(link.isBlank() ? "/user/study-plan" : link).append('\n');
+        sb.append("Study plan: ").append(link).append('\n');
         return sb.toString();
     }
 

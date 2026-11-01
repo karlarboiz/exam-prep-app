@@ -38,4 +38,16 @@ class WeekClockTest {
         assertFalse(WeekClock.isFinalWeek(start, expires, 2));
         assertEquals(expires, WeekClock.weekEnd(start, expires, 3));
     }
+
+    @Test
+    void missingOrInvertedBoundsStayOnWeekOne() {
+        assertEquals(1, WeekClock.totalWeeks(null, start));
+        assertEquals(1, WeekClock.totalWeeks(start, null));
+        assertEquals(1, WeekClock.totalWeeks(start, start));
+        assertEquals(1, WeekClock.totalWeeks(start, start.minusDays(1)));
+        assertEquals(1, WeekClock.weekNumber(start, start.plusDays(21), null));
+        assertEquals(1, WeekClock.weekNumber(null, start.plusDays(21), start));
+        assertEquals(1, WeekClock.weekNumber(start, start.plusDays(21), start.minusHours(1)));
+        assertTrue(WeekClock.isFinalWeek(null, null, 1));
+    }
 }

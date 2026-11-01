@@ -2,7 +2,9 @@ package com.examprep.service;
 
 import com.examprep.dao.N8nRequestDao;
 import com.examprep.dao.UserDao;
+import com.examprep.model.GoogleDriveAccount;
 import com.examprep.model.GoogleDriveFile;
+import com.examprep.model.GoogleDriveListing;
 import com.examprep.model.N8nRequest;
 import com.examprep.model.N8nRequestKind;
 import com.examprep.model.N8nRequestStatus;
@@ -193,6 +195,173 @@ class N8nServiceTest extends DatabaseTestSupport {
         assertTrue(service.recentRequests().isEmpty());
     }
 
+    @Test
+    void validatesQuestionFieldsAndClipsLongText() throws Exception {
+        User admin = createAdmin();
+        N8nService service = newService();
+        assertTrue(service.isAnalyzeConfigured());
+        assertFalse(service.isDriveConfigured());
+        assertFalse(service.isOAuthConfigured());
+        assertFalse(service.isDriveConnected(admin));
+        assertEquals(null, service.connectedGoogleEmail(admin));
+        service.disconnectDrive(admin);
+        assertTrue(service.listDrive(admin, "root").getFiles().isEmpty());
+        assertTrue(service.listDriveFiles().isEmpty());
+        assertFalse(new N8nService().isQuestionsConfigured());
+
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(null, "make", null, null, null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "  ", null, null, null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make", null, "0", null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make", null, "101", null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make", null, "nope", null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make", null, null, "extreme", null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.requestQuestions(admin, "make", null, null, null, "__unlabeled__"));
+
+        String longMessage = "q".repeat(400);
+        N8nRequest row = service.requestQuestions(admin, longMessage, "s".repeat(120),
+                " 12 ", " easy ", " batch ");
+        assertEquals(300, row.getSummary().length());
+        assertTrue(lastQuestionsBody.get().contains("\"count\":\"12\""));
+        assertTrue(lastQuestionsBody.get().contains("\"difficulty\":\"EASY\""));
+
+        N8nService noSecret = new N8nService(questionsUrl, "", null, httpClient(), new N8nRequestDao());
+        assertFalse(noSecret.isAnalyzeConfigured());
+        assertThrows(IllegalArgumentException.class, () ->
+                noSecret.analyzeFile(admin, "notes.pdf", "application/pdf", new byte[] {1}, null));
+        N8nRequest accepted = noSecret.requestQuestions(admin, "short", "  ", null, null, null);
+        assertEquals(N8nRequestStatus.ACCEPTED, accepted.getStatus());
+        assertEquals(null, lastSecret.get());
+    }
+
+    @Test
+    void analyzeCoversTypesSizeAndTransportFailures() throws Exception {
+        User admin = createAdmin();
+        N8nService service = newService();
+        assertFalse(N8nService.isAllowedFilename(null));
+        assertFalse(N8nService.isAllowedFilename("notes."));
+        assertFalse(N8nService.isAllowedFilename("notes"));
+        assertTrue(N8nService.isAllowedFilename("dir/notes.TXT"));
+        assertTrue(N8nService.isAllowedFilename("dir\\shot.JPEG"));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                service.analyzeFile(admin, null, "application/pdf", new byte[] {1}, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.analyzeFile(admin, "a.txt", null, null, null));
+        service.analyzeFile(admin, "a.txt", null, new byte[] {1}, null);
+        service.analyzeFile(admin, "a.txt", "  ", new byte[] {1}, null);
+        java.lang.reflect.Method infer = N8nService.class.getDeclaredMethod(
+                "inferContentType", String.class, String.class);
+        infer.setAccessible(true);
+        assertEquals("application/octet-stream", infer.invoke(null, "notes", null));
+        assertEquals("application/octet-stream", infer.invoke(null, "notes.bin", "application/octet-stream"));
+        assertFalse(new N8nService(questionsUrl, "", "", httpClient(), new N8nRequestDao()).isOAuthConfigured());
+        assertThrows(IllegalArgumentException.class, () -> service.requestQuestions(new User(), "make", null, null, null, null));
+        service.requestQuestions(admin, "make some", null, null, null, null, null);
+        service.requestQuestions(admin, "make some", null, null, null, null, new String[0]);
+        HttpClient lowStatus = GoogleDriveServiceTest.scripted(uri -> 150, uri -> "");
+        N8nService low = new N8nService(questionsUrl, analyzeUrl, "", lowStatus, new N8nRequestDao());
+        assertThrows(IllegalStateException.class, () ->
+                low.requestQuestions(admin, "make some", null, null, null, null));
+        java.lang.reflect.Method summary = N8nService.class.getDeclaredMethod(
+                "questionSummary", String.class, List.class);
+        summary.setAccessible(true);
+        assertEquals("prompt", summary.invoke(null, "prompt", null));
+        assertEquals("prompt", summary.invoke(null, "prompt", List.of()));
+        GoogleDriveFile blank = new GoogleDriveFile();
+        blank.setId("id-1");
+        blank.setName(" ");
+        GoogleDriveFile named = new GoogleDriveFile();
+        named.setId("id-2");
+        named.setName("notes.pdf");
+        assertTrue(String.valueOf(summary.invoke(null, "prompt", List.of(blank, named, named, named))).contains("+1"));
+        GoogleDriveFile unnamed = new GoogleDriveFile();
+        unnamed.setId("id-0");
+        assertTrue(String.valueOf(summary.invoke(null, "prompt", List.of(unnamed, named, named))).contains("id-0"));
+        java.lang.reflect.Method clip = N8nService.class.getDeclaredMethod("clip", String.class, int.class);
+        clip.setAccessible(true);
+        assertEquals("", clip.invoke(null, null, 10));
+        assertEquals("", clip.invoke(null, "  ", 10));
+        assertFalse(new N8nService(questionsUrl, "", "", httpClient(), new N8nRequestDao(),
+                new GoogleDriveService(), new GoogleOAuthService()).isOAuthConfigured());
+        service.analyzeFile(admin, "notes.pdf", "application/octet-stream", new byte[] {1}, null);
+        for (String name : List.of("a.txt", "a.xlsx", "a.png", "a.jpg", "a.jpeg", "a.docx")) {
+            N8nRequest row = service.analyzeFile(admin, name, "application/octet-stream",
+                    new byte[] {1}, null);
+            assertEquals(name, row.getSummary());
+        }
+        service.analyzeFile(admin, "folder/notes.pdf", "application/pdf", new byte[] {1, 2}, "x".repeat(20));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.analyzeFile(admin, "big.pdf", "application/pdf",
+                        new byte[N8nService.MAX_FILE_BYTES + 1], null));
+
+        analyzeStatus.set(500);
+        assertThrows(IllegalStateException.class, () ->
+                service.analyzeFile(admin, "notes.pdf", "application/pdf", new byte[] {1}, "go"));
+        analyzeStatus.set(200);
+
+        N8nService down = new N8nService("http://127.0.0.1:1/questions", analyzeUrl, "secret",
+                httpClient(), new N8nRequestDao());
+        assertThrows(IllegalStateException.class, () ->
+                down.requestQuestions(admin, "make", null, null, null, null));
+        assertEquals(N8nRequestStatus.FAILED, down.recentRequests().get(0).getStatus());
+
+        Thread.currentThread().interrupt();
+        try {
+            assertThrows(IllegalStateException.class, () ->
+                    service.requestQuestions(admin, "make", null, null, null, null));
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void driveListingAndSelectionUseOauthOrServiceAccount() throws Exception {
+        User admin = createAdmin();
+        StubDrive drive = new StubDrive();
+        StubOAuth oauth = new StubOAuth();
+        N8nService connected = new N8nService(questionsUrl, analyzeUrl, "n8n-secret", httpClient(),
+                new N8nRequestDao(), drive, oauth);
+        assertTrue(connected.isOAuthConfigured());
+        assertTrue(connected.isDriveConfigured());
+        assertTrue(connected.isDriveConnected(admin));
+        assertEquals("owner@example.com", connected.connectedGoogleEmail(admin));
+        assertEquals("nested", connected.listDrive(admin, "folder-1").getFolderId());
+        assertEquals(1, connected.listDriveFiles().size());
+
+        GoogleDriveFile blankName = new GoogleDriveFile("id-4", " ", "text/plain");
+        drive.files = List.of(
+                new GoogleDriveFile("id-1", "one.pdf", "application/pdf"),
+                new GoogleDriveFile("id-2", "two.pdf", "application/pdf"),
+                blankName,
+                new GoogleDriveFile("id-3", "three.pdf", "application/pdf"));
+        N8nRequest row = connected.requestQuestions(admin, "batch", null, null, null, null,
+                new String[] {"id-1", "id-2", "id-3", "id-4"}, "folder 1");
+        assertTrue(row.getSummary().contains("+1"));
+        assertTrue(row.getSummary().contains("id-4"));
+
+        oauth.connected = false;
+        assertFalse(connected.isDriveConnected(admin));
+        var listing = connected.listDrive(admin, "ignored");
+        assertEquals("folder-abc", listing.getFolderId());
+        assertFalse(listing.getFiles().isEmpty());
+        connected.requestQuestions(admin, "from service account", null, null, null, null,
+                new String[] {"id-1"});
+
+        N8nService unconfiguredDrive = new N8nService(questionsUrl, analyzeUrl, "secret", httpClient(),
+                new N8nRequestDao(), new GoogleDriveService("", "", httpClient(), "http://127.0.0.1"), oauth);
+        assertThrows(IllegalArgumentException.class, () ->
+                unconfiguredDrive.requestQuestions(admin, "make", null, null, null, null, new String[] {"x"}));
+        connected.disconnectDrive(admin);
+        assertFalse(oauth.connected);
+    }
+
     private N8nService newService() {
         return new N8nService(questionsUrl, analyzeUrl, "n8n-secret",
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
@@ -202,5 +371,71 @@ class N8nServiceTest extends DatabaseTestSupport {
     private User createAdmin() throws Exception {
         return new UserDao().create("boss", "boss@example.com", PasswordUtil.hash("password123"),
                 Role.ADMIN, null);
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+    }
+
+    private static final class StubDrive extends GoogleDriveService {
+        private List<GoogleDriveFile> files = List.of(new GoogleDriveFile("id-1", "one.pdf", "application/pdf"));
+
+        private StubDrive() {
+            super("folder-abc", "{}", HttpClient.newHttpClient(), "http://127.0.0.1");
+        }
+
+        @Override
+        public GoogleDriveListing listFolder(String accessToken, String folderId) {
+            GoogleDriveListing listing = new GoogleDriveListing();
+            listing.setFolderId("nested");
+            listing.getFiles().addAll(files);
+            return listing;
+        }
+
+        @Override
+        public List<GoogleDriveFile> listFolderFiles() {
+            return files;
+        }
+
+        @Override
+        public List<GoogleDriveFile> resolveSelected(String accessToken, String folderId, String[] requestedIds) {
+            return files;
+        }
+
+        @Override
+        public List<GoogleDriveFile> resolveSelected(String[] requestedIds) {
+            return files;
+        }
+    }
+
+    private static final class StubOAuth extends GoogleOAuthService {
+        private boolean connected = true;
+
+        private StubOAuth() {
+            super("client", "secret", "", "http://127.0.0.1", "http://127.0.0.1", "http://127.0.0.1",
+                    HttpClient.newHttpClient(), new com.examprep.dao.GoogleDriveAccountDao());
+        }
+
+        @Override
+        public boolean isConnected(User admin) {
+            return connected;
+        }
+
+        @Override
+        public String accessToken(User admin) {
+            return "token";
+        }
+
+        @Override
+        public java.util.Optional<GoogleDriveAccount> findAccount(User admin) {
+            GoogleDriveAccount account = new GoogleDriveAccount();
+            account.setGoogleEmail("owner@example.com");
+            return java.util.Optional.of(account);
+        }
+
+        @Override
+        public void disconnect(User admin) {
+            connected = false;
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.examprep.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -392,6 +393,107 @@ class AuthServiceTest extends DatabaseTestSupport {
         authService.deleteUser(null, student.getId());
 
         assertTrue(userDao.findById(student.getId()).isEmpty());
+    }
+
+    @Test
+    void updateLocaleDefaultsWhenMissing() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        authService.updateLocale(student.getId(), null);
+        assertEquals(com.examprep.model.AppLocale.DEFAULT, userDao.findById(student.getId()).orElseThrow().getLocale());
+        authService.updateLocale(student.getId(), com.examprep.model.AppLocale.EN);
+        assertEquals(com.examprep.model.AppLocale.EN, userDao.findById(student.getId()).orElseThrow().getLocale());
+    }
+
+    @Test
+    void updateProfileRejectsBlankAndOverlongFields() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "pat@example.com", " "));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), " ", "pat@example.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", " ", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "p".repeat(51), "pat@example.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "p".repeat(90) + "@example.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "pat@example", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "@example.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "pat@.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(student.getId(), "pat", "pat @example.com", PASSWORD));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.updateProfile(999_999L, "pat", "pat@example.com", PASSWORD));
+
+        authService.updateProfile(student.getId(), " pat ", " pat@example.com ", PASSWORD);
+        User updated = userDao.findById(student.getId()).orElseThrow();
+        assertEquals("pat", updated.getUsername());
+        assertEquals("pat@example.com", updated.getEmail());
+    }
+
+    @Test
+    void changePasswordAndResetRejectIncompleteInput() throws Exception {
+        User student = createStudent("pat", ExamLevel.PROFESSIONAL);
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), null, "newpass1", "newpass1"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), PASSWORD, null, "newpass1"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), PASSWORD, "newpass1", null));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), PASSWORD, "", "newpass1"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), PASSWORD, "newpass1", ""));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), "", "newpass1", "newpass1"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(student.getId(), PASSWORD, "short", "short"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.changePassword(999_999L, PASSWORD, "newpass1", "newpass1"));
+
+        authService.requestPasswordReset("  ", "http://localhost");
+        authService.requestPasswordReset("pat@example.com", null);
+        assertEquals(1, new com.examprep.dao.EmailOutboxDao().findByUserId(student.getId()).size());
+
+        assertTrue(authService.peekResetToken(" ").isEmpty());
+        assertTrue(authService.peekResetToken("missing-token").isEmpty());
+
+        authService.requestPasswordReset("pat@example.com", "http://localhost/");
+        String raw = rawResetToken(student.getId());
+        assertTrue(authService.peekResetToken(raw).isPresent());
+
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(" ", "newpass1", "newpass1"));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, null, "newpass1"));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, "newpass1", null));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, "newpass1", ""));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, " ", " "));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, "newpass1", "otherpass"));
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, "tiny", "tiny"));
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.resetPassword("missing-token", "newpass1", "newpass1"));
+
+        String expired = com.examprep.util.TokenHashUtil.generateRawToken();
+        new com.examprep.dao.PasswordResetTokenDao().insert(student.getId(),
+                com.examprep.util.TokenHashUtil.sha256(expired), LocalDateTime.now().minusMinutes(5));
+        assertTrue(authService.peekResetToken(expired).isEmpty());
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.resetPassword(expired, "newpass1", "newpass1"));
+    }
+
+    @Test
+    void cannotDeleteLastAdminOrUnknownUser() throws Exception {
+        User admin = createAdmin("boss");
+        assertThrows(IllegalArgumentException.class, () -> authService.deleteUser(null, admin.getId()));
+        assertThrows(IllegalArgumentException.class, () -> authService.deleteUser(admin.getId(), 999_999L));
+    }
+
+    private String rawResetToken(Long userId) throws Exception {
+        String body = new com.examprep.dao.EmailOutboxDao().findByUserId(userId).get(0).getBody();
+        int idx = body.indexOf("token=");
+        return body.substring(idx + 6).split("\\s")[0];
     }
 
     private User createAdmin(String username) throws Exception {

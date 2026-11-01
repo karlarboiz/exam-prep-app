@@ -109,7 +109,7 @@ public class WeeklyRegimenService {
 
         StudyPlan plan = buildStudyPlan(userId, current);
         dashboard.setStudyPlan(plan);
-        dashboard.setCanReview(plan.getMisses() != null && !plan.getMisses().isEmpty());
+        dashboard.setCanReview(!plan.getMisses().isEmpty());
 
         Optional<ExamAttempt> checkpointInProgress = attemptDao.findInProgressByRegimen(
                 userId, current.getId(), AttemptKind.CHECKPOINT);
@@ -646,7 +646,7 @@ public class WeeklyRegimenService {
                 }
             }
         }
-        return targets.size() > 5 ? targets.subList(0, 5) : targets;
+        return targets;
     }
 
     private List<WeeklySubjectScore> buildWeeklySubjectScores(Long regimenId, Long attemptId, List<Question> questions)
