@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -461,9 +462,17 @@ class AuthServiceTest extends DatabaseTestSupport {
         assertTrue(authService.peekResetToken(" ").isEmpty());
         assertTrue(authService.peekResetToken("missing-token").isEmpty());
 
+        String firstRaw = rawResetToken(student.getId());
+        assertTrue(authService.peekResetToken(firstRaw).isPresent());
+
+        // A second request invalidates the previous token; outbox "latest" must be the new mail
+        // even when created_at ties (ORDER BY id DESC).
         authService.requestPasswordReset("pat@example.com", "http://localhost/");
+        assertEquals(2, new com.examprep.dao.EmailOutboxDao().findByUserId(student.getId()).size());
+        assertTrue(authService.peekResetToken(firstRaw).isEmpty());
         String raw = rawResetToken(student.getId());
         assertTrue(authService.peekResetToken(raw).isPresent());
+        assertNotEquals(firstRaw, raw);
 
         assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(" ", "newpass1", "newpass1"));
         assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(raw, null, "newpass1"));
