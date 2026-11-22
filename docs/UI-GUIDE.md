@@ -128,7 +128,8 @@ Use existing pages as the visual reference before inventing new layouts.
 | Screen | Route | Page doc |
 |--------|-------|----------|
 | Dashboard | `/user/dashboard` | [dashboard](pages/user/dashboard.md) |
-| Take exam | `/user/exam` | [take-exam](pages/user/take-exam.md) |
+| Exam start options | `/user/exam?examId=` | [exam-start](pages/user/exam-start.md) |
+| Take exam | `/user/exam?attemptId=` | [take-exam](pages/user/take-exam.md) |
 | Result | `/user/result` | [result](pages/user/result.md) |
 | History | `/user/history` | [history](pages/user/history.md) |
 | Subscription expired | `/user/subscription-expired` | [subscription-expired](pages/user/subscription-expired.md) |

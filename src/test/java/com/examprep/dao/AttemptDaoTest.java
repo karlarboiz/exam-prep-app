@@ -1,5 +1,6 @@
 package com.examprep.dao;
 
+import com.examprep.model.AnswerRevealMode;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.ExamAttempt;
 import com.examprep.model.ExamLevel;
@@ -9,6 +10,7 @@ import com.examprep.support.DatabaseTestSupport;
 import com.examprep.util.PasswordUtil;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,7 +34,21 @@ class AttemptDaoTest extends DatabaseTestSupport {
 
         assertFalse(loadedPractice.isDiagnostic());
         assertTrue(loadedDiagnostic.isDiagnostic());
+        assertEquals(AnswerRevealMode.AFTER_EXAM, loadedPractice.getAnswerRevealMode());
         assertTrue(attemptDao.findByUserId(user.getId()).stream()
                 .anyMatch(a -> a.isDiagnostic() && a.getStatus() == AttemptStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void createPersistsAnswerRevealMode() throws Exception {
+        User user = userDao.create(
+                "revealuser", "reveal@example.com", PasswordUtil.hash("password123"),
+                Role.USER, ExamLevel.PROFESSIONAL);
+
+        ExamAttempt afterEach = attemptDao.create(user.getId(), 1L, AnswerRevealMode.AFTER_EACH);
+        ExamAttempt loaded = attemptDao.findById(afterEach.getId()).orElseThrow();
+
+        assertEquals(AnswerRevealMode.AFTER_EACH, loaded.getAnswerRevealMode());
+        assertTrue(loaded.isRevealAfterEach());
     }
 }
