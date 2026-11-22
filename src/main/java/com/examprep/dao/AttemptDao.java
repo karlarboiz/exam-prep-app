@@ -1,6 +1,7 @@
 package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
+import com.examprep.model.AnswerRevealMode;
 import com.examprep.model.AttemptAnswer;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.ExamAttempt;
@@ -23,7 +24,7 @@ public class AttemptDao {
 
     private static final String ATTEMPT_SELECT = """
             SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
-                   a.leave_count, a.suspect_leave_count, a.integrity_tracking,
+                   a.leave_count, a.suspect_leave_count, a.integrity_tracking, a.answer_reveal_mode,
                    e.title AS exam_title, e.duration_minutes, e.is_diagnostic, s.name AS subject_name,
                    u.username
             FROM exam_attempts a
@@ -82,12 +83,21 @@ public class AttemptDao {
     }
 
     public ExamAttempt create(Long userId, Long examId) throws SQLException {
-        String sql = "INSERT INTO exam_attempts (user_id, exam_id, started_at, status) VALUES (?, ?, ?, 'IN_PROGRESS')";
+        return create(userId, examId, AnswerRevealMode.AFTER_EXAM);
+    }
+
+    public ExamAttempt create(Long userId, Long examId, AnswerRevealMode answerRevealMode) throws SQLException {
+        AnswerRevealMode mode = answerRevealMode != null ? answerRevealMode : AnswerRevealMode.AFTER_EXAM;
+        String sql = """
+                INSERT INTO exam_attempts (user_id, exam_id, started_at, status, answer_reveal_mode)
+                VALUES (?, ?, ?, 'IN_PROGRESS', ?)
+                """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, userId);
             ps.setLong(2, examId);
             ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setString(4, mode.name());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -254,6 +264,7 @@ public class AttemptDao {
         attempt.setLeaveCount(rs.getInt("leave_count"));
         attempt.setSuspectLeaveCount(rs.getInt("suspect_leave_count"));
         attempt.setIntegrityTracking(rs.getBoolean("integrity_tracking"));
+        attempt.setAnswerRevealMode(AnswerRevealMode.fromString(rs.getString("answer_reveal_mode")));
         attempt.setUsername(rs.getString("username"));
         return attempt;
     }

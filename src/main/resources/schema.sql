@@ -88,6 +88,8 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     leave_count INT NOT NULL DEFAULT 0,
     suspect_leave_count INT NOT NULL DEFAULT 0,
     integrity_tracking BOOLEAN NOT NULL DEFAULT TRUE,
+    answer_reveal_mode VARCHAR(20) NOT NULL DEFAULT 'AFTER_EXAM'
+        CHECK (answer_reveal_mode IN ('AFTER_EACH', 'AFTER_EXAM')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
 );
@@ -95,6 +97,7 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
 ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS leave_count INT NOT NULL DEFAULT 0;
 ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS suspect_leave_count INT NOT NULL DEFAULT 0;
 ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS integrity_tracking BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS answer_reveal_mode VARCHAR(20) NOT NULL DEFAULT 'AFTER_EXAM';
 
 -- Attempt Answers
 CREATE TABLE IF NOT EXISTS attempt_answers (

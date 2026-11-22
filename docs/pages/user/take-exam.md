@@ -4,9 +4,10 @@
 **Route:** `/user/exam`  
 **Feature:** [take-exam flow](../../features/take-exam/flow.md)
 
-
-Exam header, countdown `.timer-bar`, question cards with radio options, submit action.
+Exam header (including the chosen answer-reveal mode), countdown `.timer-bar`, question cards with radio options, submit action.
 
 One question at a time with progress (`Question X of Y`), dual timers (per-question share and overall exam), Prev/Next navigation, and submit on the last question. Per-question remaining time is preserved when navigating. Selecting an option saves via AJAX.
+
+When the attempt is `AFTER_EACH`, answering shows an `.answer-feedback` panel (reuse `.review-card.correct` / `.incorrect`), highlights the correct option, and locks radios for that item. `AFTER_EXAM` keeps the previous silent-save behavior until the result page.
 
 A disclosure line states that leaving the page is recorded. Tab/window leave and header navigation are posted as `action=behavior`. Returning shows a stay-on-this-page overlay with the attempt leave count. Timers do not pause while away.
