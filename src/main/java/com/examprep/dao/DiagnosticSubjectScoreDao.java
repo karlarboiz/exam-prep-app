@@ -73,4 +73,40 @@ public class DiagnosticSubjectScoreDao {
         }
         return scores;
     }
+
+    public List<DiagnosticSubjectScore> findLatestByUserId(Long userId) throws SQLException {
+        String sql = """
+                SELECT d.attempt_id, d.subject_id, d.score_percent, d.band, s.name AS subject_name
+                FROM diagnostic_subject_scores d
+                JOIN subjects s ON s.id = d.subject_id
+                JOIN exam_attempts a ON a.id = d.attempt_id
+                WHERE a.user_id = ? AND a.status = 'COMPLETED'
+                AND a.id = (
+                    SELECT a2.id FROM exam_attempts a2
+                    JOIN exams e ON e.id = a2.exam_id
+                    WHERE a2.user_id = ? AND e.is_diagnostic = TRUE AND a2.status = 'COMPLETED'
+                    ORDER BY a2.completed_at DESC
+                    LIMIT 1
+                )
+                ORDER BY s.name
+                """;
+        List<DiagnosticSubjectScore> scores = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setLong(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    DiagnosticSubjectScore score = new DiagnosticSubjectScore();
+                    score.setAttemptId(rs.getLong("attempt_id"));
+                    score.setSubjectId(rs.getLong("subject_id"));
+                    score.setSubjectName(rs.getString("subject_name"));
+                    score.setScorePercent(rs.getBigDecimal("score_percent"));
+                    score.setBand(SubjectBand.fromString(rs.getString("band")));
+                    scores.add(score);
+                }
+            }
+        }
+        return scores;
+    }
 }

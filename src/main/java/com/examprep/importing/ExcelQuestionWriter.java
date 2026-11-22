@@ -16,7 +16,7 @@ public final class ExcelQuestionWriter {
     public static final String[] COLUMNS = {
             "subject", "prompt", "option_a", "option_b", "option_c", "option_d",
             "correct_option", "difficulty", "explanation",
-            "is_professional", "is_sub_professional"
+            "is_professional", "is_sub_professional", "batch_label"
     };
 
     private ExcelQuestionWriter() {
@@ -35,7 +35,8 @@ public final class ExcelQuestionWriter {
                     "EASY",
                     "2 + 2 equals 4.",
                     "true",
-                    "true"
+                    "true",
+                    ""
             };
             for (int i = 0; i < values.length; i++) {
                 example.createCell(i).setCellValue(values[i]);
@@ -70,7 +71,8 @@ public final class ExcelQuestionWriter {
                         nullToEmpty(question.getDifficulty()),
                         nullToEmpty(question.getExplanation()),
                         professional ? "true" : "false",
-                        subProfessional ? "true" : "false"
+                        subProfessional ? "true" : "false",
+                        nullToEmpty(question.getBatchLabel())
                 };
                 for (int i = 0; i < values.length; i++) {
                     row.createCell(i).setCellValue(values[i]);

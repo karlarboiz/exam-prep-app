@@ -10,4 +10,5 @@ data/
 .env*
 *.key
 *.pem
+*service-account*.json
 .DS_Store

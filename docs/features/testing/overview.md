@@ -18,8 +18,10 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Area | Test class |
 |------|------------|
 | Access grant create / redeem / revoke / active access | `AccessGrantServiceTest` |
+| Auth login / register / JWT / admin user guards | `AuthServiceTest` |
 | Admin user role / exam level / delete guards | `AuthServiceTest` |
 | Logged-in password change | `AuthServiceTest` |
+| Profile username / email edit | `AuthServiceTest` |
 | Seed subject visible on both exam levels | `SubjectDaoTest` |
 | Attempt `isDiagnostic` joined from exam | `AttemptDaoTest` |
 | Suspect leave flag rules | `BehaviorIntegrityTest` |
@@ -27,3 +29,9 @@ CI (`.github/workflows/ci.yml`) runs `mvn -B package`, which includes tests.
 | Import creates leveled subjects | `QuestionImportServiceTest` |
 | Import rejects both-false level flags | `QuestionImportServiceTest` |
 | Import upsert / template / export round-trip | `QuestionImportServiceTest` |
+| Question batch delete | `QuestionDaoTest`, `AdminServiceTest` |
+| Week clock / quotas / official lock / missed week / follow-up mail | `WeekClockTest`, `QuestionSamplerTest`, `WeeklyRegimenServiceTest` |
+| Tagalog / English message bundles | `MessagesTest`, `LocaleSupportTest` |
+| n8n question / analyze send + audit | `N8nServiceTest` |
+| Google Drive folder list + selected ids | `GoogleDriveServiceTest`, `N8nServiceTest` |
+| Google Drive OAuth connect / disconnect | `GoogleOAuthServiceTest` |

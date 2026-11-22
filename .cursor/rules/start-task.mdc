@@ -1,0 +1,16 @@
+---
+description: Read pre-implementation docs before changing product code
+alwaysApply: true
+---
+
+# Start-task order
+
+Before writing or changing product code, follow [docs/PRE-IMPLEMENTATION.md](docs/PRE-IMPLEMENTATION.md):
+
+1. Confirm the feature-tracker row (Done / Pending) in `docs/feature-tracker/`.
+2. Implement in order: schema + model → DAO → service → filter (only if needed) → servlet → JSP.
+3. Do not start a servlet before its model/DAO/service exists.
+4. Match existing patterns in `com.examprep` (servlet / service / dao / filter / model).
+5. After the change: update feature docs if behavior changed, then sync the tracker.
+
+When in doubt, trust the feature tracker over memory. Cargo/`target/` is not product source.

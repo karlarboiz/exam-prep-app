@@ -45,7 +45,7 @@ Typography today: system UI stack on `body`. Keep sizes consistent with existing
 
 ```
 body (column flex, min-height 100vh)
-├── .site-header > .container > .header-inner  (logo + .main-nav)
+├── .site-header > .container > .header-inner  (logo + .header-nav)
 ├── .main-content > .container                 (page body, flex: 1)
 └── .site-footer > .container                  (muted centered)
 ```
@@ -82,6 +82,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 - Helpers: `.hint` · Login/register switch: `.auth-link`.
 - Register / admin mint token display: `.token-readonly` (monospace).
 - Admin filters: `.filter-bar` · Multi-select questions: `.checkbox-list` / `.checkbox-item`.
+- Question bank batch delete: `.col-check` + `.bank-toolbar`.
 - Practice exam order: `.exam-question-row` with Up/Down.
 - Users admin row editors: `.table-inline-form`.
 
@@ -98,7 +99,7 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 | Timer | `.timer-bar`, `.timer-value`, `.timer-warning`, `.timer-expired` | Take exam |
 | Score | `.result-summary`, `.score-circle`, `.score-value` | Result |
 | Review row | `.review-card` + `.correct` / `.incorrect` | Result |
-| Table | `.data-table` | Admin lists, history |
+| Table | `.data-table` | Admin lists, history (stacks into labeled rows at ≤768px) |
 | Empty | `.empty-state` | No exams / no token |
 | Expired sub | `.expired-panel` inside `.auth-card` | Subscription expired |
 | Errors | `.error-page` | 403 / 404 |
@@ -106,7 +107,9 @@ Group related actions with `.actions`. Table row deletes: `.inline-form`.
 ### Badges
 
 `.badge-success`, `.badge-muted`, `.badge-admin`, `.badge-user`,  
-`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`
+`.badge-IN_PROGRESS`, `.badge-COMPLETED`, `.badge-EXPIRED`, `.badge-suspect`,  
+`.badge-WEAK` / `.badge-DEVELOPING` / `.badge-STRONG`,  
+`.badge-WEEKLY` / `.badge-CHECKPOINT` / `.badge-OPEN` / `.badge-MISSED`
 
 ---
 
@@ -120,6 +123,8 @@ Use existing pages as the visual reference before inventing new layouts.
 |--------|-------|----------|
 | Login | `/login` | [login](pages/auth/login.md) |
 | Register | `/register` | [register](pages/auth/register.md) |
+| Forgot password | `/forgot-password` | [forgot-password](pages/auth/forgot-password.md) |
+| Reset password | `/reset-password` | [reset-password](pages/auth/reset-password.md) |
 | Account | `/account` | [account](pages/auth/account.md) |
 | 403 / 404 | error pages | [403](pages/error/403.md), [404](pages/error/404.md) |
 
@@ -130,6 +135,10 @@ Use existing pages as the visual reference before inventing new layouts.
 | Dashboard | `/user/dashboard` | [dashboard](pages/user/dashboard.md) |
 | Exam start options | `/user/exam?examId=` | [exam-start](pages/user/exam-start.md) |
 | Take exam | `/user/exam?attemptId=` | [take-exam](pages/user/take-exam.md) |
+| Weekly exam | `/user/weekly` | [take-exam](pages/user/take-exam.md) |
+| Checkpoint | `/user/checkpoint` | [take-exam](pages/user/take-exam.md) |
+| Study plan | `/user/study-plan` | [study-plan](pages/user/study-plan.md) |
+| Review | `/user/review` | [review](pages/user/review.md) |
 | Result | `/user/result` | [result](pages/user/result.md) |
 | History | `/user/history` | [history](pages/user/history.md) |
 | Subscription expired | `/user/subscription-expired` | [subscription-expired](pages/user/subscription-expired.md) |
@@ -145,6 +154,7 @@ Use existing pages as the visual reference before inventing new layouts.
 | Users | `/admin/users` | [users](pages/admin/users.md) |
 | Access grants | `/admin/access-grants` | [access-grants](pages/admin/access-grants.md) |
 | Integrity | `/admin/integrity` | [integrity](pages/admin/integrity.md) |
+| n8n | `/admin/n8n` | [n8n](pages/admin/n8n.md) |
 
 ### Layout partials
 
@@ -161,8 +171,8 @@ Use existing pages as the visual reference before inventing new layouts.
 - [ ] Header + footer included (unless auth-card-only / error-page pattern already used)
 - [ ] Primary action is a `.btn-primary`
 - [ ] Error and empty states use `.alert-*` / `.empty-state`
-- [ ] Tables use `.data-table`; exam lists use `.exam-grid`
-- [ ] ≤768px: no unbroken two-column layout (use `.grid-2` or stack)
+- [ ] Tables use `.data-table` with `data-label` on each body cell (same text as the column header); exam lists use `.exam-grid`
+- [ ] ≤768px: no unbroken two-column layout (use `.grid-2` or stack); tables become labeled stacked rows, not sideways-scroll-only
 - [ ] Page note updated under `docs/pages/…` if markup contract changed
 
 ---

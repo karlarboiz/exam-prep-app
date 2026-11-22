@@ -151,6 +151,68 @@ class BehaviorTrackingServiceTest extends DatabaseTestSupport {
                 BehaviorEventType.LEAVE, 1_000).isEmpty());
     }
 
+    @Test
+    void tracksReturnsOnlyAfterALeaveAndRejectsUnknownQuestions() throws Exception {
+        User user = student("edges");
+        ExamAttempt attempt = attemptDao.create(user.getId(), 1L);
+        tracking.enableTracking(attempt.getId());
+        assertTrue(tracking.record(user.getId(), attempt.getId(), 2L,
+                BehaviorEventType.RETURN, null).isEmpty());
+        tracking.record(user.getId(), attempt.getId(), 2L, BehaviorEventType.LEAVE, -5);
+        assertEquals(0, tracking.getTimeline(attempt.getId()).get(0).getRemainingQuestionMs());
+        tracking.record(user.getId(), attempt.getId(), 2L, BehaviorEventType.RETURN, 1);
+        assertTrue(tracking.record(user.getId(), attempt.getId(), 2L,
+                BehaviorEventType.RETURN, 1).isEmpty());
+        assertFalse(tracking.acknowledgeReturnIfAway(user.getId(), attempt.getId()));
+
+        tracking.record(user.getId(), attempt.getId(), 2L, BehaviorEventType.LEAVE, null);
+        assertTrue(tracking.acknowledgeReturnIfAway(user.getId(), attempt.getId()));
+        tracking.disableTracking(attempt.getId());
+        assertTrue(tracking.record(user.getId(), attempt.getId(), 2L,
+                BehaviorEventType.LEAVE, 1).isEmpty());
+
+        ExamAttempt fresh = attemptDao.create(user.getId(), 1L);
+        assertThrows(IllegalArgumentException.class, () ->
+                tracking.record(user.getId(), fresh.getId(), 99L, BehaviorEventType.LEAVE, 1));
+        assertThrows(IllegalArgumentException.class, () -> tracking.record(user.getId(), 999_999L, 1L,
+                BehaviorEventType.LEAVE, 1));
+        assertThrows(IllegalArgumentException.class, () -> tracking.getAttempt(999_999L));
+        assertFalse(tracking.acknowledgeReturnIfAway(user.getId(), fresh.getId()));
+    }
+
+    @Test
+    void diagnosticQuestionMustBelongToTheAttempt() throws Exception {
+        User user = student("diagq");
+        ExamAttempt attempt = diagnosticService.startDiagnostic(user.getId());
+        diagnosticService.beginDiagnostic(attempt.getId());
+        Long questionId = diagnosticService.getAttemptQuestions(attempt.getId()).get(0).getId();
+        assertTrue(tracking.record(user.getId(), attempt.getId(), questionId,
+                BehaviorEventType.LEAVE, 1_000).isPresent());
+        assertThrows(IllegalArgumentException.class, () ->
+                tracking.record(user.getId(), attempt.getId(), 99L, BehaviorEventType.LEAVE, 1));
+
+        BehaviorTrackingService missing = new BehaviorTrackingService();
+        java.lang.reflect.Field questions = BehaviorTrackingService.class.getDeclaredField("questionDao");
+        questions.setAccessible(true);
+        questions.set(missing, new QuestionDao() {
+            @Override
+            public java.util.Optional<Question> findById(Long id) {
+                return java.util.Optional.empty();
+            }
+
+            @Override
+            public List<Question> findByAttemptId(Long attemptId) {
+                Question question = new Question();
+                question.setId(questionId);
+                question.setDifficulty("EASY");
+                return List.of(question);
+            }
+        });
+        IllegalArgumentException gone = assertThrows(IllegalArgumentException.class, () ->
+                missing.record(user.getId(), attempt.getId(), questionId, BehaviorEventType.RETURN, 1));
+        assertTrue(gone.getMessage().contains("Question not found"));
+    }
+
     private User student(String username) throws Exception {
         return userDao.create(username, username + "@example.com", PasswordUtil.hash("password123"),
                 Role.USER, ExamLevel.PROFESSIONAL);

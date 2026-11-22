@@ -1,5 +1,7 @@
 package com.examprep.model;
 
+import java.util.List;
+
 public class Question {
 
     private Long id;
@@ -13,7 +15,9 @@ public class Question {
     private String difficulty;
     private String explanation;
     private String imageUrl;
+    private String batchLabel;
     private String subjectName;
+    private List<QuestionOption> displayOptions;
 
     public Question() {
     }
@@ -106,6 +110,14 @@ public class Question {
         this.imageUrl = imageUrl;
     }
 
+    public String getBatchLabel() {
+        return batchLabel;
+    }
+
+    public void setBatchLabel(String batchLabel) {
+        this.batchLabel = batchLabel;
+    }
+
     public String getSubjectName() {
         return subjectName;
     }
@@ -125,5 +137,22 @@ public class Question {
             case "D" -> optionD;
             default -> "";
         };
+    }
+
+    public List<QuestionOption> getOptions() {
+        return List.of(
+                new QuestionOption("A", optionA),
+                new QuestionOption("B", optionB),
+                new QuestionOption("C", optionC),
+                new QuestionOption("D", optionD)
+        );
+    }
+
+    public List<QuestionOption> getDisplayOptions() {
+        return displayOptions != null ? displayOptions : getOptions();
+    }
+
+    public void setDisplayOptions(List<QuestionOption> displayOptions) {
+        this.displayOptions = displayOptions;
     }
 }

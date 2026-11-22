@@ -23,6 +23,7 @@
 - `.actions` for horizontal button groups.
 - `.filter-bar` for subject/filter selects above tables.
 - `.checkbox-list` + `.checkbox-item` for multi-select question lists when editing exams.
+- `.col-check` + `.bank-toolbar` for question-bank select-all / delete-selected.
 - `.exam-question-row` + `.exam-q-order-actions` for Up/Down order on practice exams.
 
 ## Registration token

@@ -3,6 +3,7 @@ package com.examprep.filter;
 import com.examprep.config.AppConfig;
 import com.examprep.util.RateLimiter;
 import com.examprep.util.SimpleJson;
+import com.examprep.util.WebUtil;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -72,7 +73,7 @@ public class ApiRateLimitFilter implements Filter {
             return;
         }
 
-        String clientIp = getClientIp(req);
+        String clientIp = WebUtil.getClientIp(req);
         if (!rateLimiter.tryAcquire(clientIp)) {
             int remaining = rateLimiter.getRemainingRequests(clientIp);
             resp.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
@@ -95,18 +96,5 @@ public class ApiRateLimitFilter implements Filter {
             }
         }
         return false;
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isBlank()) {
-            int commaIndex = ip.indexOf(',');
-            if (commaIndex > 0) {
-                ip = ip.substring(0, commaIndex).trim();
-            }
-        } else {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
     }
 }

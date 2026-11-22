@@ -18,7 +18,7 @@ public class ExamDao {
 
     private static final String SELECT_COLUMNS = """
             SELECT e.id, e.subject_id, e.title, e.duration_minutes, e.is_active,
-                   e.is_diagnostic, e.questions_per_subject,
+                   e.is_diagnostic, e.is_weekly, e.questions_per_subject,
                    s.name AS subject_name,
                    (SELECT COUNT(*) FROM exam_questions eq WHERE eq.exam_id = e.id) AS question_count
             FROM exams e
@@ -31,7 +31,7 @@ public class ExamDao {
 
     public List<Exam> findActive() throws SQLException {
         String sql = SELECT_COLUMNS + """
-                WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE
+                WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE AND e.is_weekly = FALSE
                 ORDER BY e.title
                 """;
         return queryList(sql);
@@ -45,7 +45,7 @@ public class ExamDao {
                 ? "s.is_professional"
                 : "s.is_sub_professional";
         String sql = SELECT_COLUMNS + """
-                WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE
+                WHERE e.is_active = TRUE AND e.is_diagnostic = FALSE AND e.is_weekly = FALSE
                   AND %s = TRUE
                 ORDER BY e.title
                 """.formatted(levelColumn);
@@ -55,6 +55,21 @@ public class ExamDao {
     public Optional<Exam> findActiveDiagnostic() throws SQLException {
         String sql = SELECT_COLUMNS + """
                 WHERE e.is_active = TRUE AND e.is_diagnostic = TRUE
+                ORDER BY e.id
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Exam> findActiveWeekly() throws SQLException {
+        String sql = SELECT_COLUMNS + """
+                WHERE e.is_active = TRUE AND e.is_weekly = TRUE
                 ORDER BY e.id
                 """;
         try (Connection conn = DatabaseManager.getConnection();
@@ -83,8 +98,8 @@ public class ExamDao {
 
     public Exam create(Exam exam) throws SQLException {
         String sql = """
-                INSERT INTO exams (subject_id, title, duration_minutes, is_active, is_diagnostic, questions_per_subject)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO exams (subject_id, title, duration_minutes, is_active, is_diagnostic, questions_per_subject, is_weekly)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -102,19 +117,28 @@ public class ExamDao {
     public void update(Exam exam) throws SQLException {
         String sql = """
                 UPDATE exams SET subject_id = ?, title = ?, duration_minutes = ?, is_active = ?,
-                                 is_diagnostic = ?, questions_per_subject = ?
+                                 is_diagnostic = ?, questions_per_subject = ?, is_weekly = ?
                 WHERE id = ?
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindExam(ps, exam);
-            ps.setLong(7, exam.getId());
+            ps.setLong(8, exam.getId());
             ps.executeUpdate();
         }
     }
 
     public void deactivateOtherDiagnostics(Long keepExamId) throws SQLException {
         String sql = "UPDATE exams SET is_active = FALSE WHERE is_diagnostic = TRUE AND id <> ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, keepExamId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void deactivateOtherWeeklies(Long keepExamId) throws SQLException {
+        String sql = "UPDATE exams SET is_active = FALSE WHERE is_weekly = TRUE AND id <> ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, keepExamId);
@@ -186,6 +210,7 @@ public class ExamDao {
         } else {
             ps.setNull(6, Types.INTEGER);
         }
+        ps.setBoolean(7, exam.isWeekly());
     }
 
     private List<Exam> queryList(String sql) throws SQLException {
@@ -208,6 +233,7 @@ public class ExamDao {
         exam.setDurationMinutes(rs.getInt("duration_minutes"));
         exam.setActive(rs.getBoolean("is_active"));
         exam.setDiagnostic(rs.getBoolean("is_diagnostic"));
+        exam.setWeekly(rs.getBoolean("is_weekly"));
         int qps = rs.getInt("questions_per_subject");
         if (!rs.wasNull()) {
             exam.setQuestionsPerSubject(qps);

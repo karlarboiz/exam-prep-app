@@ -7,8 +7,9 @@
 
 ## Behavior
 
-1. **GET** — Requires `token` query param. Validates unused grant; shows setup form or error.
-2. **POST** — Creates `USER`, redeems/locks grant in one transaction, issues session JWT cookie.
-3. Redirect → `/user/diagnostic` (hard-gated until placement completes; see [diagnostic](../diagnostic/overview.md)).
+1. **GET** — If `?token=` is present, the token is moved into the session and the browser is redirected to `/register` (no token in the address bar). Otherwise the page accepts a pasted token (`action=claim`).
+2. **POST** (claim) — Stores the pasted token in session and reloads the setup form.
+3. **POST** (register) — Creates `USER`, redeems/locks grant in one transaction, issues session JWT cookie.
+4. Redirect → `/user/diagnostic` (hard-gated until placement completes; see [diagnostic](../diagnostic/overview.md)).
 
-Open registration without a purchase token is **not** allowed. See [access-grants redeem](../access-grants/redeem.md).
+Open registration without a purchase token is **not** allowed. See [access-grants redeem](../access-grants/redeem.md). Prefer sharing `/register` plus the raw token — do not put the token in a URL.

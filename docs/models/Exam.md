@@ -10,8 +10,9 @@
 | durationMinutes | int | Timer length |
 | active | boolean | Visible/usable if true |
 | diagnostic | boolean | Placement diagnostic when true |
-| questionsPerSubject | Integer | Sample size per subject (diagnostic only) |
+| weekly | boolean | Weekly regimen template when true (sampled per user) |
+| questionsPerSubject | Integer | Sample size per subject (diagnostic / weekly base quota) |
 | subjectName | String | Join helper (display) |
 | questionCount | int | Join helper for practice (`exam_questions` count) |
 
-Practice questions are linked via `exam_questions`. Diagnostic runtime questions are sampled into `attempt_questions` — see [diagnostic](../features/diagnostic/overview.md).
+Practice questions are linked via `exam_questions`. Diagnostic and weekly/checkpoint runtime questions are sampled into `attempt_questions`. Weekly templates are excluded from the practice catalog (`ExamDao.findActive`). See [diagnostic](../features/diagnostic/overview.md) and [weekly regimen](../features/weekly-regimen/overview.md).

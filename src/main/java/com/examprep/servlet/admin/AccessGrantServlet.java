@@ -44,7 +44,7 @@ public class AccessGrantServlet extends HttpServlet {
                             accessGrantService.createToken(null, durationDays, planCode, sourceRef, examLevel);
                     req.setAttribute("createdRawToken", created.rawToken());
                     req.setAttribute("createdGrant", created.grant());
-                    req.setAttribute("registerPath", "/register?token=" + created.rawToken());
+                    req.setAttribute("registerPath", "/register");
                     doGet(req, resp);
                 }
                 case "revoke" -> {

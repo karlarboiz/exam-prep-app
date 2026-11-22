@@ -41,7 +41,7 @@ Access is a **one-time purchase** ending at `expiresAt`; there is no renewal for
 }
 ```
 
-Show the buyer a link such as `/register?token=<token>`. The raw token is **not** stored in the DB. On registration, `users.exam_level` is copied from this grant (not chosen by the user). Admins can mint the same kind of token from `/admin/access-grants` without this API.
+Show the buyer the raw token and the `/register` page (they paste the token). Do not put the token in a query string. Old `?token=` links still work: the servlet stores the token in session and redirects to `/register`. The raw token is **not** stored in the DB. On registration, `users.exam_level` is copied from this grant (not chosen by the user). Admins can mint the same kind of token from `/admin/access-grants` without this API.
 
 ## Errors
 

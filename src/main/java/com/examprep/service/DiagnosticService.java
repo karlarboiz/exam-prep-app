@@ -7,6 +7,7 @@ import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
 import com.examprep.dao.UserDao;
 import com.examprep.model.AttemptAnswer;
+import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.DiagnosticResult;
 import com.examprep.model.DiagnosticSubjectScore;
@@ -67,7 +68,7 @@ public class DiagnosticService {
                 .map(User::getExamLevel)
                 .orElse(null);
 
-        ExamAttempt attempt = attemptDao.create(userId, exam.getId());
+        ExamAttempt attempt = attemptDao.create(userId, exam.getId(), AttemptKind.DIAGNOSTIC, null, null);
         behaviorTrackingService.disableTracking(attempt.getId());
         List<Long> sampledIds = sampleQuestionIds(exam, examLevel);
         if (sampledIds.isEmpty()) {
@@ -267,7 +268,7 @@ public class DiagnosticService {
         int difficultyIndex = 0;
         while (picked.size() < take) {
             boolean added = false;
-            for (int i = 0; i < order.length && picked.size() < take; i++) {
+            for (int i = 0; i < order.length; i++) {
                 String key = order[(difficultyIndex + i) % order.length];
                 List<Question> bucket = byDifficulty.get(key);
                 if (!bucket.isEmpty()) {
@@ -286,17 +287,6 @@ public class DiagnosticService {
                 break;
             }
             picked.add(q.getId());
-        }
-        if (picked.size() < take) {
-            List<Question> remaining = new ArrayList<>(pool);
-            remaining.removeIf(q -> picked.contains(q.getId()));
-            Collections.shuffle(remaining, ThreadLocalRandom.current());
-            for (Question q : remaining) {
-                if (picked.size() >= take) {
-                    break;
-                }
-                picked.add(q.getId());
-            }
         }
         return picked;
     }

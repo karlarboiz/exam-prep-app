@@ -16,8 +16,9 @@ public final class QuestionImportJob {
     }
 
     public static void main(String[] args) {
-        if (args.length != 1 || args[0].isBlank()) {
-            System.err.println("Usage: QuestionImportJob <path-to-questions.xlsx>");
+        if (args.length < 1 || args.length > 2 || args[0].isBlank()
+                || (args.length == 2 && args[1].isBlank())) {
+            System.err.println("Usage: QuestionImportJob <path-to-questions.xlsx> [batch-label]");
             System.exit(2);
             return;
         }
@@ -34,11 +35,21 @@ public final class QuestionImportJob {
             return;
         }
 
+        String batchLabel = args.length == 2
+                ? QuestionImportService.normalizeBatchLabel(args[1])
+                : QuestionImportService.suggestedBatchLabel();
+        if (batchLabel == null || !QuestionImportService.isValidBatchLabel(batchLabel)) {
+            System.err.println("Batch label is required and must be at most "
+                    + QuestionImportService.BATCH_LABEL_MAX_LENGTH + " characters");
+            System.exit(2);
+            return;
+        }
+
         DatabaseManager.init();
         try {
             QuestionImportResult result;
             try (InputStream in = Files.newInputStream(path)) {
-                result = new QuestionImportService().importFromExcel(in);
+                result = new QuestionImportService().importFromExcel(in, batchLabel);
             }
 
             System.out.println("Imported: " + result.getImportedCount());

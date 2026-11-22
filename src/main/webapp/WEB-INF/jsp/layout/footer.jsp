@@ -1,7 +1,7 @@
 </main>
 <footer class="site-footer">
     <div class="container">
-        <p>&copy; 2026 Exam Prep App</p>
+        <p><fmt:message key="app.footer"><fmt:param value="2026"/></fmt:message></p>
     </div>
 </footer>
 </body>

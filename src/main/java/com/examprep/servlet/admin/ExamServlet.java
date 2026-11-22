@@ -55,6 +55,13 @@ public class ExamServlet extends HttpServlet {
                     Exam exam = new Exam();
                     if ("update".equals(action)) {
                         exam.setId(IdCipher.dec(req.getParameter("id")));
+                        adminService.getExam(exam.getId()).ifPresent(existing -> {
+                            exam.setWeekly(existing.isWeekly());
+                            if (existing.isWeekly()) {
+                                exam.setDiagnostic(false);
+                                exam.setQuestionsPerSubject(existing.getQuestionsPerSubject());
+                            }
+                        });
                     }
                     exam.setSubjectId(Long.parseLong(req.getParameter("subjectId")));
                     exam.setTitle(req.getParameter("title").trim());

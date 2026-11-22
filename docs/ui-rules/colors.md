@@ -14,5 +14,7 @@ Defined in `src/main/webapp/css/app.css` as CSS variables on `:root`.
 | `--color-border` | `#e2e8f0` | Borders / dividers |
 | `--color-text` | `#1e293b` | Body text |
 | `--color-muted` | `#64748b` | Secondary text |
+| `--color-primary-soft` | `#eff6ff` | Active nav, logo mark, admin avatar |
+| `--color-danger-soft` | `#fef2f2` | Logout hover |
 
 Prefer these variables over hard-coded hex in new UI.
