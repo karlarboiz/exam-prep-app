@@ -22,6 +22,7 @@ public class ExamAttempt {
     private int leaveCount;
     private int suspectLeaveCount;
     private boolean integrityTracking;
+    private AnswerRevealMode answerRevealMode = AnswerRevealMode.AFTER_EXAM;
     private String username;
 
     public ExamAttempt() {
@@ -161,6 +162,18 @@ public class ExamAttempt {
 
     public void setIntegrityTracking(boolean integrityTracking) {
         this.integrityTracking = integrityTracking;
+    }
+
+    public AnswerRevealMode getAnswerRevealMode() {
+        return answerRevealMode;
+    }
+
+    public void setAnswerRevealMode(AnswerRevealMode answerRevealMode) {
+        this.answerRevealMode = answerRevealMode != null ? answerRevealMode : AnswerRevealMode.AFTER_EXAM;
+    }
+
+    public boolean isRevealAfterEach() {
+        return answerRevealMode == AnswerRevealMode.AFTER_EACH;
     }
 
     public String getUsername() {

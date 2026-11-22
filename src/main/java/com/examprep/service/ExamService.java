@@ -4,6 +4,7 @@ import com.examprep.dao.AttemptDao;
 import com.examprep.dao.ExamDao;
 import com.examprep.dao.QuestionDao;
 import com.examprep.dao.SubjectDao;
+import com.examprep.model.AnswerRevealMode;
 import com.examprep.model.AttemptAnswer;
 import com.examprep.model.AttemptStatus;
 import com.examprep.model.Exam;
@@ -68,17 +69,29 @@ public class ExamService {
         return questionDao.findByExamId(examId);
     }
 
-    public ExamAttempt startExam(Long userId, Long examId) throws SQLException {
+    public Optional<ExamAttempt> findInProgressAttempt(Long userId, Long examId) throws SQLException {
         Optional<ExamAttempt> existing = attemptDao.findInProgress(userId, examId);
-        if (existing.isPresent()) {
-            ExamAttempt attempt = existing.get();
-            if (isExpired(attempt)) {
-                attemptDao.updateStatus(attempt.getId(), AttemptStatus.EXPIRED);
-            } else {
-                return attempt;
-            }
+        if (existing.isEmpty()) {
+            return Optional.empty();
         }
-        return attemptDao.create(userId, examId);
+        ExamAttempt attempt = existing.get();
+        if (isExpired(attempt)) {
+            attemptDao.updateStatus(attempt.getId(), AttemptStatus.EXPIRED);
+            return Optional.empty();
+        }
+        return Optional.of(attempt);
+    }
+
+    public ExamAttempt startExam(Long userId, Long examId) throws SQLException {
+        return startExam(userId, examId, AnswerRevealMode.AFTER_EXAM);
+    }
+
+    public ExamAttempt startExam(Long userId, Long examId, AnswerRevealMode answerRevealMode) throws SQLException {
+        Optional<ExamAttempt> existing = findInProgressAttempt(userId, examId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        return attemptDao.create(userId, examId, answerRevealMode);
     }
 
     public ExamAttempt getAttempt(Long attemptId) throws SQLException {
@@ -94,7 +107,7 @@ public class ExamService {
         return attempt.getStartedAt().plusMinutes(attempt.getDurationMinutes());
     }
 
-    public void saveAnswer(Long attemptId, Long questionId, String selectedOption) throws SQLException {
+    public AttemptAnswer saveAnswer(Long attemptId, Long questionId, String selectedOption) throws SQLException {
         ExamAttempt attempt = getAttempt(attemptId);
         if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
             throw new IllegalStateException("Attempt is not in progress");
@@ -105,8 +118,17 @@ public class ExamService {
         }
         Question question = questionDao.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("Question not found"));
-        boolean correct = question.getCorrectOption().equalsIgnoreCase(selectedOption);
-        attemptDao.saveAnswer(attemptId, questionId, selectedOption.toUpperCase(), correct);
+        String selected = selectedOption.toUpperCase();
+        boolean correct = question.getCorrectOption().equalsIgnoreCase(selected);
+        attemptDao.saveAnswer(attemptId, questionId, selected, correct);
+
+        AttemptAnswer answer = new AttemptAnswer();
+        answer.setAttemptId(attemptId);
+        answer.setQuestionId(questionId);
+        answer.setSelectedOption(selected);
+        answer.setCorrect(correct);
+        answer.setQuestion(question);
+        return answer;
     }
 
     public ExamAttempt submitExam(Long attemptId, Map<Long, String> answers) throws SQLException {

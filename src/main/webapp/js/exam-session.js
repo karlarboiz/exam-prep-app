@@ -16,6 +16,11 @@
     const answerFailRedirect = root.dataset.answerFailRedirect || '';
     const trackingEndpoint = root.dataset.trackingEndpoint || postUrl.replace(ctx, '') || '';
     const leaveCount = parseInt(root.dataset.leaveCount || '0', 10);
+    const revealAfterEach = root.dataset.revealAfterEach === 'true';
+    const feedbackCorrect = root.dataset.feedbackCorrect || 'Correct';
+    const feedbackIncorrect = root.dataset.feedbackIncorrect || 'Incorrect';
+    const feedbackCorrectAnswer = root.dataset.feedbackCorrectAnswer || 'Correct answer:';
+    const feedbackExplanation = root.dataset.feedbackExplanation || 'Explanation:';
 
     const examForm = document.getElementById('examForm');
     const submitConfirm = (examForm && examForm.dataset.confirmSubmit) || root.dataset.submitConfirm || '';
@@ -148,6 +153,9 @@
             window.ExamTracking.disable();
         }
         if (examForm) {
+            examForm.querySelectorAll('input[type="radio"][disabled]').forEach(function (input) {
+                input.disabled = false;
+            });
             examForm.submit();
         }
     }
@@ -204,8 +212,56 @@
         return headers;
     }
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text == null ? '' : String(text);
+        return div.innerHTML;
+    }
+
+    function lockQuestionOptions(card, data) {
+        const labels = card.querySelectorAll('.option-label');
+        labels.forEach(function (label) {
+            const input = label.querySelector('input[type="radio"]');
+            if (!input) {
+                return;
+            }
+            input.disabled = true;
+            label.classList.add('is-locked');
+            label.classList.toggle('is-correct-option', input.value === data.correctOption);
+            label.classList.toggle('is-wrong-option',
+                input.value === data.selectedOption && !data.correct);
+        });
+        card.setAttribute('data-answered', '1');
+    }
+
+    function renderFeedback(card, data) {
+        const panel = card.querySelector('.answer-feedback');
+        if (!panel) {
+            return;
+        }
+        panel.classList.remove('is-hidden', 'correct', 'incorrect');
+        panel.classList.add('review-card', data.correct ? 'correct' : 'incorrect');
+        let html = '<p class="feedback-verdict">'
+            + escapeHtml(data.correct ? feedbackCorrect : feedbackIncorrect) + '</p>';
+        if (!data.correct) {
+            html += '<p><strong>' + escapeHtml(feedbackCorrectAnswer) + '</strong> '
+                + escapeHtml(data.correctOption)
+                + ' — ' + escapeHtml(data.correctText || '') + '</p>';
+        }
+        if (data.explanation) {
+            html += '<p><strong>' + escapeHtml(feedbackExplanation) + '</strong> '
+                + escapeHtml(data.explanation) + '</p>';
+        }
+        panel.innerHTML = html;
+        lockQuestionOptions(card, data);
+    }
+
     function saveAnswer(questionId, option) {
         if (!examStarted) {
+            return;
+        }
+        const card = document.querySelector('.question-card[data-question-id="' + questionId + '"]');
+        if (card && card.getAttribute('data-answered') === '1' && revealAfterEach) {
             return;
         }
         fetch(postUrl, {
@@ -221,6 +277,14 @@
         }).then(function (res) {
             if (res.redirected || res.status === 403) {
                 window.location.href = res.url || answerFailRedirect || postUrl;
+                return;
+            }
+            if (revealAfterEach && res.status === 200) {
+                return res.json().then(function (data) {
+                    if (card) {
+                        renderFeedback(card, data);
+                    }
+                });
             }
         }).catch(function () { /* keep selection local if save fails briefly */ });
     }

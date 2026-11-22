@@ -8,6 +8,10 @@
 <%@ include file="/WEB-INF/jsp/layout/header.jsp" %>
 <fmt:message key="exam.questionOf" var="questionOfPattern"/>
 <fmt:message key="exam.confirmSubmit" var="confirmSubmit"/>
+<fmt:message key="exam.correct" var="feedbackCorrect"/>
+<fmt:message key="exam.incorrect" var="feedbackIncorrect"/>
+<fmt:message key="exam.correctAnswer" var="feedbackCorrectAnswer"/>
+<fmt:message key="exam.explanation" var="feedbackExplanation"/>
 
 <c:set var="examPostPath" value="${empty examPostPath ? '/user/exam' : examPostPath}"/>
 <div id="examShell" class="exam-shell"
@@ -19,10 +23,18 @@
      data-show-intro="false"
      data-answer-fail-redirect="<c:out value='${ctx}/user/dashboard'/>"
      data-tracking-endpoint="<c:out value='${examPostPath}'/>"
-     data-leave-count="${attempt.leaveCount}">
+     data-leave-count="${attempt.leaveCount}"
+     data-reveal-after-each="${attempt.revealAfterEach}"
+     data-feedback-correct="<c:out value='${feedbackCorrect}'/>"
+     data-feedback-incorrect="<c:out value='${feedbackIncorrect}'/>"
+     data-feedback-correct-answer="<c:out value='${feedbackCorrectAnswer}'/>"
+     data-feedback-explanation="<c:out value='${feedbackExplanation}'/>">
 <div class="exam-header">
     <h1><c:out value="${attempt.examTitle}"/></h1>
     <p class="exam-meta"><c:out value="${attempt.subjectName}"/> &middot; <fmt:message key="exam.questions"><fmt:param value="${questions.size()}"/></fmt:message></p>
+    <p class="exam-meta"><fmt:message key="exam.answersShown"><fmt:param>
+        <fmt:message key="exam.reveal.${attempt.answerRevealMode}"/>
+    </fmt:param></fmt:message></p>
     <p class="hint exam-integrity-note"><fmt:message key="exam.integrityNote"/></p>
     <p class="exam-progress" id="exam-progress"><fmt:message key="exam.questionOf"><fmt:param value="1"/><fmt:param value="${questions.size()}"/></fmt:message></p>
     <div class="timer-bar">
@@ -44,10 +56,12 @@
     <input type="hidden" name="action" value="submit">
 
     <c:forEach var="q" items="${questions}" varStatus="status">
+        <c:set var="fb" value="${feedbackByQuestion[q.id]}"/>
         <div class="question-card${status.index == 0 ? '' : ' is-hidden'}${empty q.imageUrl ? '' : ' has-image'}"
              data-index="${status.index}"
              data-question-id="${q.id}"
-             data-has-image="${not empty q.imageUrl}">
+             data-has-image="${not empty q.imageUrl}"
+             data-answered="${not empty fb ? '1' : '0'}">
             <h3><fmt:message key="exam.question"><fmt:param value="${status.index + 1}"/></fmt:message></h3>
             <p class="question-prompt"><c:out value="${q.prompt}"/></p>
             <c:set var="imageUrl" value="${q.imageUrl}"/>
@@ -55,6 +69,19 @@
             <c:set var="imageLoading" value="${status.index == 0 ? 'eager' : 'lazy'}"/>
             <%@ include file="/WEB-INF/jsp/partials/question-image.jsp" %>
             <%@ include file="/WEB-INF/jsp/partials/question-options.jsp" %>
+            <div class="answer-feedback${empty fb ? ' is-hidden' : ''} ${not empty fb and fb.correct ? 'review-card correct' : ''}${not empty fb and !fb.correct ? 'review-card incorrect' : ''}"
+                 data-feedback-for="${q.id}">
+                <c:if test="${not empty fb}">
+                    <p class="feedback-verdict">${fb.correct ? feedbackCorrect : feedbackIncorrect}</p>
+                    <c:if test="${!fb.correct}">
+                        <p><strong>${feedbackCorrectAnswer}</strong> ${fb.question.correctOption}
+                            — ${fb.question.getOptionText(fb.question.correctOption)}</p>
+                    </c:if>
+                    <c:if test="${not empty fb.question.explanation}">
+                        <p><strong>${feedbackExplanation}</strong> <c:out value="${fb.question.explanation}"/></p>
+                    </c:if>
+                </c:if>
+            </div>
         </div>
     </c:forEach>
 

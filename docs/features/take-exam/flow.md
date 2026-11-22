@@ -3,21 +3,28 @@
 **Route:** `/user/exam`  
 **Servlet:** `TakeExamServlet`  
 **Service:** `ExamService`  
-**Page:** [take-exam.jsp](../../pages/user/take-exam.md)
+**Pages:** [take-exam.jsp](../../pages/user/take-exam.md), [exam-start.jsp](../../pages/user/exam-start.md)
 
 ## Flow
 
 ```
 GET ?examId=N
-  → startExam (reuse IN_PROGRESS or create new)
+  → if IN_PROGRESS exists → redirect ?attemptId=…
+  → else show answer-feedback options (exam-start)
+
+POST action=start
+  → answerRevealMode = AFTER_EACH | AFTER_EXAM
+  → startExam (create attempt with mode; reuse IN_PROGRESS if any)
   → redirect ?attemptId=N
 
 GET ?attemptId=N
   → if not IN_PROGRESS or expired → redirect to result
-  → else show questions + timer
+  → else show questions + timer (+ per-item feedback UI when AFTER_EACH)
 
 POST action=answer
   → saveAnswer for one question
+  → AFTER_EACH + ajax → JSON { correct, selectedOption, correctOption, correctText, explanation }
+  → otherwise ajax → 204
 
 POST action=behavior
   → record LEAVE/RETURN for the current question (CSRF, owner, IN_PROGRESS)
@@ -29,6 +36,13 @@ POST action=submit
        blank / missing → selected_option NULL, is_correct false
   → redirect /user/result?attemptId=N
 ```
+
+## Answer reveal
+
+- Chosen once when starting a **new** practice attempt. Resume does not re-prompt.
+- **AFTER_EACH** — options lock after a selection; correct/incorrect panel (and explanation when present) appears under the item. Resume reloads feedback for already-answered items.
+- **AFTER_EXAM** — no in-exam reveal; [result](../results-history/result.md) shows the full review (unchanged).
+- Correct options are not embedded in the take-exam page for unanswered items; AFTER_EACH feedback is returned only after save.
 
 ## UI timing
 

@@ -133,7 +133,8 @@ Use existing pages as the visual reference before inventing new layouts.
 | Screen | Route | Page doc |
 |--------|-------|----------|
 | Dashboard | `/user/dashboard` | [dashboard](pages/user/dashboard.md) |
-| Take exam | `/user/exam` | [take-exam](pages/user/take-exam.md) |
+| Exam start options | `/user/exam?examId=` | [exam-start](pages/user/exam-start.md) |
+| Take exam | `/user/exam?attemptId=` | [take-exam](pages/user/take-exam.md) |
 | Weekly exam | `/user/weekly` | [take-exam](pages/user/take-exam.md) |
 | Checkpoint | `/user/checkpoint` | [take-exam](pages/user/take-exam.md) |
 | Study plan | `/user/study-plan` | [study-plan](pages/user/study-plan.md) |

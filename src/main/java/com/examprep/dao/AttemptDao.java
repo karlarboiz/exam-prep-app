@@ -1,6 +1,7 @@
 package com.examprep.dao;
 
 import com.examprep.config.DatabaseManager;
+import com.examprep.model.AnswerRevealMode;
 import com.examprep.model.AttemptAnswer;
 import com.examprep.model.AttemptKind;
 import com.examprep.model.AttemptStatus;
@@ -24,7 +25,7 @@ public class AttemptDao {
 
     private static final String ATTEMPT_SELECT = """
             SELECT a.id, a.user_id, a.exam_id, a.started_at, a.completed_at, a.score_percent, a.status,
-                   a.leave_count, a.suspect_leave_count, a.integrity_tracking,
+                   a.leave_count, a.suspect_leave_count, a.integrity_tracking, a.answer_reveal_mode,
                    a.attempt_kind, a.regimen_id,
                    e.title AS exam_title,
                    COALESCE(a.duration_minutes_override, e.duration_minutes) AS duration_minutes,
@@ -86,15 +87,26 @@ public class AttemptDao {
     }
 
     public ExamAttempt create(Long userId, Long examId) throws SQLException {
-        return create(userId, examId, AttemptKind.PRACTICE, null, null);
+        return create(userId, examId, AttemptKind.PRACTICE, null, null, AnswerRevealMode.AFTER_EXAM);
+    }
+
+    public ExamAttempt create(Long userId, Long examId, AnswerRevealMode answerRevealMode) throws SQLException {
+        return create(userId, examId, AttemptKind.PRACTICE, null, null, answerRevealMode);
     }
 
     public ExamAttempt create(Long userId, Long examId, AttemptKind kind, Long regimenId,
                               Integer durationOverrideMinutes) throws SQLException {
+        return create(userId, examId, kind, regimenId, durationOverrideMinutes, AnswerRevealMode.AFTER_EXAM);
+    }
+
+    public ExamAttempt create(Long userId, Long examId, AttemptKind kind, Long regimenId,
+                              Integer durationOverrideMinutes, AnswerRevealMode answerRevealMode)
+            throws SQLException {
+        AnswerRevealMode mode = answerRevealMode != null ? answerRevealMode : AnswerRevealMode.AFTER_EXAM;
         String sql = """
                 INSERT INTO exam_attempts (user_id, exam_id, started_at, status, attempt_kind, regimen_id,
-                                           duration_minutes_override)
-                VALUES (?, ?, ?, 'IN_PROGRESS', ?, ?, ?)
+                                           duration_minutes_override, answer_reveal_mode)
+                VALUES (?, ?, ?, 'IN_PROGRESS', ?, ?, ?, ?)
                 """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -112,6 +124,7 @@ public class AttemptDao {
             } else {
                 ps.setNull(6, Types.INTEGER);
             }
+            ps.setString(7, mode.name());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -321,6 +334,7 @@ public class AttemptDao {
         attempt.setLeaveCount(rs.getInt("leave_count"));
         attempt.setSuspectLeaveCount(rs.getInt("suspect_leave_count"));
         attempt.setIntegrityTracking(rs.getBoolean("integrity_tracking"));
+        attempt.setAnswerRevealMode(AnswerRevealMode.fromString(rs.getString("answer_reveal_mode")));
         attempt.setUsername(rs.getString("username"));
         return attempt;
     }
