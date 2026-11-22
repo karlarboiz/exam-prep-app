@@ -53,7 +53,7 @@ public class EmailOutboxDao {
                 SELECT id, user_id, regimen_id, to_address, subject, body, created_at
                 FROM email_outbox
                 WHERE user_id = ?
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC, id DESC
                 """;
         List<EmailOutbox> rows = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
@@ -86,7 +86,7 @@ public class EmailOutboxDao {
                 SELECT id, user_id, regimen_id, to_address, subject, body, created_at
                 FROM email_outbox
                 WHERE regimen_id = ?
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC, id DESC
                 """;
         List<EmailOutbox> rows = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();
