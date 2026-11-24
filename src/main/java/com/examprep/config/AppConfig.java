@@ -38,6 +38,14 @@ public final class AppConfig {
         overrideFromEnv("N8N_WEBHOOK_QUESTIONS", "n8n.webhook.questions");
         overrideFromEnv("N8N_WEBHOOK_ANALYZE", "n8n.webhook.analyze");
         overrideFromEnv("N8N_WEBHOOK_SECRET", "n8n.webhook.secret");
+        overrideFromEnv("N8N_SCHEDULER_ENABLED", "n8n.scheduler.enabled");
+        overrideFromEnv("N8N_SCHEDULER_INTERVAL_HOURS", "n8n.scheduler.interval.hours");
+        overrideFromEnv("N8N_SCHEDULER_INITIAL_DELAY_MINUTES", "n8n.scheduler.initial.delay.minutes");
+        overrideFromEnv("N8N_SCHEDULER_MESSAGE", "n8n.scheduler.message");
+        overrideFromEnv("N8N_SCHEDULER_SUBJECT", "n8n.scheduler.subject");
+        overrideFromEnv("N8N_SCHEDULER_COUNT", "n8n.scheduler.count");
+        overrideFromEnv("N8N_SCHEDULER_DIFFICULTY", "n8n.scheduler.difficulty");
+        overrideFromEnv("N8N_SCHEDULER_BATCH_LABEL", "n8n.scheduler.batchLabel");
         overrideFromEnv("GOOGLE_DRIVE_FOLDER_ID", "google.drive.folderId");
         overrideFromEnv("GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON", "google.drive.serviceAccountJson");
         overrideFromEnv("GOOGLE_OAUTH_CLIENT_ID", "google.oauth.clientId");
