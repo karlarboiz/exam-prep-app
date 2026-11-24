@@ -134,6 +134,7 @@ Run these after any auth, grant, or exam change.
 4. `/admin/access-grants` → mint token → raw token + register link shown once; grant appears in the table
 5. `/admin/integrity` → flagged list loads (empty or with suspect leaves)
 6. `/admin/n8n` → Connect Google Drive (or the unconfigured empty state); browse a folder; send a question request with one checked file; n8n receives `driveFiles` (not the whole folder)
+7. `/admin/n8n` → scheduler card shows off by default; with `N8N_SCHEDULER_ENABLED=true`, webhook URL, and message, card shows ready (actual timer fire is background)
 
 ### Funnel → student
 

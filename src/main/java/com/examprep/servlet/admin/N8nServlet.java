@@ -2,6 +2,7 @@ package com.examprep.servlet.admin;
 
 import com.examprep.i18n.Messages;
 import com.examprep.model.User;
+import com.examprep.service.N8nQuestionSchedulerJob;
 import com.examprep.service.N8nService;
 import com.examprep.service.QuestionImportService;
 import com.examprep.util.WebUtil;
@@ -34,6 +35,13 @@ public class N8nServlet extends HttpServlet {
             req.setAttribute("driveEmail", n8nService.connectedGoogleEmail(admin));
             req.setAttribute("recentRequests", n8nService.recentRequests());
             req.setAttribute("suggestedBatchLabel", QuestionImportService.suggestedBatchLabel());
+            req.setAttribute("schedulerEnabled", N8nQuestionSchedulerJob.isEnabled());
+            req.setAttribute("schedulerReady", N8nQuestionSchedulerJob.isReady(n8nService));
+            req.setAttribute("schedulerIntervalHours", N8nQuestionSchedulerJob.intervalHours());
+            req.setAttribute("schedulerMessage", N8nQuestionSchedulerJob.configuredMessage());
+            req.setAttribute("schedulerSubject", N8nQuestionSchedulerJob.configuredSubject());
+            req.setAttribute("schedulerCount", N8nQuestionSchedulerJob.configuredCount());
+            req.setAttribute("schedulerDifficulty", N8nQuestionSchedulerJob.configuredDifficulty());
             applyDriveFlash(req);
             loadDriveFiles(req, admin);
             req.getRequestDispatcher("/WEB-INF/jsp/admin/n8n.jsp").forward(req, resp);

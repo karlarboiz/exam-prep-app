@@ -6,7 +6,7 @@ After n8n delivers an `.xlsx`, import it on [admin questions](../admin-questions
 
 **Route:** `/admin/n8n`  
 **Servlets:** `N8nServlet`, `GoogleDriveOAuthServlet`  
-**Services:** `N8nService`, `GoogleOAuthService`, `GoogleDriveService`  
+**Services:** `N8nService`, `N8nQuestionSchedulerJob`, `GoogleOAuthService`, `GoogleDriveService`  
 **Page:** [n8n.jsp](../../pages/admin/n8n.md)  
 **Models:** [N8nRequest](../../models/N8nRequest.md), [GoogleDriveFile](../../models/GoogleDriveFile.md), [GoogleDriveAccount](../../models/GoogleDriveAccount.md)
 
@@ -21,6 +21,14 @@ Requires `Role.ADMIN` (`JwtAuthFilter` on `/admin/**`). CSRF applies on POST (sa
 | `n8n.webhook.questions` | `N8N_WEBHOOK_QUESTIONS` | Question-batch webhook URL |
 | `n8n.webhook.analyze` | `N8N_WEBHOOK_ANALYZE` | File-analyze webhook URL |
 | `n8n.webhook.secret` | `N8N_WEBHOOK_SECRET` | Sent as `X-N8n-Secret` when non-blank |
+| `n8n.scheduler.enabled` | `N8N_SCHEDULER_ENABLED` | When `true`, start the background question-batch job (default `false`) |
+| `n8n.scheduler.interval.hours` | `N8N_SCHEDULER_INTERVAL_HOURS` | Hours between runs (default `24`, minimum `1`) |
+| `n8n.scheduler.initial.delay.minutes` | `N8N_SCHEDULER_INITIAL_DELAY_MINUTES` | Delay before the first run after startup (default `5`) |
+| `n8n.scheduler.message` | `N8N_SCHEDULER_MESSAGE` | Required when enabled — prompt sent as `message` |
+| `n8n.scheduler.subject` | `N8N_SCHEDULER_SUBJECT` | Optional subject |
+| `n8n.scheduler.count` | `N8N_SCHEDULER_COUNT` | Question count (default `20`) |
+| `n8n.scheduler.difficulty` | `N8N_SCHEDULER_DIFFICULTY` | `EASY` / `MEDIUM` / `HARD` (default `MEDIUM`) |
+| `n8n.scheduler.batchLabel` | `N8N_SCHEDULER_BATCH_LABEL` | Optional; defaults to `cse-import-YYYY-MM-DD` |
 | `google.oauth.clientId` | `GOOGLE_OAUTH_CLIENT_ID` | OAuth web client id |
 | `google.oauth.clientSecret` | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth web client secret |
 | `google.oauth.redirectUri` | `GOOGLE_OAUTH_REDIRECT_URI` | Optional exact callback URL |
@@ -28,6 +36,10 @@ Requires `Role.ADMIN` (`JwtAuthFilter` on `/admin/**`). CSRF applies on POST (sa
 | `google.drive.serviceAccountJson` | `GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON` | Optional service-account JSON or file path |
 
 If a webhook URL is blank, that form is hidden. In production, when at least one URL is set, the n8n secret must be 32+ characters and must not contain insecure patterns. If an OAuth client id is set, the client secret is required. If a Drive folder id is set, the service-account JSON is required.
+
+### Scheduled question batches
+
+`N8nQuestionSchedulerJob` starts from `AppContextListener` only when `n8n.scheduler.enabled=true`. Each run calls the same question webhook JSON as a manual send (no Drive file selection). The request is attributed to the configured admin username (`admin.username`, default `admin`), or the first `ADMIN` user if that name is missing. Incomplete config (blank webhook or message) skips the run and logs to stderr. The `/admin/n8n` page shows a read-only status card for the scheduler.
 
 Redirect URI defaults to `{app.public.url}/admin/n8n/drive/callback`, or the current host + that path. It must match the Google Cloud OAuth client **exactly**.
 

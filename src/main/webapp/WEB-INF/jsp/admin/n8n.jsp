@@ -168,6 +168,36 @@
     </div>
 
 <div class="card">
+    <h2><fmt:message key="n8n.scheduler.heading"/></h2>
+    <c:choose>
+        <c:when test="${schedulerReady}">
+            <p class="alert alert-success"><fmt:message key="n8n.scheduler.ready"/></p>
+            <p class="hint">
+                <fmt:message key="n8n.scheduler.interval">
+                    <fmt:param value="${schedulerIntervalHours}"/>
+                </fmt:message>
+            </p>
+            <p class="exam-meta"><c:out value="${schedulerMessage}"/></p>
+            <c:if test="${not empty schedulerSubject or not empty schedulerCount or not empty schedulerDifficulty}">
+                <p class="hint">
+                    <c:if test="${not empty schedulerSubject}"><c:out value="${schedulerSubject}"/> · </c:if>
+                    <c:if test="${not empty schedulerCount}"><fmt:message key="n8n.questions.count"/>: <c:out value="${schedulerCount}"/> · </c:if>
+                    <c:if test="${not empty schedulerDifficulty}"><fmt:message key="n8n.questions.difficulty"/>: <c:out value="${schedulerDifficulty}"/></c:if>
+                </p>
+            </c:if>
+        </c:when>
+        <c:when test="${schedulerEnabled}">
+            <p class="alert alert-error"><fmt:message key="n8n.scheduler.incomplete"/></p>
+            <p class="hint"><fmt:message key="n8n.scheduler.help"/></p>
+        </c:when>
+        <c:otherwise>
+            <p class="empty-state"><fmt:message key="n8n.scheduler.disabled"/></p>
+            <p class="hint"><fmt:message key="n8n.scheduler.help"/></p>
+        </c:otherwise>
+    </c:choose>
+</div>
+
+<div class="card">
     <h2><fmt:message key="n8n.recent.heading"/></h2>
     <c:choose>
         <c:when test="${empty recentRequests}">

@@ -8,3 +8,4 @@ Admin send-only webhooks to n8n. Results arrive outside the app (email / Drive).
 | File-analyze send | Done | `POST /admin/n8n` `action=analyze` → n8n webhook multipart; n8n owns Drive upload |
 | Drive file picker | Done | Admin taps Connect, signs in with Google, browses folders, checks files. Selected ids go in `driveFiles`. Service-account folder remains an optional fallback |
 | Request audit log | Done | `n8n_requests` — accepted/failed only, not a results inbox |
+| Scheduled question-batch webhook | Done | `N8nQuestionSchedulerJob` — off by default; when `n8n.scheduler.enabled=true` + message + questions URL, POSTs the same JSON on an interval. Status card on `/admin/n8n` |
